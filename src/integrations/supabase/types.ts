@@ -9,188 +9,236 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      announcements: {
+      huggingface_api_keys: {
         Row: {
-          asset_types: string[] | null
-          assets: string[] | null
-          content: string
-          created_at: string
-          created_by: string
+          api_key: string
+          created_at: string | null
           id: string
+          is_active: boolean | null
+          last_used_at: string | null
         }
         Insert: {
-          asset_types?: string[] | null
-          assets?: string[] | null
-          content: string
-          created_at?: string
-          created_by: string
+          api_key: string
+          created_at?: string | null
           id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
         }
         Update: {
-          asset_types?: string[] | null
-          assets?: string[] | null
-          content?: string
-          created_at?: string
-          created_by?: string
+          api_key?: string
+          created_at?: string | null
           id?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "announcements_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      poll_options: {
+      notifications: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
-          option_text: string
-          poll_id: string
+          image_url: string | null
+          is_read: boolean | null
+          link: string | null
+          link_names: string | null
+          message: string
+          read_at: string | null
+          title: string
+          user_id: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          option_text: string
-          poll_id: string
+          image_url?: string | null
+          is_read?: boolean | null
+          link?: string | null
+          link_names?: string | null
+          message: string
+          read_at?: string | null
+          title: string
+          user_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
-          option_text?: string
-          poll_id?: string
+          image_url?: string | null
+          is_read?: boolean | null
+          link?: string | null
+          link_names?: string | null
+          message?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "poll_options_poll_id_fkey"
-            columns: ["poll_id"]
-            isOneToOne: false
-            referencedRelation: "polls"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      poll_responses: {
-        Row: {
-          created_at: string
-          id: string
-          option_id: string
-          poll_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          option_id: string
-          poll_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          option_id?: string
-          poll_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "poll_responses_option_id_fkey"
-            columns: ["option_id"]
-            isOneToOne: false
-            referencedRelation: "poll_options"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "poll_responses_poll_id_fkey"
-            columns: ["poll_id"]
-            isOneToOne: false
-            referencedRelation: "polls"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "poll_responses_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      polls: {
-        Row: {
-          announcement_id: string
-          created_at: string
-          id: string
-          question: string
-        }
-        Insert: {
-          announcement_id: string
-          created_at?: string
-          id?: string
-          question: string
-        }
-        Update: {
-          announcement_id?: string
-          created_at?: string
-          id?: string
-          question?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_announcement"
-            columns: ["announcement_id"]
-            isOneToOne: false
-            referencedRelation: "announcements"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "polls_announcement_id_fkey"
-            columns: ["announcement_id"]
-            isOneToOne: false
-            referencedRelation: "announcements"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
           avatar_url: string | null
-          class: string
+          bonus_credits: number
+          created_at: string | null
+          credit_count: number
+          display_name: string | null
+          followers_count: number | null
+          following_count: number | null
           id: string
-          id_roll: string
-          is_class_teacher: boolean | null
-          name: string
-          number: string | null
-          role: string
-          section: string | null
-          shift: string | null
+          is_admin: boolean | null
+          is_pro: boolean | null
+          is_pro_request: boolean | null
+          last_refill_time: string | null
+          updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
-          class: string
+          bonus_credits?: number
+          created_at?: string | null
+          credit_count?: number
+          display_name?: string | null
+          followers_count?: number | null
+          following_count?: number | null
           id: string
-          id_roll: string
-          is_class_teacher?: boolean | null
-          name: string
-          number?: string | null
-          role?: string
-          section?: string | null
-          shift?: string | null
+          is_admin?: boolean | null
+          is_pro?: boolean | null
+          is_pro_request?: boolean | null
+          last_refill_time?: string | null
+          updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
-          class?: string
+          bonus_credits?: number
+          created_at?: string | null
+          credit_count?: number
+          display_name?: string | null
+          followers_count?: number | null
+          following_count?: number | null
           id?: string
-          id_roll?: string
-          is_class_teacher?: boolean | null
-          name?: string
-          number?: string | null
-          role?: string
-          section?: string | null
-          shift?: string | null
+          is_admin?: boolean | null
+          is_pro?: boolean | null
+          is_pro_request?: boolean | null
+          last_refill_time?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_follows: {
+        Row: {
+          created_at: string | null
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_image_likes: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          image_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          image_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          image_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_image_likes_image_id_fkey"
+            columns: ["image_id"]
+            isOneToOne: false
+            referencedRelation: "user_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_images: {
+        Row: {
+          aspect_ratio: string
+          created_at: string | null
+          height: number
+          id: string
+          is_hot: boolean
+          is_private: boolean
+          is_trending: boolean
+          model: string
+          negative_prompt: string | null
+          prompt: string
+          quality: string
+          seed: number
+          storage_path: string
+          user_id: string | null
+          width: number
+        }
+        Insert: {
+          aspect_ratio: string
+          created_at?: string | null
+          height: number
+          id?: string
+          is_hot?: boolean
+          is_private?: boolean
+          is_trending?: boolean
+          model: string
+          negative_prompt?: string | null
+          prompt: string
+          quality: string
+          seed: number
+          storage_path: string
+          user_id?: string | null
+          width: number
+        }
+        Update: {
+          aspect_ratio?: string
+          created_at?: string | null
+          height?: number
+          id?: string
+          is_hot?: boolean
+          is_private?: boolean
+          is_trending?: boolean
+          model?: string
+          negative_prompt?: string | null
+          prompt?: string
+          quality?: string
+          seed?: number
+          storage_path?: string
+          user_id?: string | null
+          width?: number
         }
         Relationships: []
       }
@@ -199,7 +247,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_bonus_credits: {
+        Args: {
+          p_user_id: string
+          p_bonus_amount: number
+        }
+        Returns: number
+      }
+      delete_old_read_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      get_random_huggingface_api_key: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      refill_user_credits: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      similarity: {
+        Args: {
+          query: string
+          document: string
+        }
+        Returns: number
+      }
+      update_trending_and_hot_status: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
