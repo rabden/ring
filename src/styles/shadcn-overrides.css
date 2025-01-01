@@ -1,0 +1,13 @@
+/* Remove focus ring and outline from shadcn components */
+.ring-offset-background,
+[data-radix-popper-content-wrapper] * {
+  --tw-ring-offset-width: 0px !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove focus visible styles */
+*:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
