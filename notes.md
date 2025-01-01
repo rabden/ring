@@ -705,7 +705,7 @@ Updated the dark theme with a modern, cohesive color palette:
 
 ## URL Configuration
 1. ✅ Main Site URL:
-   - Base URL: https://ring.lovable.app
+   - Base URL: 
    - Organization: Lovable (https://lovable.app)
    - Social handle: @lovableai
 

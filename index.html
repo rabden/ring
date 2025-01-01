@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="https://ring.lovable.app/logo.ico" />
+    <link rel="icon" type="image/svg+xml" href="/logo.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     
     <!-- Primary Meta Tags -->
@@ -17,7 +17,7 @@
     <meta property="og:url" content="https://ring.lovable.app/">
     <meta property="og:title" content="Ring IG - Professional AI Art Generation Platform">
     <meta property="og:description" content="Transform ideas into art with 20+ AI models: Realistic photos, anime, 3D renders, logos, vector art, and more. Start free with 50 daily credits. Professional quality, instant generation.">
-    <meta property="og:image" content="https://ring.lovable.app/cover.jpg">
+    <meta property="og:image" content="/cover.jpg">
     <meta property="og:site_name" content="Ring IG">
     
     <!-- Twitter -->
@@ -27,7 +27,7 @@
     <meta name="twitter:url" content="https://ring.lovable.app/">
     <meta name="twitter:title" content="Ring IG - Create Professional AI Art Instantly">
     <meta name="twitter:description" content="Access 20+ specialized AI models for every creative need. From photorealistic images to anime, 3D renders, logos, and more. Start free, no credit card needed.">
-    <meta name="twitter:image" content="https://ring.lovable.app/cover.jpg">
+    <meta name="twitter:image" content="/cover.jpg">
     
     <!-- Additional SEO Tags -->
     <meta name="robots" content="index, follow">
@@ -53,7 +53,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/logo.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/logo.png">
     <link rel="manifest" href="/site.webmanifest">
-    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000">
     
     <!-- Enhanced Structured Data -->
     <script type="application/ld+json">
@@ -160,5 +159,19 @@
         display: none !important;
       }
     </style>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful');
+            })
+            .catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
