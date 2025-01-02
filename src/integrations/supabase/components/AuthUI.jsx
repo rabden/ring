@@ -30,6 +30,7 @@ export const AuthUI = ({ buttonText }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          redirectTo: window.location.href,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -49,9 +50,7 @@ export const AuthUI = ({ buttonText }) => {
   return (
     <div className="w-full space-y-3 flex flex-col items-center">
       {isInIframe ? (
-        <div className="max-w-[300px] w-full mx-auto">
-          <EmailAuthForm />
-        </div>
+        <EmailAuthForm />
       ) : (
         <Button
           className={cn(
