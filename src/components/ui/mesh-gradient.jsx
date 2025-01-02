@@ -12,9 +12,9 @@ const getRandomTransform = () => {
 const GradientOrb = ({ 
   color, 
   size = 300,
-  opacity = 0.15,
-  blur = 80,
-  duration = 15
+  opacity = 0.25,
+  blur = 70,
+  duration = 10
 }) => {
   const [position, setPosition] = useState(getRandomTransform());
   const [prevPosition, setPrevPosition] = useState(position);
