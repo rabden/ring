@@ -26,6 +26,22 @@ const queryClient = new QueryClient({
   },
 });
 
+// Initial Redirect Component
+const InitialRedirect = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const hasRedirected = sessionStorage.getItem('hasRedirected');
+    if (!hasRedirected && location.pathname === '/') {
+      sessionStorage.setItem('hasRedirected', 'true');
+      navigate('/inspiration#top');
+    }
+  }, [navigate, location]);
+
+  return null;
+};
+
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { session, loading } = useSupabaseAuth();
@@ -91,6 +107,7 @@ function App() {
         <AuthProvider>
           <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
             <NotificationProvider>
+              <InitialRedirect />
               <Routes>
                 {/* Public Routes */}
                 <Route path="/image/:imageId" element={<SingleImageView />} />
