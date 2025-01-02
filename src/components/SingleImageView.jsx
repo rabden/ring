@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,18 +13,8 @@ import { cn } from "@/lib/utils";
 const SingleImageView = () => {
   const { imageId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const { session } = useSupabaseAuth();
   const isMobile = useMediaQuery('(max-width: 768px)');
-
-  // Add redirect effect
-  useEffect(() => {
-    const hasRedirected = sessionStorage.getItem('hasRedirectedToInspiration');
-    if (!hasRedirected) {
-      sessionStorage.setItem('hasRedirectedToInspiration', 'true');
-      navigate('/inspiration#top', { replace: true });
-    }
-  }, [navigate]);
 
   const { data: image, isLoading } = useQuery({
     queryKey: ['singleImage', imageId],
