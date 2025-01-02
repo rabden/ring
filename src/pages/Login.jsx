@@ -6,6 +6,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
+import GoogleOneTap from '@/components/auth/GoogleOneTap';
 import logoImage from '/logo2.png';
 
 const texts = [
@@ -118,14 +119,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background backdrop-blur-sm relative overflow-hidden">
-      <MeshGradient 
-        intensity="medium" 
-        speed="fast" 
-        size={800}
-        className="z-0"
-        className2="bg-background/5 backdrop-blur-[1px]"
-      />
-      {/* Left side with background image */}
+      <GoogleOneTap />
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
