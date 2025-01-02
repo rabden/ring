@@ -27,9 +27,6 @@ const ImagePromptSection = ({ image }) => {
         <Label>Prompt</Label>
         <div className={cn(
           "rounded-md",
-          "bg-muted/5 hover:bg-muted/10",
-          "border border-border/5",
-          "transition-colors duration-200",
           "group"
         )}>
           <p className="text-sm text-foreground/90 leading-relaxed p-3">{displayedPrompt}</p>

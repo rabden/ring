@@ -9,9 +9,6 @@ const ImageDetailsSection = ({ detailItems }) => {
           key={index} 
           className={cn(
             "space-y-1 rounded-md",
-            "bg-muted/5 hover:bg-muted/10",
-            "border border-border/5",
-            "transition-colors duration-200",
             "group"
           )}
         >
