@@ -6,7 +6,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
-import logoImage from '/logo.png';
+import logoImage from '/logo2.png';
 
 const texts = [
   "Create stunning AI art with a single prompt",
