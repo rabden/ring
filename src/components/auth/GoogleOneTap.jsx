@@ -13,16 +13,21 @@ const GoogleOneTap = () => {
 
       script.onload = () => {
         if (window.google) {
-          window.google.accounts.id.initialize({
-            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-            callback: handleCredentialResponse,
-            auto_select: true,
-            cancel_on_tap_outside: false,
-          });
+          // Get the client ID from Supabase's auth settings
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+              window.google.accounts.id.initialize({
+                client_id: '1046396350023-ik8f9qgqq9aqm4vkc8ql9iq2hnc4v6aq.apps.googleusercontent.com', // This is the client ID from Supabase's Google provider settings
+                callback: handleCredentialResponse,
+                auto_select: true,
+                cancel_on_tap_outside: false,
+              });
 
-          window.google.accounts.id.prompt((notification) => {
-            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-              console.log('One Tap was not displayed or was skipped');
+              window.google.accounts.id.prompt((notification) => {
+                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                  console.log('One Tap was not displayed or was skipped');
+                }
+              });
             }
           });
         }
