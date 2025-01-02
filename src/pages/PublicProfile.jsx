@@ -159,7 +159,7 @@ const PublicProfile = () => {
             <div className="p-4 md:p-6 relative">
               <div className="flex flex-col sm:grid sm:grid-cols-2 gap-6">
                 {/* Profile Details */}
-                <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="flex flex-row items-center gap-6">
                   <div className="flex-shrink-0">
                     <ProfileAvatar 
                       user={{ user_metadata: { avatar_url: profile.avatar_url } }} 
