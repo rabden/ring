@@ -11,7 +11,7 @@ const urlsToCache = [
   '/inspiration',
   '/logo.png',
   '/logo.ico',
-  '/cover.jpg',
+  'https://i.ibb.co.com/X3BQdwH/cover.jpg',
   '/site.webmanifest'
 ];
 
