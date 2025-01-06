@@ -13,6 +13,30 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 
+const GroupSelector = ({ groups, activeGroup, onGroupChange }) => (
+  <div className="flex gap-1 px-2 py-1 mb-1 overflow-x-auto scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
+    <Button
+      size="sm"
+      variant={activeGroup === "all" ? "default" : "outline"}
+      className="h-7 px-2 text-xs rounded-full flex-shrink-0"
+      onClick={() => onGroupChange("all")}
+    >
+      All
+    </Button>
+    {groups.map((group) => (
+      <Button
+        key={group}
+        size="sm"
+        variant={activeGroup === group ? "default" : "outline"}
+        className="h-7 px-2 text-xs rounded-full flex-shrink-0 whitespace-nowrap"
+        onClick={() => onGroupChange(group)}
+      >
+        {group}
+      </Button>
+    ))}
+  </div>
+);
+
 // Current card style for selected model
 const ModelCard = ({ modelKey, config, isActive, showRadio = false, onClick, disabled, proMode }) => (
   <div
@@ -88,39 +112,27 @@ const ModelGridCard = ({ modelKey, config, isActive, onClick, disabled, proMode 
   </div>
 );
 
-const GroupSelector = ({ groups, activeGroup, onGroupChange }) => (
-  <div className="flex gap-1 px-2 py-1 mb-1 overflow-x-auto  scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
-    <Button
-      size="sm"
-      variant={activeGroup === "all" ? "default" : "outline"}
-      className="h-7 px-2 text-xs rounded-full flex-shrink-0"
-      onClick={() => onGroupChange("all")}
-    >
-      All
-    </Button>
-    {groups.map((group) => (
-      <Button
-        key={group}
-        size="sm"
-        variant={activeGroup === group ? "default" : "outline"}
-        className="h-7 px-2 text-xs rounded-full flex-shrink-0"
-        onClick={() => onGroupChange(group)}
-      >
-        {group}
-      </Button>
-    ))}
-  </div>
-);
-
 const ModelGrid = ({ filteredModels, model, setModel, proMode, className, onClose }) => {
   const scrollAreaRef = React.useRef(null);
   const activeCardRef = React.useRef(null);
   const [activeGroup, setActiveGroup] = useState("all");
 
-  // Get unique groups from filtered models
+  // Get unique groups from filtered models and sort them
   const groups = useMemo(() => {
     const groupSet = new Set(filteredModels.map(([_, config]) => config.group));
-    return Array.from(groupSet).sort();
+    return Array.from(groupSet).sort((a, b) => {
+      // Custom sort order for groups
+      const order = [
+        "Base Models",
+        "Style Models",
+        "Logo & Branding",
+        "Art & Illustration",
+        "3D & Design",
+        "Anime & Character",
+        "NSFW"
+      ];
+      return order.indexOf(a) - order.indexOf(b);
+    });
   }, [filteredModels]);
 
   // Filter models by active group
