@@ -9,14 +9,20 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const clearAuthData = (shouldClearStorage = false) => {
     setSession(null);
     queryClient.invalidateQueries('user');
     
+    // Only clear localStorage when explicitly requested (like during logout)
     if (shouldClearStorage) {
       try {
+        // Remove session from Supabase storage
         supabase.auth.storage.removeItem('sb-auth-token');
+        
+        // Clear any other auth-related items
         Object.keys(localStorage).forEach(key => {
           if (key.startsWith('supabase.auth.')) {
             localStorage.removeItem(key);
@@ -28,12 +34,72 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const handleAuthSession = async () => {
+    try {
+      // First try to get session from storage
+      const storedSession = supabase.auth.storage.getItem('sb-auth-token');
+      
+      if (storedSession) {
+        console.log('Found stored session, validating...');
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (!userError && user) {
+          console.log('Stored session is valid');
+          setSession(storedSession);
+          return;
+        } else {
+          console.log('Stored session is invalid, fetching new session');
+        }
+      }
+
+      // If no stored session or it's invalid, get a fresh session
+      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Auth session error:', error);
+        clearAuthData(false);
+        return;
+      }
+
+      if (!currentSession) {
+        clearAuthData(false);
+        return;
+      }
+
+      // Verify the session is still valid
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('User verification error:', userError);
+        // If we get a 403 or session_not_found error, clear the session
+        if (userError.status === 403 || userError.message?.includes('session_not_found')) {
+          await supabase.auth.signOut();
+          clearAuthData(true);
+        }
+        return;
+      }
+
+      setSession(currentSession);
+      
+      // Store the valid session
+      supabase.auth.storage.setItem('sb-auth-token', currentSession);
+      
+    } catch (error) {
+      console.error('Auth error:', error);
+      clearAuthData(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
     let authSubscription = null;
 
+    // Initialize auth state
     const initializeAuth = async () => {
       try {
+        // Get initial session
         const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -55,6 +121,7 @@ export const AuthProvider = ({ children }) => {
             clearAuthData(false);
           }
           
+          // Set up auth listener after initial check
           const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
             console.log('Auth state change:', event, currentSession);
             
@@ -112,7 +179,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await supabase.auth.signOut();
-      clearAuthData(true);
+      clearAuthData(true); // Clear storage during explicit logout
     } catch (error) {
       console.error('Error signing out:', error);
     }

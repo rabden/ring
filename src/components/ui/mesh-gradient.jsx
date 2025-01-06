@@ -4,16 +4,16 @@ import { cn } from '@/lib/utils';
 
 const getRandomTransform = () => {
   // Much larger range for more extreme movements
-  const x = Math.random() * 300 - 150; // -150 to 150
-  const y = Math.random() * 300 - 150; // -150 to 150
+  const x = Math.random() * 400 - 200; // -200 to 200
+  const y = Math.random() * 400 - 200; // -200 to 200
   return { x, y };
 };
 
 const GradientOrb = ({ 
   color, 
   size = 300,
-  opacity = 0.35, // Increased opacity for more visibility
-  blur = 60, // Reduced blur for sharper appearance
+  opacity = 0.25,
+  blur = 70,
   duration = 10
 }) => {
   const [position, setPosition] = useState(getRandomTransform());
@@ -65,15 +65,15 @@ export const MeshGradient = ({
   size = 300
 }) => {
   const opacityMap = {
-    subtle: 0.3,
-    medium: 0.4,
-    strong: 0.5
+    subtle: 0.15,
+    medium: 0.2,
+    strong: 0.25
   };
 
   const speedMap = {
     slow: 4,
-    medium: 2,
-    fast: 1
+    medium: 2.7,
+    fast: 1.7
   };
 
   const opacity = opacityMap[intensity] || opacityMap.subtle;
@@ -81,18 +81,18 @@ export const MeshGradient = ({
 
   // Create more orbs with varied colors and larger sizes
   const orbConfigs = [
-    { color: "bg-red-500", size: size * 1.2 },
-    { color: "bg-yellow-500", size: size * 1.4 },
-    { color: "bg-green-500", size: size * 1.3 },
-    { color: "bg-orange-500", size: size * 1.1 },
-    { color: "bg-teal-500", size: size * 1.0 },
-    { color: "bg-cyan-500", size: size * 1.2 },
-    { color: "bg-lime-500", size: size * 1.1 },
-    { color: "bg-amber-500", size: size * 1.3 },
-    { color: "bg-emerald-500", size: size * 1.0 },
-    { color: "bg-fuchsia-500", size: size * 1.2 },
-    { color: "bg-rose-500", size: size * 0.9 },
-    { color: "bg-violet-500", size: size * 1.1 }
+    { color: "bg-blue-500", size: size * 1.2 },
+    { color: "bg-purple-500", size: size * 1.4 },
+    { color: "bg-indigo-400", size: size * 1.3 },
+    { color: "bg-pink-500", size: size * 1.1 },
+    { color: "bg-blue-400", size: size * 1.0 },
+    { color: "bg-purple-400", size: size * 1.2 },
+    { color: "bg-indigo-500", size: size * 1.1 },
+    { color: "bg-pink-400", size: size * 1.3 },
+    { color: "bg-blue-300", size: size * 1.0 },
+    { color: "bg-purple-300", size: size * 1.2 },
+    { color: "bg-indigo-300", size: size * 0.9 },
+    { color: "bg-pink-300", size: size * 1.1 }
   ];
 
   return (
