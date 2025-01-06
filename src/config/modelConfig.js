@@ -499,7 +499,7 @@ export const modelConfig = {
     promptSuffix: ", Isometric 3D",
     tagline: "Isometric style, build your world",
     image: "https://i.ibb.co.com/88P57s7/ID2.png",
-    example: "Start with 'Isometric 3D, a 3D model of' Then describe the things to appear in the image, heres an example: 'Isometric 3D, a 3D model of a tropical island is displayed on a light blue backdrop. The island features a small body of water, surrounded by gray rocks and green grass. There are palm trees and small bushes scattered throughout the island, adding a pop of color to the scene.'",
+    example: `Start with 'Isometric 3D, a 3D model of' Then describe the things to appear in the image, heres an example: 'Isometric 3D, a 3D model of a tropical island is displayed on a light blue backdrop. The island features a small body of water, surrounded by gray rocks and green grass. There are palm trees and small bushes scattered throughout the island, adding a pop of color to the scene.'`,
     steps: 28,
     use_guidance: false,
     defaultguidance: 7.5,
