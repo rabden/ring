@@ -118,7 +118,7 @@ export const modelConfig = {
   logodesign: {
     name: "Logo Design",
     category: "General",
-    group: "Logo Maker",
+    group: "Design",
     apiUrl: "https://api-inference.huggingface.co/models/Shakker-Labs/FLUX.1-dev-LoRA-Logo-Design",
     qualityLimits: null,
     isPremium: false,
@@ -135,7 +135,7 @@ export const modelConfig = {
   logodesign2: {
     name: "Logo Design 2",
     category: "General",
-    group: "Logo Maker",
+    group: "Design",
     apiUrl: "https://api-inference.huggingface.co/models/imagepipeline/Logo",
     qualityLimits: null,
     isPremium: false,
@@ -152,7 +152,7 @@ export const modelConfig = {
   logodesign3: {
     name: "Logo Design 3",
     category: "General",
-    group: "Logo Maker",
+    group: "Design",
     apiUrl: "https://api-inference.huggingface.co/models/AP123/flux-logos-v1",
     qualityLimits: null,
     isPremium: false,
@@ -169,7 +169,7 @@ export const modelConfig = {
   logodesign4: {
     name: "Logo Design 4",
     category: "General",
-    group: "Logo Maker",
+    group: "Design",
     apiUrl: "https://api-inference.huggingface.co/models/prithivMLmods/Logo-Design-Flux-LoRA",
     qualityLimits: null,
     isPremium: false,
