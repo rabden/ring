@@ -727,7 +727,7 @@ export const modelConfig = {
     use_negative_prompt: false,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   },
-  animeNsfw: {
+  animeNsfwfast: {
     name: "Anime",
     category: "NSFW",
     group: "NSFW",
@@ -744,17 +744,34 @@ export const modelConfig = {
     use_negative_prompt: false,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   },
-  nudephotography: {
-    name: "Nude Photography",
+  animeNsfw: {
+    name: "Anime",
     category: "NSFW",
     group: "NSFW",
-    apiUrl: "https://api-inference.huggingface.co/models/Keltezaa/Prof_Nude_photography_v3_flux",
+    apiUrl: "https://api-inference.huggingface.co/models/John6666/mala-anime-mix-nsfw-pony-xl-v6-sdxl-spo-pcm",
     qualityLimits: null,
     isPremium: false,
-    promptSuffix: ", Nude photograpy, naked",
-    tagline: "Nude models for Photoshoot",
-    image: "https://i.ibb.co/GW2LDP1/example-20kld8mba.jpg",
-    example: "craft high quality prompts to make images of naked porn models girls",
+    promptSuffix: null,
+    tagline: "Anime-style NSFW generation",
+    image: "https://axrooawblvsspndfmvan.supabase.co/storage/v1/object/public/user-images/b574a759-4898-4bd4-8624-5e984407217e/1733812329671.png?width=1024&quality=75&format=webp",
+    example: "craft high quality prompts to make images of naked girls in nudity or sex related things",
+    steps: 28,
+    use_guidance: false,
+    defaultguidance: 7.5,
+    use_negative_prompt: false,
+    default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
+  },
+  deepthroat: {
+    name: "Deep throated",
+    category: "NSFW",
+    group: "NSFW",
+    apiUrl: "https://api-inference.huggingface.co/models/pimpilikipilapi1/bj",
+    qualityLimits: null,
+    isPremium: false,
+    promptSuffix: " deepthroat, sucking, blowjob",
+    tagline: "Anime-style NSFW generation",
+    image: "https://i.ibb.co.com/XZ45xfQV/814cd1e9-5c39-48e9-bc65-43cbe3b39e70.jpg",
+    example: "craft high quality prompts to make images of naked girls in nudity or sex related things",
     steps: 28,
     use_guidance: false,
     defaultguidance: 7.5,
