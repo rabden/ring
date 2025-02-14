@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
@@ -138,14 +137,12 @@ const FullScreenImageView = ({
         <div className="absolute left-4 top-4 z-50">
           <Button 
             variant="ghost" 
-            size="icon"
             onClick={onClose}
             className={cn(
-              "h-8 w-8 p-0 rounded-xl",
+              "group flex items-center gap-2 hover:gap-3",
+              "transition-all duration-300",
               "bg-card/80 backdrop-blur-[2px]",
-              "hover:bg-card/90",
-              "transition-all duration-200",
-              "flex items-center gap-2"
+              "hover:bg-card/90"
             )}
           >
             <ArrowLeft className="h-5 w-5 text-foreground/70" />
