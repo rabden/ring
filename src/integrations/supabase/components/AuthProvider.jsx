@@ -1,4 +1,5 @@
-import React, { createContext, useEffect, useState } from 'react';
+import * as React from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
