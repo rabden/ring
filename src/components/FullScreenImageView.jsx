@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
@@ -154,9 +153,8 @@ const FullScreenImageView = ({
         
         <div className="flex h-full">
           <div className={cn(
-            "flex-1 relative flex items-center justify-center bg-background backdrop-blur-[2px]",
-            "transition-all duration-300",
-            !isSidebarOpen && "pr-12"
+            "flex-1 relative flex items-center justify-center p-3 bg-background backdrop-blur-[2px]",
+            "transition-all duration-300"
           )}>
             <img
               src={supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl}
@@ -173,35 +171,35 @@ const FullScreenImageView = ({
             </div>
           </div>
 
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className={cn(
+              "absolute right-0 top-1/2 -translate-y-1/2 z-10",
+              "h-8 w-8 rounded-full",
+              "bg-card/95 backdrop-blur-[2px]",
+              "border border-border/80",
+              "hover:bg-card/90",
+              "transition-all duration-300",
+              isSidebarOpen ? "-right-[400px]" : "right-4"
+            )}
+          >
+            {isSidebarOpen ? (
+              <ChevronsRight className="h-4 w-4" />
+            ) : (
+              <ChevronsLeft className="h-4 w-4" />
+            )}
+          </Button>
+
           <div 
             className={cn(
               "relative transition-all duration-300 ease-in-out transform",
               isSidebarOpen ? "w-[380px]" : "w-0 opacity-0"
             )}
           >
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={cn(
-                "absolute -left-4 top-1/2 -translate-y-1/2 z-10",
-                "h-8 w-8 rounded-full",
-                "bg-card/95 backdrop-blur-[2px]",
-                "border border-border/80",
-                "hover:bg-card/90",
-                "transition-all duration-300",
-                !isSidebarOpen && "-left-12"
-              )}
-            >
-              {isSidebarOpen ? (
-                <ChevronsRight className="h-4 w-4" />
-              ) : (
-                <ChevronsLeft className="h-4 w-4" />
-              )}
-            </Button>
-
             <div className={cn(
-              "h-[calc(100vh-24px)] rounded-lg mr-3",
+              "h-[calc(100vh-24px)] rounded-lg mr-3 mt-3",
               "border border-border bg-card",
               "backdrop-blur-[2px]",
               "shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
