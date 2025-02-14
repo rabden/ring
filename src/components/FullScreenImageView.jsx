@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
@@ -143,10 +144,12 @@ const FullScreenImageView = ({
               "h-8 w-8 p-0 rounded-xl",
               "bg-card/80 backdrop-blur-[2px]",
               "hover:bg-card/90",
-              "transition-all duration-200"
+              "transition-all duration-200",
+              "flex items-center gap-2"
             )}
           >
             <ArrowLeft className="h-5 w-5 text-foreground/70" />
+            <span className="hidden md:inline text-sm text-foreground/70">Back</span>
           </Button>
         </div>
         
