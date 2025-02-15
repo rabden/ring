@@ -135,7 +135,11 @@ const FullScreenImageView = ({
         "data-[state=open]:duration-0 [&>button]:hidden",
         "rounded-none border-none"
       )}>
-        <div className="absolute left-8 top-8 z-50">
+        <div className={cn(
+          "absolute left-8 top-8 z-50",
+          "transition-all duration-300",
+          !isSidebarOpen && "opacity-0 pointer-events-none"
+        )}>
           <Button 
             variant="ghost" 
             onClick={onClose}
