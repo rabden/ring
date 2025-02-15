@@ -105,7 +105,7 @@ const AuthCallback = () => {
   );
 };
 
-// Create a client
+// Initialize QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -114,10 +114,15 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
       gcTime: 1000 * 60 * 30, // 30 minutes
     },
+    mutations: {
+      retry: 1,
+      networkMode: 'always'
+    }
   },
 });
 
-function App() {
+// Wrap the entire app with QueryClientProvider at the root level
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -184,6 +189,6 @@ function App() {
       </BrowserRouter>
     </QueryClientProvider>
   );
-}
+};
 
 export default App;

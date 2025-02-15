@@ -27,7 +27,7 @@ export const usePromptImprovement = (userId) => {
         modelConfigs,
         (chunk) => {
           // Call onSuccess with each chunk to update the textarea in real-time
-          onSuccess(chunk, true); // Added isStreaming flag
+          onSuccess(chunk, true);
         }
       );
 
