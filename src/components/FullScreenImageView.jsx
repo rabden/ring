@@ -147,7 +147,7 @@ const FullScreenImageView = ({
             )}
           >
             <ArrowLeft className="h-8 w-8 bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent" />
-            <span className="hidden md:inline text-md bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent>Back</span>
+            <span className="hidden md:inline text-md bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">Back</span>
           </Button>
         </div>
         
