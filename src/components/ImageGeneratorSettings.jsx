@@ -96,7 +96,7 @@ const ImageGeneratorSettings = ({
   };
 
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full pr-1">
       <div className="space-y-4">
 
         <div className={hidePromptOnDesktop ? 'md:hidden' : ''}>
