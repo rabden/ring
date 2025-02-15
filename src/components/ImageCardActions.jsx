@@ -219,7 +219,7 @@ const ImageCardActions = ({
               className={cn(
                 "flex items-center gap-3 py-2 px-3 rounded-lg",
                 "cursor-pointer transition-colors duration-200",
-                "hover:bg-accent/10 focus:bg-accent/10",
+                "hover:bg-accent/30 focus:bg-accent/10",
                 "group"
               )}
             >
@@ -250,7 +250,7 @@ const ImageCardActions = ({
                   className={cn(
                     "flex items-center gap-3 py-2 px-3 rounded-lg",
                     "cursor-pointer transition-colors duration-200",
-                    "hover:bg-accent/10 focus:bg-accent/10",
+                    "hover:bg-accent/30 focus:bg-accent/10",
                     "group"
                   )}
                 >
@@ -266,7 +266,7 @@ const ImageCardActions = ({
               className={cn(
                 "flex items-center gap-3 py-2 px-3 rounded-lg",
                 "cursor-pointer transition-colors duration-200",
-                "hover:bg-accent/10 focus:bg-accent/10",
+                "hover:bg-accent/30 focus:bg-accent/10",
                 "group"
               )}
             >

@@ -96,7 +96,7 @@ const ImageGeneratorSettings = ({
   };
 
   return (
-    <ScrollArea className="h-full pr-4">
+    <ScrollArea className="h-full pr-1">
       <div className="space-y-4">
         {isGenerateTab && (
           <div className="flex justify-center w-full mb-2">
