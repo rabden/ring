@@ -241,8 +241,8 @@ const ImageCardActions = ({
                       "group"
                     )}
                   >
-                    <Trash2 className="h-4 w-4 transition-colors duration-200" />
-                    <span className="text-sm font-medium">Discard</span>
+                    <Trash2 className="h-4 w-4 transition-colors duration-200 text-destructive" />
+                    <span className="text-sm font-medium text-destructive">Discard</span>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem 

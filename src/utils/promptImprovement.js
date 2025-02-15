@@ -31,11 +31,11 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
     let improvedPrompt = "";
     
     const stream = await client.chatCompletionStream({
-      model: "Qwen/Qwen2.5-Coder-32B-Instruct",
+      model: "meta-llama/Llama-3.2-3B-Instruct",
       messages: [
         {
           role: "system",
-          content: `You are an expert AI image prompt engineer specializing in enhancing prompts for high-quality image generation. Your task is to improve the given prompt while maintaining its core concept and artistic intent but if the prompt is lacking and too short add more details to it making it better and more detailed, Just return the improved prompt saying nothing else. stongly follow these Guidelines: ${modelExample}`
+          content: `You are an expert AI image prompt engineer specializing in enhancing prompts for high-quality image generation. Your task is to improve the given prompt while maintaining its core concept and artistic intent but if the prompt is lacking and too short add more details and extra elements and contents to it making it better and more detailed, Just return the improved prompt saying nothing else. stongly follow these Guidelines: ${modelExample}`
         },
         {
           role: "user",
