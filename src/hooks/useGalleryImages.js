@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
 
 const ITEMS_PER_PAGE = 20;
-const NSFW_MODELS = ['nsfwMaster', 'animeNsfw'];
+const NSFW_MODELS = ['nsfwMaster', 'animeNsfw', 'animeNsfwfast', 'deepthroat'];
 
 export const useGalleryImages = ({
   userId,

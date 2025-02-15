@@ -728,10 +728,10 @@ export const modelConfig = {
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   },
   animeNsfwfast: {
-    name: "Anime",
+    name: "Anime fast",
     category: "NSFW",
     group: "NSFW",
-    apiUrl: "https://api-inference.huggingface.co/models/John6666/mala-anime-mix-nsfw-pony-xl-v6-sdxl-spo-hyper",
+    apiUrl: "https://router.huggingface.co/hf-inference/models/John6666/mala-anime-mix-nsfw-pony-xl-v3-sdxl",
     qualityLimits: null,
     isPremium: false,
     promptSuffix: null,
@@ -748,7 +748,7 @@ export const modelConfig = {
     name: "Anime",
     category: "NSFW",
     group: "NSFW",
-    apiUrl: "https://api-inference.huggingface.co/models/John6666/mala-anime-mix-nsfw-pony-xl-v6-sdxl-spo-pcm",
+    apiUrl: "https://router.huggingface.co/hf-inference/models/Niggendar/malaAnimeMixNSFW_v50",
     qualityLimits: null,
     isPremium: false,
     promptSuffix: null,
