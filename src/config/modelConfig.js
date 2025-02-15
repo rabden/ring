@@ -192,7 +192,7 @@ export const modelConfig = {
     isPremium: false,
     promptSuffix: ", dalle",
     tagline: "Open AI Dall-E 3",
-    image: "https://i.ibb.co/com/18gFNNS/images-example-kz79mj1mz.jpg",
+    image: "https://i.ibb.co.com/18gFNNS/images-example-kz79mj1mz.jpg",
     example: "Make high quality prompts with clear and concise details, in the prompt describe everything in detail while keeping it in medium length",
     steps: 28,
     use_guidance: false,
