@@ -98,11 +98,6 @@ const ImageGeneratorSettings = ({
   return (
     <ScrollArea className="h-full pr-1">
       <div className="space-y-4">
-        {isGenerateTab && (
-          <div className="flex justify-center w-full mb-2">
-            <CreditCounter credits={credits} bonusCredits={bonusCredits} />
-          </div>
-        )}
 
         <div className={hidePromptOnDesktop ? 'md:hidden' : ''}>
           <PromptInput
@@ -119,6 +114,12 @@ const ImageGeneratorSettings = ({
             bonusCredits={bonusCredits}
           />
         </div>
+
+        {isGenerateTab && (
+          <div className="flex justify-center w-full mb-2">
+            <CreditCounter credits={credits} bonusCredits={bonusCredits} />
+          </div>
+        )}
 
         <ModelChooser
           model={model}
