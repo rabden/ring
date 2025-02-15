@@ -1,9 +1,10 @@
+
+import React from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
 import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
-import { useState, useRef, useCallback } from 'react';
 
 export const useImageGeneration = ({
   session,
@@ -23,11 +24,11 @@ export const useImageGeneration = ({
   negativePrompt
 }) => {
   // Queue to store pending generations
-  const generationQueue = useRef([]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const generationQueue = React.useRef([]);
+  const [isProcessing, setIsProcessing] = React.useState(false);
 
   // Process the queue one item at a time
-  const processQueue = useCallback(async () => {
+  const processQueue = React.useCallback(async () => {
     if (isProcessing || generationQueue.current.length === 0) return;
 
     setIsProcessing(true);
