@@ -135,19 +135,19 @@ const FullScreenImageView = ({
         "data-[state=open]:duration-0 [&>button]:hidden",
         "rounded-none border-none"
       )}>
-        <div className="absolute left-4 top-4 z-50">
+        <div className="absolute left-8 top-8 z-50">
           <Button 
             variant="ghost" 
             onClick={onClose}
             className={cn(
               "group flex items-center gap-2 hover:gap-3",
               "transition-all duration-300",
-              "bg-card/80 backdrop-blur-[2px]",
-              "hover:bg-card/90"
+              "bg-card/90 backdrop-blur-[2px]",
+              "hover:bg-card"
             )}
           >
-            <ArrowLeft className="h-5 w-5 text-foreground/70" />
-            <span className="hidden md:inline text-sm text-foreground/70">Back</span>
+            <ArrowLeft className="h-8 w-8 bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent" />
+            <span className="hidden md:inline text-md bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent>Back</span>
           </Button>
         </div>
         
@@ -182,7 +182,7 @@ const FullScreenImageView = ({
               "border border-border/80",
               "hover:bg-card/90",
               "transition-all duration-300",
-              isSidebarOpen ? "right-[392px]" : "right-4"
+              isSidebarOpen ? "right-[388px]" : "right-2"
             )}
           >
             {isSidebarOpen ? (
