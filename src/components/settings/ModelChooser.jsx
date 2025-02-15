@@ -116,6 +116,7 @@ const ModelGrid = ({ filteredModels, model, setModel, proMode, className, onClos
   const scrollAreaRef = React.useRef(null);
   const activeCardRef = React.useRef(null);
   const [activeGroup, setActiveGroup] = useState("all");
+  const isMobile = window.innerWidth < 768;
 
   // Get unique groups from filtered models
   const groups = useMemo(() => {
@@ -132,21 +133,37 @@ const ModelGrid = ({ filteredModels, model, setModel, proMode, className, onClos
   // Scroll to active model when grid is mounted or group changes
   React.useEffect(() => {
     if (activeCardRef.current && scrollAreaRef.current) {
-      const scrollArea = scrollAreaRef.current;
+      // Get the scroll viewport for both drawer and dialog cases
+      const scrollViewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (!scrollViewport) return;
+
+      const scrollContainer = scrollViewport;
       const activeCard = activeCardRef.current;
       
-      // Get the scroll container's and active card's dimensions
-      const scrollRect = scrollArea.getBoundingClientRect();
-      const cardRect = activeCard.getBoundingClientRect();
+      // Get the container's dimensions and scroll position
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const activeCardRect = activeCard.getBoundingClientRect();
       
-      // Calculate the scroll position to center the active card
-      const scrollTop = cardRect.top - scrollRect.top - (scrollRect.height - cardRect.height) / 2;
+      // Calculate relative position of the card within the scroll container
+      const relativeTop = activeCardRect.top - containerRect.top;
+      const relativeBottom = activeCardRect.bottom - containerRect.top;
       
-      // Smooth scroll to the active card
-      scrollArea.scrollTo({
-        top: scrollTop,
-        behavior: 'smooth'
-      });
+      // Check if the card is outside the visible area
+      const isCardVisible = (
+        relativeTop >= 0 &&
+        relativeBottom <= containerRect.height
+      );
+
+      if (!isCardVisible) {
+        // Calculate the ideal scroll position to center the card
+        const scrollTop = scrollContainer.scrollTop + relativeTop - (containerRect.height - activeCardRect.height) / 2;
+        
+        // Smooth scroll to the position
+        scrollContainer.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth'
+        });
+      }
     }
   }, [model, activeGroup]);
 
