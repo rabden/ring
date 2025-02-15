@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SearchBar = ({ onSearch, initialQuery = '', className, onSearchOpenChange }) => {
-  const [isSearchOpen, setIsSearchOpen] = useState(!!initialQuery);
-  const [query, setQuery] = useState(initialQuery);
+  const [isSearchOpen, setIsSearchOpen] = React.useState(!!initialQuery);
+  const [query, setQuery] = React.useState(initialQuery);
 
   // Sync with external changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (initialQuery !== query) {
       setQuery(initialQuery);
       setIsSearchOpen(!!initialQuery);
@@ -17,7 +18,7 @@ const SearchBar = ({ onSearch, initialQuery = '', className, onSearchOpenChange 
   }, [initialQuery]);
 
   // Notify parent when search state changes
-  useEffect(() => {
+  React.useEffect(() => {
     onSearchOpenChange?.(isSearchOpen);
   }, [isSearchOpen, onSearchOpenChange]);
 

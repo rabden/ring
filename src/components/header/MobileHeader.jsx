@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { useLocation } from 'react-router-dom';
 import SearchBar from '../search/SearchBar';
 import PrivateFilterButton from '../filters/PrivateFilterButton';
@@ -22,7 +23,7 @@ const MobileHeader = ({
   const location = useLocation();
   const isInspiration = location.pathname === '/inspiration';
   const isMyImages = location.pathname === '/' && (!location.hash || location.hash === '#myimages');
-  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [isSearchActive, setIsSearchActive] = React.useState(false);
 
   return (
     <div 
