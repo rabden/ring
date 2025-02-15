@@ -1,11 +1,11 @@
 
-import * as React from 'react';
+import { useState } from 'react';
 import { improvePrompt } from '@/utils/promptImprovement';
 import { toast } from 'sonner';
 import { usePromptCredits } from './usePromptCredits';
 
 export const usePromptImprovement = (userId) => {
-  const [isImproving, setIsImproving] = React.useState(false);
+  const [isImproving, setIsImproving] = useState(false);
   const { deductCredits, isDeducting } = usePromptCredits(userId);
 
   const improveCurrentPrompt = async (prompt, activeModel, modelConfigs, onSuccess) => {
