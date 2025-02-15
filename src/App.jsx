@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/integrations/supabase/components/AuthProvider';
 import { NotificationProvider } from '@/contexts/NotificationContext';
@@ -106,67 +107,65 @@ const AuthCallback = () => {
 // Wrap the entire app with providers
 const App = () => {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-          <NotificationProvider>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/image/:imageId" element={<SingleImageView />} />
-              <Route path="/docs" element={<Documentation />} />
-              
-              {/* Auth Routes */}
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route 
-                path="/login" 
-                element={
-                  <AuthRoute>
-                    <Login />
-                  </AuthRoute>
-                } 
-              />
+    <AuthProvider>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <NotificationProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/image/:imageId" element={<SingleImageView />} />
+            <Route path="/docs" element={<Documentation />} />
+            
+            {/* Auth Routes */}
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route 
+              path="/login" 
+              element={
+                <AuthRoute>
+                  <Login />
+                </AuthRoute>
+              } 
+            />
 
-              {/* Protected Routes */}
-              <Route 
-                path="/" 
-                element={
-                  <ProtectedRoute>
-                    <ImageGenerator />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/profile/:userId" 
-                element={
-                  <ProtectedRoute>
-                    <PublicProfile />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/userprofile" 
-                element={
-                  <ProtectedRoute>
-                    <UserProfile />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/inspiration" 
-                element={
-                  <ProtectedRoute>
-                    <Inspiration />
-                  </ProtectedRoute>
-                } 
-              />
+            {/* Protected Routes */}
+            <Route 
+              path="/" 
+              element={
+                <ProtectedRoute>
+                  <ImageGenerator />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile/:userId" 
+              element={
+                <ProtectedRoute>
+                  <PublicProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/userprofile" 
+              element={
+                <ProtectedRoute>
+                  <UserProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/inspiration" 
+              element={
+                <ProtectedRoute>
+                  <Inspiration />
+                </ProtectedRoute>
+              } 
+            />
 
-              {/* Fallback Route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </NotificationProvider>
-        </ThemeProvider>
-      </AuthProvider>
-    </BrowserRouter>
+            {/* Fallback Route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </NotificationProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 };
 
