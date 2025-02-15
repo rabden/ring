@@ -42,8 +42,10 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
           content: originalPrompt
         }
       ],
-      max_tokens: 2048,
-      temperature: 0.7
+      temperature: 0.5,
+	    max_tokens: 40960,
+	    top_p: 0.7
+
     });
 
     for await (const chunk of stream) {
