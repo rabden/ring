@@ -1,14 +1,13 @@
-
-import * as React from 'react';
+import { useState, useEffect, createContext } from 'react';
 import { supabase } from '../supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-export const AuthContext = React.createContext();
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [session, setSession] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
@@ -93,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     let mounted = true;
     let authSubscription = null;
 
