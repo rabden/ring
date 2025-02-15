@@ -209,6 +209,75 @@ const ModelGrid = ({ filteredModels, model, setModel, proMode, className, onClos
   );
 };
 
+// Add this new component for mobile view
+const MobileModelGrid = ({ filteredModels, model, setModel, proMode, className, onClose }) => {
+  const activeCardRef = React.useRef(null);
+  const [activeGroup, setActiveGroup] = useState("all");
+
+  const groups = useMemo(() => {
+    const groupSet = new Set(filteredModels.map(([_, config]) => config.group));
+    return Array.from(groupSet).sort();
+  }, [filteredModels]);
+
+  const groupFilteredModels = useMemo(() => {
+    if (activeGroup === "all") return filteredModels;
+    return filteredModels.filter(([_, config]) => config.group === activeGroup);
+  }, [filteredModels, activeGroup]);
+
+  // Auto scroll when drawer opens
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeCardRef.current) {
+        activeCardRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }, 300); // Wait for drawer animation
+
+    return () => clearTimeout(timer);
+  }, [model, activeGroup]);
+
+  return (
+    <div className="flex flex-col h-full">
+      <GroupSelector 
+        groups={groups}
+        activeGroup={activeGroup}
+        onGroupChange={setActiveGroup}
+      />
+      
+      <div 
+        className={cn(
+          "flex-1 overflow-y-auto px-1",
+          "scroll-smooth",
+          className
+        )}
+      >
+        <div className="grid grid-cols-2 gap-2 rounded-3xl pb-1">
+          {groupFilteredModels.map(([key, config]) => (
+            <div 
+              key={key}
+              ref={model === key ? activeCardRef : null}
+            >
+              <ModelGridCard
+                modelKey={key}
+                config={config}
+                isActive={model === key}
+                proMode={proMode}
+                onClick={() => {
+                  setModel(key);
+                  onClose?.();
+                }}
+                disabled={config.isPremium && !proMode}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -317,7 +386,7 @@ const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) =
               <DrawerTitle className="text-base font-medium text-foreground/90">Select Model</DrawerTitle>
             </DrawerHeader>
             <div className="px-3 py-2">
-              <ModelGrid 
+              <MobileModelGrid 
                 filteredModels={filteredModels}
                 model={model}
                 setModel={handleModelSelection}
