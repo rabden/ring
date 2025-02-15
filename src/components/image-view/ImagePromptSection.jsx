@@ -24,7 +24,7 @@ const ImagePromptSection = ({
               onClick={onCopyPrompt}
               className={cn(
                 "h-6 w-6 p-0 rounded-md",
-                "bg-accent/10 hover:bg-accent/20",
+                "bg-accent/10 hover:bg-accent/50",
                 "transition-all duration-200"
               )}
             >
@@ -40,7 +40,7 @@ const ImagePromptSection = ({
               onClick={onShare}
               className={cn(
                 "h-6 w-6 p-0 rounded-md",
-                "bg-accent/10 hover:bg-accent/20",
+                "bg-accent/10 hover:bg-accent/50",
                 "transition-all duration-200"
               )}
             >
