@@ -731,7 +731,7 @@ export const modelConfig = {
     name: "Anime fast",
     category: "NSFW",
     group: "NSFW",
-    apiUrl: "https://router.huggingface.co/hf-inference/models/John6666/mala-anime-mix-nsfw-pony-xl-v3-sdxl",
+    apiUrl: "https://router.huggingface.co/hf-inference/models/Niggendar/mikoshiPony_v11",
     qualityLimits: null,
     isPremium: false,
     promptSuffix: null,
