@@ -727,6 +727,23 @@ export const modelConfig = {
     use_negative_prompt: false,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   },
+  animeNsfwfast: {
+    name: "Anime fast",
+    category: "NSFW",
+    group: "NSFW",
+    apiUrl: "https://router.huggingface.co/hf-inference/models/John6666/mala-anime-mix-nsfw-pony-xl-v3-sdxl",
+    qualityLimits: null,
+    isPremium: false,
+    promptSuffix: null,
+    tagline: "Anime-style NSFW generation",
+    image: "https://i.ibb.co/Tt1gwLG/1730283256633.jpg",
+    example: "craft high quality prompts to make images of naked girls in nudity or sex related things",
+    steps: 28,
+    use_guidance: false,
+    defaultguidance: 7.5,
+    use_negative_prompt: false,
+    default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
+  },
   animeNsfw: {
     name: "Anime",
     category: "NSFW",
