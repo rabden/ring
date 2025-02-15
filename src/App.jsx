@@ -1,7 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from 'sonner';
 import { AuthProvider } from '@/integrations/supabase/components/AuthProvider';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import ImageGenerator from '@/pages/ImageGenerator';
@@ -15,6 +16,15 @@ import Inspiration from '@/pages/Inspiration';
 import Documentation from '@/pages/Documentation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/supabase';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -63,6 +73,86 @@ const AuthRoute = ({ children }) => {
   return children;
 };
 
+// Main App Component
+function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <NotificationProvider>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/image/:imageId" element={<SingleImageView />} />
+                <Route path="/docs" element={<Documentation />} />
+                
+                {/* Auth Routes */}
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route 
+                  path="/login" 
+                  element={
+                    <AuthRoute>
+                      <Login />
+                    </AuthRoute>
+                  } 
+                />
+
+                {/* Protected Routes */}
+                <Route 
+                  path="/" 
+                  element={
+                    <ProtectedRoute>
+                      <ImageGenerator />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/profile/:userId" 
+                  element={
+                    <ProtectedRoute>
+                      <PublicProfile />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/userprofile" 
+                  element={
+                    <ProtectedRoute>
+                      <UserProfile />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/inspiration" 
+                  element={
+                    <ProtectedRoute>
+                      <Inspiration />
+                    </ProtectedRoute>
+                  } 
+                />
+
+                {/* Fallback Route */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+              <Toaster />
+            </NotificationProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+}
+
 // Auth Callback Component
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -101,71 +191,6 @@ const AuthCallback = () => {
     <div className="min-h-screen flex items-center justify-center">
       <LoadingScreen />
     </div>
-  );
-};
-
-// Wrap the entire app with providers
-const App = () => {
-  return (
-    <AuthProvider>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <NotificationProvider>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/image/:imageId" element={<SingleImageView />} />
-            <Route path="/docs" element={<Documentation />} />
-            
-            {/* Auth Routes */}
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route 
-              path="/login" 
-              element={
-                <AuthRoute>
-                  <Login />
-                </AuthRoute>
-              } 
-            />
-
-            {/* Protected Routes */}
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <ImageGenerator />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/profile/:userId" 
-              element={
-                <ProtectedRoute>
-                  <PublicProfile />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/userprofile" 
-              element={
-                <ProtectedRoute>
-                  <UserProfile />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/inspiration" 
-              element={
-                <ProtectedRoute>
-                  <Inspiration />
-                </ProtectedRoute>
-              } 
-            />
-
-            {/* Fallback Route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </NotificationProvider>
-      </ThemeProvider>
-    </AuthProvider>
   );
 };
 

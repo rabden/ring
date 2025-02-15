@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 
@@ -28,7 +27,7 @@ export const useProUser = (userId) => {
     },
     enabled: Boolean(userId),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes
+    cacheTime: 1000 * 60 * 30, // 30 minutes
     retry: 2
   });
 };

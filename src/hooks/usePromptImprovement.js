@@ -1,11 +1,11 @@
 
-import { useState } from 'react';
+import * as React from 'react';
 import { improvePrompt } from '@/utils/promptImprovement';
 import { toast } from 'sonner';
 import { usePromptCredits } from './usePromptCredits';
 
 export const usePromptImprovement = (userId) => {
-  const [isImproving, setIsImproving] = useState(false);
+  const [isImproving, setIsImproving] = React.useState(false);
   const { deductCredits, isDeducting } = usePromptCredits(userId);
 
   const improveCurrentPrompt = async (prompt, activeModel, modelConfigs, onSuccess) => {
@@ -27,7 +27,7 @@ export const usePromptImprovement = (userId) => {
         modelConfigs,
         (chunk) => {
           // Call onSuccess with each chunk to update the textarea in real-time
-          onSuccess(chunk, true);
+          onSuccess(chunk, true); // Added isStreaming flag
         }
       );
 

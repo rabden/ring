@@ -1,12 +1,11 @@
-
-import React from 'react';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 
 export const useRealtimeProfile = (userId) => {
   const queryClient = useQueryClient();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!userId) return;
 
     const channel = supabase
