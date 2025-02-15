@@ -176,13 +176,13 @@ const FullScreenImageView = ({
             size="icon"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={cn(
-              "absolute right-0 top-1/2 -translate-y-1/2 z-10",
+              "absolute top-1/2 -translate-y-1/2 z-10",
               "h-8 w-8 rounded-full",
               "bg-card/95 backdrop-blur-[2px]",
               "border border-border/80",
               "hover:bg-card/90",
               "transition-all duration-300",
-              isSidebarOpen ? "-right-[400px]" : "right-4"
+              isSidebarOpen ? "right-[392px]" : "right-4"
             )}
           >
             {isSidebarOpen ? (
