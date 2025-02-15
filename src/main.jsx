@@ -22,9 +22,12 @@ const queryClient = new QueryClient({
   },
 })
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+// To ensure queryClient doesn't get recreated on each render
+const root = ReactDOM.createRoot(document.getElementById('root'))
+root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
+      <App />
       <Toaster 
         theme="dark"
         position="top-center"
@@ -36,7 +39,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           border: "1px solid hsl(var(--border))"
         }}
       />
-      <App />
     </QueryClientProvider>
   </React.StrictMode>
 )

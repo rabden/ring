@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from 'sonner';
 import { AuthProvider } from '@/integrations/supabase/components/AuthProvider';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import ImageGenerator from '@/pages/ImageGenerator';
@@ -105,89 +103,70 @@ const AuthCallback = () => {
   );
 };
 
-// Initialize QueryClient
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes
-    },
-    mutations: {
-      retry: 1,
-      networkMode: 'always'
-    }
-  },
-});
-
-// Wrap the entire app with QueryClientProvider at the root level
+// Wrap the entire app with providers
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-            <NotificationProvider>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/image/:imageId" element={<SingleImageView />} />
-                <Route path="/docs" element={<Documentation />} />
-                
-                {/* Auth Routes */}
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route 
-                  path="/login" 
-                  element={
-                    <AuthRoute>
-                      <Login />
-                    </AuthRoute>
-                  } 
-                />
+    <BrowserRouter>
+      <AuthProvider>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <NotificationProvider>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/image/:imageId" element={<SingleImageView />} />
+              <Route path="/docs" element={<Documentation />} />
+              
+              {/* Auth Routes */}
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route 
+                path="/login" 
+                element={
+                  <AuthRoute>
+                    <Login />
+                  </AuthRoute>
+                } 
+              />
 
-                {/* Protected Routes */}
-                <Route 
-                  path="/" 
-                  element={
-                    <ProtectedRoute>
-                      <ImageGenerator />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/profile/:userId" 
-                  element={
-                    <ProtectedRoute>
-                      <PublicProfile />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/userprofile" 
-                  element={
-                    <ProtectedRoute>
-                      <UserProfile />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/inspiration" 
-                  element={
-                    <ProtectedRoute>
-                      <Inspiration />
-                    </ProtectedRoute>
-                  } 
-                />
+              {/* Protected Routes */}
+              <Route 
+                path="/" 
+                element={
+                  <ProtectedRoute>
+                    <ImageGenerator />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/profile/:userId" 
+                element={
+                  <ProtectedRoute>
+                    <PublicProfile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/userprofile" 
+                element={
+                  <ProtectedRoute>
+                    <UserProfile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/inspiration" 
+                element={
+                  <ProtectedRoute>
+                    <Inspiration />
+                  </ProtectedRoute>
+                } 
+              />
 
-                {/* Fallback Route */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-              <Toaster />
-            </NotificationProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+              {/* Fallback Route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </NotificationProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 };
 
