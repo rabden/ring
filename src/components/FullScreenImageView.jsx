@@ -182,7 +182,7 @@ const FullScreenImageView = ({
               "border border-border/80",
               "hover:bg-card/90",
               "transition-all duration-300",
-              isSidebarOpen ? "right-[392px]" : "right-4"
+              isSidebarOpen ? "right-[388px]" : "right-2"
             )}
           >
             {isSidebarOpen ? (
