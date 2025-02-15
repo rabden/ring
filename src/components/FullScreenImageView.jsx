@@ -137,8 +137,10 @@ const FullScreenImageView = ({
       )}>
         <div className={cn(
           "absolute left-8 top-8 z-50",
-          "transition-all duration-300",
-          !isSidebarOpen && "opacity-0 pointer-events-none"
+          "transition-all duration-300 transform",
+          isSidebarOpen 
+            ? "translate-x-0 opacity-100" 
+            : "-translate-x-12 opacity-0 pointer-events-none"
         )}>
           <Button 
             variant="ghost" 
