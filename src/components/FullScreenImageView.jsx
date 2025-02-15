@@ -146,8 +146,8 @@ const FullScreenImageView = ({
               "hover:bg-card"
             )}
           >
-            <ArrowLeft className="h-8 w-8 bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent" />
-            <span className="hidden md:inline text-md bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">Back</span>
+            <ArrowLeft className="h-5 w-5 text-foreground" />
+            <span className="hidden md:inline text-sm bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">Back</span>
           </Button>
         </div>
         
