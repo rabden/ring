@@ -22,9 +22,7 @@ const queryClient = new QueryClient({
   },
 })
 
-// To ensure queryClient doesn't get recreated on each render
-const root = ReactDOM.createRoot(document.getElementById('root'))
-root.render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
