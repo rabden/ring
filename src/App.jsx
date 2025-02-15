@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
@@ -73,18 +74,49 @@ const AuthRoute = ({ children }) => {
   return children;
 };
 
-// Main App Component
-function App() {
-  const [isLoading, setIsLoading] = useState(true);
+// Auth Callback Component
+const AuthCallback = () => {
+  const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2500);
+    const handleCallback = async () => {
+      try {
+        const { error } = await supabase.auth.getSession();
+        if (error) throw error;
+        navigate('/', { replace: true });
+      } catch (error) {
+        console.error('Error handling auth callback:', error);
+        setError(error.message);
+      }
+    };
 
-    return () => clearTimeout(timer);
-  }, []);
+    handleCallback();
+  }, [navigate]);
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-bold text-red-500">Authentication Error</h1>
+          <p className="text-gray-600">{error}</p>
+          <Button onClick={() => navigate('/login', { replace: true })}>
+            Back to Login
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <LoadingScreen />
+    </div>
+  );
+};
+
+// Main App Component
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -152,46 +184,5 @@ function App() {
     </QueryClientProvider>
   );
 }
-
-// Auth Callback Component
-const AuthCallback = () => {
-  const navigate = useNavigate();
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        const { error } = await supabase.auth.getSession();
-        if (error) throw error;
-        navigate('/', { replace: true });
-      } catch (error) {
-        console.error('Error handling auth callback:', error);
-        setError(error.message);
-      }
-    };
-
-    handleCallback();
-  }, [navigate]);
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold text-red-500">Authentication Error</h1>
-          <p className="text-gray-600">{error}</p>
-          <Button onClick={() => navigate('/login', { replace: true })}>
-            Back to Login
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <LoadingScreen />
-    </div>
-  );
-};
 
 export default App;
