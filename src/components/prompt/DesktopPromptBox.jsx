@@ -208,7 +208,7 @@ const DesktopPromptBox = ({
       {/* Fixed position box */}
       <div 
         className={cn(
-          "hidden md:block fixed top-10 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
+          "hidden md:block fixed top-11 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
           isFixed ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
         )}
       >
