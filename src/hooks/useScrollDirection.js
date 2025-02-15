@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+
+import * as React from 'react';
 
 export const useScrollDirection = () => {
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isVisible, setIsVisible] = React.useState(true);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
@@ -23,3 +24,5 @@ export const useScrollDirection = () => {
 
   return isVisible;
 };
+
+export default useScrollDirection;
