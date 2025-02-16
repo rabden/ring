@@ -35,7 +35,7 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
       messages: [
         {
           role: "system",
-          content: `You are an expert AI image prompt engineer specializing in enhancing prompts for high-quality image generation. Your task is to improve the given prompt while maintaining its core concept and artistic intent but if the prompt is lacking and too short add more details and extra elements and contents to it making it better and more detailed, dont make the prompt too big keep it in 20 to 50 words and if user provided prompt contains noise remove them, Just return the improved prompt saying nothing else. stongly follow these Guidelines: ${modelExample}`
+          content: `Act as an expert AI image prompt engineer for high-quality image generation. Enhance the provided prompt by preserving its core idea and artistic vision. If it's too brief, enrich it with details; remove any extraneous noise that might make image-generator AI confused. Keep the final prompt between 50 and 100 words and strongly follow these Guidelines: ${modelExample} Don't write anything else except the prompt.`
         },
         {
           role: "user",
@@ -43,8 +43,8 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
         }
       ],
       temperature: 0.5,
-	    max_tokens: 40960,
-	    top_p: 0.7
+      max_tokens: 64000,
+      top_p: 0.7
 
     });
 
