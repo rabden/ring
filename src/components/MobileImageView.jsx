@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
@@ -141,17 +142,34 @@ const MobileImageView = ({
     const rect = img.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
+    const isLandscape = rect.width > rect.height;
+    const isMobile = window.innerWidth < 768;
 
     // Calculate scale to fit screen
-    const scaleX = viewportWidth / rect.width;
-    const scaleY = viewportHeight / rect.height;
-    const scale = Math.min(scaleX, scaleY);
+    let scaleX, scaleY, scale;
+    if (isLandscape && isMobile) {
+      // For landscape images on mobile, rotate and swap dimensions
+      scaleX = viewportHeight / rect.width;
+      scaleY = viewportWidth / rect.height;
+    } else {
+      scaleX = viewportWidth / rect.width;
+      scaleY = viewportHeight / rect.height;
+    }
+    scale = Math.min(scaleX, scaleY) * 0.9; // 0.9 to add some padding
 
     // Calculate position to center
-    const targetWidth = rect.width * scale;
-    const targetHeight = rect.height * scale;
-    const x = (viewportWidth - targetWidth) / 2;
-    const y = (viewportHeight - targetHeight) / 2;
+    let targetWidth, targetHeight, x, y;
+    if (isLandscape && isMobile) {
+      targetWidth = rect.width * scale;
+      targetHeight = rect.height * scale;
+      x = (viewportHeight - targetWidth) / 2;
+      y = (viewportWidth - targetHeight) / 2;
+    } else {
+      targetWidth = rect.width * scale;
+      targetHeight = rect.height * scale;
+      x = (viewportWidth - targetWidth) / 2;
+      y = (viewportHeight - targetHeight) / 2;
+    }
 
     return {
       originX: rect.left,
@@ -160,7 +178,9 @@ const MobileImageView = ({
       originHeight: rect.height,
       scale,
       targetX: x,
-      targetY: y
+      targetY: y,
+      isLandscape,
+      isMobile
     };
   };
 
@@ -207,16 +227,17 @@ const MobileImageView = ({
       <ScrollArea 
         ref={containerRef}
         className={cn(
-        isMobile ? "h-[100dvh]" : "h-screen",
-        isFullscreen ? "overflow-hidden" : ""
-      )}>
+          isMobile ? "h-[100dvh]" : "h-screen",
+          isFullscreen ? "overflow-hidden" : ""
+        )}
+      >
         <div className="space-y-6 pb-6">
           {image && (
             <motion.div
               className={cn(
                 "relative",
                 isFullscreen ? "fixed inset-0 z-50 bg-black/90" : "relative",
-                "transition-none" // Remove default transitions
+                "transition-none"
               )}
               onClick={toggleFullscreen}
             >
@@ -234,9 +255,11 @@ const MobileImageView = ({
                         width: imagePosition.originWidth,
                         height: imagePosition.originHeight,
                         scale: imagePosition.scale,
+                        rotate: (imagePosition.isLandscape && imagePosition.isMobile) ? 90 : 0,
+                        transformOrigin: 'center center',
                         transition: {
                           duration: 0.3,
-                          ease: [0.4, 0, 0.2, 1] // Custom ease for smooth animation
+                          ease: [0.4, 0, 0.2, 1]
                         }
                       }
                     : {
@@ -246,6 +269,7 @@ const MobileImageView = ({
                         width: '100%',
                         height: 'auto',
                         scale: 1,
+                        rotate: 0,
                         transition: {
                           duration: 0.3,
                           ease: [0.4, 0, 0.2, 1]
@@ -253,7 +277,7 @@ const MobileImageView = ({
                       }
                 }
                 className={cn(
-                  "origin-top-left", // Important for scale animation
+                  "origin-center",
                   "object-contain",
                   isFullscreen ? "cursor-zoom-out" : "cursor-zoom-in"
                 )}
