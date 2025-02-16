@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
@@ -48,6 +47,8 @@ const MobileImageView = ({
   const [targetDimensions, setTargetDimensions] = useState(null);
   const [imagePosition, setImagePosition] = useState(null);
   const containerRef = useRef(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageDimensions, setImageDimensions] = useState(null);
 
   const getImageUrl = () => {
     if (!image?.storage_path) return null;
@@ -86,6 +87,21 @@ const MobileImageView = ({
     },
     enabled: !!image?.id
   });
+
+  useEffect(() => {
+    if (image?.storage_path) {
+      const img = new Image();
+      img.src = supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl;
+      img.onload = () => {
+        setImageDimensions({
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+          isLandscape: img.naturalWidth > img.naturalHeight
+        });
+        setImageLoaded(true);
+      };
+    }
+  }, [image]);
 
   const handleCopyPrompt = async () => {
     await navigator.clipboard.writeText(image.user_prompt || image.prompt);
@@ -136,26 +152,25 @@ const MobileImageView = ({
   };
 
   const calculateImageTransform = () => {
-    if (!imageRef.current || !containerRef.current) return null;
+    if (!imageRef.current || !containerRef.current || !imageDimensions) return null;
 
     const img = imageRef.current;
     const rect = img.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const isLandscape = rect.width > rect.height;
     const isMobile = window.innerWidth < 768;
+    const { isLandscape } = imageDimensions;
 
     // Calculate scale to fit screen
     let scaleX, scaleY, scale;
     if (isLandscape && isMobile) {
-      // For landscape images on mobile, rotate and swap dimensions
       scaleX = viewportHeight / rect.width;
       scaleY = viewportWidth / rect.height;
     } else {
       scaleX = viewportWidth / rect.width;
       scaleY = viewportHeight / rect.height;
     }
-    scale = Math.min(scaleX, scaleY) * 0.9; // 0.9 to add some padding
+    scale = Math.min(scaleX, scaleY) * 0.9;
 
     // Calculate position to center
     let targetWidth, targetHeight, x, y;
@@ -232,7 +247,7 @@ const MobileImageView = ({
         )}
       >
         <div className="space-y-6 pb-6">
-          {image && (
+          {image && imageLoaded && (
             <motion.div
               className={cn(
                 "relative",
