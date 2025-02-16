@@ -162,10 +162,13 @@ const MobileImageView = ({
     const { isLandscape } = imageDimensions;
 
     if (isLandscape && isMobile) {
-      // For landscape images on mobile
-      const targetWidth = viewportWidth;
-      const targetHeight = (rect.height / rect.width) * targetWidth;
-      const scale = targetWidth / rect.width;
+      // For landscape images on mobile, we want to maximize the viewport usage
+      const scaleToWidth = viewportWidth / rect.width;
+      const scaleToHeight = viewportHeight / rect.height;
+      const scale = Math.min(scaleToWidth, scaleToHeight) * 0.95; // 95% to leave some padding
+
+      const scaledWidth = rect.width * scale;
+      const scaledHeight = rect.height * scale;
 
       return {
         originX: rect.left,
@@ -173,16 +176,19 @@ const MobileImageView = ({
         originWidth: rect.width,
         originHeight: rect.height,
         scale,
-        targetX: 0,
-        targetY: (viewportHeight - targetHeight * scale) / 2,
+        targetX: (viewportWidth - scaledWidth) / 2,
+        targetY: (viewportHeight - scaledHeight) / 2,
         isLandscape,
         isMobile
       };
     } else {
-      // For portrait images or desktop view
-      const targetHeight = viewportHeight * 0.9; // 90% of viewport height
-      const targetWidth = (rect.width / rect.height) * targetHeight;
-      const scale = targetHeight / rect.height;
+      // For portrait images or desktop view, same approach
+      const scaleToWidth = viewportWidth / rect.width;
+      const scaleToHeight = viewportHeight / rect.height;
+      const scale = Math.min(scaleToWidth, scaleToHeight) * 0.95;
+
+      const scaledWidth = rect.width * scale;
+      const scaledHeight = rect.height * scale;
 
       return {
         originX: rect.left,
@@ -190,8 +196,8 @@ const MobileImageView = ({
         originWidth: rect.width,
         originHeight: rect.height,
         scale,
-        targetX: (viewportWidth - targetWidth * scale) / 2,
-        targetY: viewportHeight * 0.05, // 5% padding from top
+        targetX: (viewportWidth - scaledWidth) / 2,
+        targetY: (viewportHeight - scaledHeight) / 2,
         isLandscape,
         isMobile
       };
@@ -269,7 +275,7 @@ const MobileImageView = ({
                         width: imagePosition.originWidth,
                         height: imagePosition.originHeight,
                         scale: imagePosition.scale,
-                        transformOrigin: 'top left',
+                        transformOrigin: 'center center',
                         transition: {
                           duration: 0.3,
                           ease: [0.4, 0, 0.2, 1]
@@ -282,7 +288,7 @@ const MobileImageView = ({
                         width: '100%',
                         height: 'auto',
                         scale: 1,
-                        transformOrigin: 'top left',
+                        transformOrigin: 'center center',
                         transition: {
                           duration: 0.3,
                           ease: [0.4, 0, 0.2, 1]
@@ -290,7 +296,7 @@ const MobileImageView = ({
                       }
                 }
                 className={cn(
-                  "origin-top-left",
+                  "origin-center",
                   "object-contain",
                   isFullscreen ? "cursor-zoom-out" : "cursor-zoom-in"
                 )}
