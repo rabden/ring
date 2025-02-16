@@ -161,42 +161,44 @@ const MobileImageView = ({
     const isMobile = window.innerWidth < 768;
     const { isLandscape } = imageDimensions;
 
-    // Calculate scale to fit screen
-    let scaleX, scaleY, scale;
     if (isLandscape && isMobile) {
-      scaleX = viewportHeight / rect.width;
-      scaleY = viewportWidth / rect.height;
-    } else {
-      scaleX = viewportWidth / rect.width;
-      scaleY = viewportHeight / rect.height;
-    }
-    scale = Math.min(scaleX, scaleY) * 0.9;
+      // For landscape images on mobile, fit to screen width
+      const targetHeight = viewportHeight;
+      const targetWidth = (rect.width / rect.height) * targetHeight;
+      const scale = targetHeight / rect.height;
 
-    // Calculate position to center
-    let targetWidth, targetHeight, x, y;
-    if (isLandscape && isMobile) {
-      targetWidth = rect.width * scale;
-      targetHeight = rect.height * scale;
-      x = (viewportHeight - targetWidth) / 2;
-      y = (viewportWidth - targetHeight) / 2;
+      return {
+        originX: rect.left,
+        originY: rect.top,
+        originWidth: rect.width,
+        originHeight: rect.height,
+        scale,
+        targetX: (viewportWidth - targetWidth) / 2,
+        targetY: 0,
+        isLandscape,
+        isMobile
+      };
     } else {
-      targetWidth = rect.width * scale;
-      targetHeight = rect.height * scale;
-      x = (viewportWidth - targetWidth) / 2;
-      y = (viewportHeight - targetHeight) / 2;
-    }
+      // For portrait images or desktop view
+      const scaleX = viewportWidth / rect.width;
+      const scaleY = viewportHeight / rect.height;
+      const scale = Math.min(scaleX, scaleY) * 0.9;
 
-    return {
-      originX: rect.left,
-      originY: rect.top,
-      originWidth: rect.width,
-      originHeight: rect.height,
-      scale,
-      targetX: x,
-      targetY: y,
-      isLandscape,
-      isMobile
-    };
+      const targetWidth = rect.width * scale;
+      const targetHeight = rect.height * scale;
+
+      return {
+        originX: rect.left,
+        originY: rect.top,
+        originWidth: rect.width,
+        originHeight: rect.height,
+        scale,
+        targetX: (viewportWidth - targetWidth) / 2,
+        targetY: (viewportHeight - targetHeight) / 2,
+        isLandscape,
+        isMobile
+      };
+    }
   };
 
   const toggleFullscreen = () => {
@@ -270,7 +272,6 @@ const MobileImageView = ({
                         width: imagePosition.originWidth,
                         height: imagePosition.originHeight,
                         scale: imagePosition.scale,
-                        rotate: (imagePosition.isLandscape && imagePosition.isMobile) ? 90 : 0,
                         transformOrigin: 'center center',
                         transition: {
                           duration: 0.3,
@@ -284,7 +285,6 @@ const MobileImageView = ({
                         width: '100%',
                         height: 'auto',
                         scale: 1,
-                        rotate: 0,
                         transition: {
                           duration: 0.3,
                           ease: [0.4, 0, 0.2, 1]
