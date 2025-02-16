@@ -25,8 +25,7 @@ const LoadingScreen = () => {
     )}>
       <div className="flex flex-col items-center gap-6">
         <div className={cn(
-          "w-20 h-20 rounded-xl overflow-hidden",
-          "border border-border/80",
+          "w-40 h-40 rounded-full overflow-hidden",
           "shadow-[0_8px_30px_rgb(0,0,0,0.06)]",
           "transition-all duration-300"
         )}>
@@ -36,7 +35,7 @@ const LoadingScreen = () => {
             className="w-full h-full object-cover"
           />
         </div>
-        <h1 className="text-2xl font-medium text-foreground/90">Ring IG</h1>
+        <h1 className="text-3xl font-medium text-foreground/90">Ring IG</h1>
         <Progress 
           value={progress} 
           className={cn(
