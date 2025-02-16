@@ -41,41 +41,42 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Skip caching for non-http(s) requests
+  const requestURL = new URL(event.request.url);
+  if (requestURL.protocol !== 'http:' && requestURL.protocol !== 'https:') {
+    return fetch(event.request);
+  }
+
   // Handle navigation requests
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
-        .catch(() => {
-          return caches.match('/index.html');
-        })
+        .catch(() => caches.match('/index.html'))
     );
     return;
   }
 
-  // Handle other requests
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        if (response) {
-          return response;
-        }
+        if (response) return response;
         return fetch(event.request)
           .then((response) => {
-            // Check if we received a valid response
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
-
-            // Clone the response
             const responseToCache = response.clone();
-
             caches.open(CACHE_NAME)
               .then((cache) => {
-                cache.put(event.request, responseToCache);
+                // Guard against putting unsupported request schemes into cache
+                try {
+                  cache.put(event.request, responseToCache);
+                } catch (error) {
+                  console.warn('Skipping cache.put for unsupported request:', event.request.url);
+                }
               });
-
             return response;
           });
       })
   );
-}); 
+});

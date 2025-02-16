@@ -1,4 +1,3 @@
-
 import { fileURLToPath, URL } from "url";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -23,6 +22,14 @@ export default defineConfig(({ mode }) => ({
       {
         find: "lib",
         replacement: resolve(__dirname, "lib"),
+      },
+      {
+        find: "react",
+        replacement: resolve(__dirname, "node_modules/react")
+      },
+      {
+        find: "react-dom",
+        replacement: resolve(__dirname, "node_modules/react-dom")
       },
     ],
   },

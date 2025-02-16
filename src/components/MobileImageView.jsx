@@ -136,31 +136,35 @@ const MobileImageView = ({
 
   const calculateImageTransform = () => {
     if (!imageRef.current || !containerRef.current) return null;
-
+  
     const img = imageRef.current;
     const rect = img.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-
-    // Calculate scale to fit screen
-    const scaleX = viewportWidth / rect.width;
-    const scaleY = viewportHeight / rect.height;
-    const scale = Math.min(scaleX, scaleY);
-
-    // Calculate position to center
-    const targetWidth = rect.width * scale;
-    const targetHeight = rect.height * scale;
-    const x = (viewportWidth - targetWidth) / 2;
-    const y = (viewportHeight - targetHeight) / 2;
-
+    let scale, targetX, targetY;
+  
+    if (rect.width > rect.height) {
+      // For landscape images: fit horizontally
+      scale = viewportWidth / rect.width;
+      targetX = 0;
+      targetY = (viewportHeight - rect.height * scale) / 2;
+    } else {
+      // For non-landscape images: fit entirely in the viewport
+      const scaleX = viewportWidth / rect.width;
+      const scaleY = viewportHeight / rect.height;
+      scale = Math.min(scaleX, scaleY);
+      targetX = (viewportWidth - rect.width * scale) / 2;
+      targetY = (viewportHeight - rect.height * scale) / 2;
+    }
+  
     return {
       originX: rect.left,
       originY: rect.top,
       originWidth: rect.width,
       originHeight: rect.height,
       scale,
-      targetX: x,
-      targetY: y
+      targetX,
+      targetY
     };
   };
 
