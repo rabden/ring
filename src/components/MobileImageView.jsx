@@ -162,8 +162,25 @@ const MobileImageView = ({
     const { isLandscape } = imageDimensions;
 
     if (isLandscape && isMobile) {
-      // For landscape images on mobile, fit to screen width
-      const targetHeight = viewportHeight;
+      // For landscape images on mobile
+      const targetWidth = viewportWidth;
+      const targetHeight = (rect.height / rect.width) * targetWidth;
+      const scale = targetWidth / rect.width;
+
+      return {
+        originX: rect.left,
+        originY: rect.top,
+        originWidth: rect.width,
+        originHeight: rect.height,
+        scale,
+        targetX: 0,
+        targetY: (viewportHeight - targetHeight * scale) / 2,
+        isLandscape,
+        isMobile
+      };
+    } else {
+      // For portrait images or desktop view
+      const targetHeight = viewportHeight * 0.9; // 90% of viewport height
       const targetWidth = (rect.width / rect.height) * targetHeight;
       const scale = targetHeight / rect.height;
 
@@ -173,28 +190,8 @@ const MobileImageView = ({
         originWidth: rect.width,
         originHeight: rect.height,
         scale,
-        targetX: (viewportWidth - targetWidth) / 2,
-        targetY: 0,
-        isLandscape,
-        isMobile
-      };
-    } else {
-      // For portrait images or desktop view
-      const scaleX = viewportWidth / rect.width;
-      const scaleY = viewportHeight / rect.height;
-      const scale = Math.min(scaleX, scaleY) * 0.9;
-
-      const targetWidth = rect.width * scale;
-      const targetHeight = rect.height * scale;
-
-      return {
-        originX: rect.left,
-        originY: rect.top,
-        originWidth: rect.width,
-        originHeight: rect.height,
-        scale,
-        targetX: (viewportWidth - targetWidth) / 2,
-        targetY: (viewportHeight - targetHeight) / 2,
+        targetX: (viewportWidth - targetWidth * scale) / 2,
+        targetY: viewportHeight * 0.05, // 5% padding from top
         isLandscape,
         isMobile
       };
@@ -272,7 +269,7 @@ const MobileImageView = ({
                         width: imagePosition.originWidth,
                         height: imagePosition.originHeight,
                         scale: imagePosition.scale,
-                        transformOrigin: 'center center',
+                        transformOrigin: 'top left',
                         transition: {
                           duration: 0.3,
                           ease: [0.4, 0, 0.2, 1]
@@ -285,6 +282,7 @@ const MobileImageView = ({
                         width: '100%',
                         height: 'auto',
                         scale: 1,
+                        transformOrigin: 'top left',
                         transition: {
                           duration: 0.3,
                           ease: [0.4, 0, 0.2, 1]
@@ -292,7 +290,7 @@ const MobileImageView = ({
                       }
                 }
                 className={cn(
-                  "origin-center",
+                  "origin-top-left",
                   "object-contain",
                   isFullscreen ? "cursor-zoom-out" : "cursor-zoom-in"
                 )}
