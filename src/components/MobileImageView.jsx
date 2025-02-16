@@ -47,8 +47,6 @@ const MobileImageView = ({
   const [targetDimensions, setTargetDimensions] = useState(null);
   const [imagePosition, setImagePosition] = useState(null);
   const containerRef = useRef(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageDimensions, setImageDimensions] = useState(null);
 
   const getImageUrl = () => {
     if (!image?.storage_path) return null;
@@ -87,21 +85,6 @@ const MobileImageView = ({
     },
     enabled: !!image?.id
   });
-
-  useEffect(() => {
-    if (image?.storage_path) {
-      const img = new Image();
-      img.src = supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl;
-      img.onload = () => {
-        setImageDimensions({
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-          isLandscape: img.naturalWidth > img.naturalHeight
-        });
-        setImageLoaded(true);
-      };
-    }
-  }, [image]);
 
   const handleCopyPrompt = async () => {
     await navigator.clipboard.writeText(image.user_prompt || image.prompt);
@@ -152,56 +135,33 @@ const MobileImageView = ({
   };
 
   const calculateImageTransform = () => {
-    if (!imageRef.current || !containerRef.current || !imageDimensions) return null;
+    if (!imageRef.current || !containerRef.current) return null;
 
     const img = imageRef.current;
     const rect = img.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const isMobile = window.innerWidth < 768;
-    const { isLandscape } = imageDimensions;
 
-    if (isLandscape && isMobile) {
-      // For landscape images on mobile, we want to maximize the viewport usage
-      const scaleToWidth = viewportWidth / rect.width;
-      const scaleToHeight = viewportHeight / rect.height;
-      const scale = Math.min(scaleToWidth, scaleToHeight) * 0.95; // 95% to leave some padding
+    // Calculate scale to fit screen
+    const scaleX = viewportWidth / rect.width;
+    const scaleY = viewportHeight / rect.height;
+    const scale = Math.min(scaleX, scaleY);
 
-      const scaledWidth = rect.width * scale;
-      const scaledHeight = rect.height * scale;
+    // Calculate position to center
+    const targetWidth = rect.width * scale;
+    const targetHeight = rect.height * scale;
+    const x = (viewportWidth - targetWidth) / 2;
+    const y = (viewportHeight - targetHeight) / 2;
 
-      return {
-        originX: rect.left,
-        originY: rect.top,
-        originWidth: rect.width,
-        originHeight: rect.height,
-        scale,
-        targetX: (viewportWidth - scaledWidth) / 2,
-        targetY: (viewportHeight - scaledHeight) / 2,
-        isLandscape,
-        isMobile
-      };
-    } else {
-      // For portrait images or desktop view, same approach
-      const scaleToWidth = viewportWidth / rect.width;
-      const scaleToHeight = viewportHeight / rect.height;
-      const scale = Math.min(scaleToWidth, scaleToHeight) * 0.95;
-
-      const scaledWidth = rect.width * scale;
-      const scaledHeight = rect.height * scale;
-
-      return {
-        originX: rect.left,
-        originY: rect.top,
-        originWidth: rect.width,
-        originHeight: rect.height,
-        scale,
-        targetX: (viewportWidth - scaledWidth) / 2,
-        targetY: (viewportHeight - scaledHeight) / 2,
-        isLandscape,
-        isMobile
-      };
-    }
+    return {
+      originX: rect.left,
+      originY: rect.top,
+      originWidth: rect.width,
+      originHeight: rect.height,
+      scale,
+      targetX: x,
+      targetY: y
+    };
   };
 
   const toggleFullscreen = () => {
@@ -247,17 +207,16 @@ const MobileImageView = ({
       <ScrollArea 
         ref={containerRef}
         className={cn(
-          isMobile ? "h-[100dvh]" : "h-screen",
-          isFullscreen ? "overflow-hidden" : ""
-        )}
-      >
+        isMobile ? "h-[100dvh]" : "h-screen",
+        isFullscreen ? "overflow-hidden" : ""
+      )}>
         <div className="space-y-6 pb-6">
-          {image && imageLoaded && (
+          {image && (
             <motion.div
               className={cn(
                 "relative",
                 isFullscreen ? "fixed inset-0 z-50 bg-black/90" : "relative",
-                "transition-none"
+                "transition-none" // Remove default transitions
               )}
               onClick={toggleFullscreen}
             >
@@ -275,10 +234,9 @@ const MobileImageView = ({
                         width: imagePosition.originWidth,
                         height: imagePosition.originHeight,
                         scale: imagePosition.scale,
-                        transformOrigin: 'center center',
                         transition: {
                           duration: 0.3,
-                          ease: [0.4, 0, 0.2, 1]
+                          ease: [0.4, 0, 0.2, 1] // Custom ease for smooth animation
                         }
                       }
                     : {
@@ -288,7 +246,6 @@ const MobileImageView = ({
                         width: '100%',
                         height: 'auto',
                         scale: 1,
-                        transformOrigin: 'center center',
                         transition: {
                           duration: 0.3,
                           ease: [0.4, 0, 0.2, 1]
@@ -296,7 +253,7 @@ const MobileImageView = ({
                       }
                 }
                 className={cn(
-                  "origin-center",
+                  "origin-top-left", // Important for scale animation
                   "object-contain",
                   isFullscreen ? "cursor-zoom-out" : "cursor-zoom-in"
                 )}
