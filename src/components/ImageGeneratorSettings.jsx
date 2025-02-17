@@ -15,6 +15,7 @@ import { useLocation } from 'react-router-dom';
 import { Textarea } from "@/components/ui/textarea";
 import { qualityOptions } from '@/utils/imageConfigs';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const ImageGeneratorSettings = ({
   prompt, setPrompt,
@@ -50,6 +51,7 @@ const ImageGeneratorSettings = ({
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCredits = totalCredits >= creditCost;
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const handleModelChange = (newModel) => {
     const modelConfig = modelConfigs?.[newModel];
@@ -96,9 +98,8 @@ const ImageGeneratorSettings = ({
   };
 
   return (
-    <ScrollArea className="h-full pr-4">
-      <div className="space-y-4">
-
+    <ScrollArea className="h-full pr-4 md:pr-4">
+      <div className="space-y-4 pb-20 md:pb-4 px-2 md:px-4">
         <div className={hidePromptOnDesktop ? 'md:hidden' : ''}>
           <PromptInput
             prompt={prompt}
@@ -125,7 +126,7 @@ const ImageGeneratorSettings = ({
           model={model}
           setModel={handleModelChange}
           nsfwEnabled={nsfwEnabled}
-          proMode={proMode}
+          proMode={isMobile ? false : proMode}
           modelConfigs={modelConfigs}
         />
 
@@ -135,7 +136,7 @@ const ImageGeneratorSettings = ({
             setAspectRatio={setAspectRatio}
             quality={quality}
             setQuality={setQuality}
-            proMode={proMode} 
+            proMode={isMobile ? false : proMode}
             qualityLimits={modelConfigs?.[model]?.qualityLimits}
           />
         </SettingSection>
@@ -180,3 +181,4 @@ const ImageGeneratorSettings = ({
 };
 
 export default ImageGeneratorSettings;
+
