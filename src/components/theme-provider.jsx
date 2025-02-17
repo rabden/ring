@@ -1,5 +1,4 @@
-
-import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeProviderContext = createContext({});
 
@@ -60,20 +59,17 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
-  const value = useMemo(
-    () => ({
-      theme,
-      setTheme: (newTheme) => {
-        try {
-          localStorage.setItem(storageKey, newTheme);
-        } catch (error) {
-          console.warn("LocalStorage access denied:", error);
-        }
-        setTheme(newTheme);
-      },
-    }),
-    [theme, storageKey]
-  );
+  const value = {
+    theme,
+    setTheme: (newTheme) => {
+      try {
+        localStorage.setItem(storageKey, newTheme);
+      } catch (error) {
+        console.warn("LocalStorage access denied:", error);
+      }
+      setTheme(newTheme);
+    },
+  };
 
   return (
     <ThemeProviderContext.Provider value={value}>

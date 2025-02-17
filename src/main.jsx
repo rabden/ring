@@ -1,21 +1,27 @@
-
 import React from 'react';
-import * as ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+import { Toaster } from 'sonner';
 
-// Ensure React is properly initialized
-window.React = React;
-
-const container = document.getElementById('root');
-if (!container) {
-  throw new Error('Failed to find the root element');
+// Ensure React is available in development
+if (process.env.NODE_ENV === 'development') {
+  window.React = React;
 }
 
-const root = ReactDOM.createRoot(container);
-
-root.render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+    <Toaster 
+      theme="dark"
+      position="top-center"
+      closeButton
+      richColors
+      style={{
+        background: "hsl(var(--background))",
+        color: "hsl(var(--foreground))",
+        border: "1px solid hsl(var(--border))"
+      }}
+    />
     <App />
   </React.StrictMode>
 );
