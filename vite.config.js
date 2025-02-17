@@ -6,8 +6,22 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    host: true,
-    port: "8080",
+    host: 'localhost', // Change from true to 'localhost'
+    port: 8080,
+    strictPort: true,
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: 8080,
+      clientPort: 8080,
+      timeout: 10000, // Increased timeout
+      overlay: true,
+      path: 'hmr-ws'  // Add explicit websocket path
+    },
+    watch: {
+      usePolling: false  // Changed to false for better performance
+    },
+    middlewareMode: false
   },
   plugins: [
     react(),
@@ -33,4 +47,10 @@ export default defineConfig(({ mode }) => ({
       },
     ],
   },
+  build: {
+    sourcemap: true,
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+  }
 }));
