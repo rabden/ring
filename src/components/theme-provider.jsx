@@ -1,10 +1,10 @@
 
-import * as React from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
-const ThemeProviderContext = React.createContext({});
+const ThemeProviderContext = createContext({});
 
 export const useTheme = () => {
-  const context = React.useContext(ThemeProviderContext);
+  const context = useContext(ThemeProviderContext);
   if (!context) {
     throw new Error("useTheme must be used within a ThemeProvider");
   }
@@ -16,7 +16,7 @@ export function ThemeProvider({
   defaultTheme = "system",
   storageKey = "vite-ui-theme",
 }) {
-  const [theme, setTheme] = React.useState(() => {
+  const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") return defaultTheme;
     
     try {
@@ -28,7 +28,7 @@ export function ThemeProvider({
     }
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     const root = window.document.documentElement;
 
     const applyTheme = (newTheme) => {
@@ -60,7 +60,7 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
-  const value = React.useMemo(
+  const value = useMemo(
     () => ({
       theme,
       setTheme: (newTheme) => {
