@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
 
-const ThemeProviderContext = createContext({});
+import * as React from "react";
+
+const ThemeProviderContext = React.createContext({});
 
 export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
+  const context = React.useContext(ThemeProviderContext);
   if (!context) {
     throw new Error("useTheme must be used within a ThemeProvider");
   }
@@ -15,7 +16,7 @@ export function ThemeProvider({
   defaultTheme = "system",
   storageKey = "vite-ui-theme",
 }) {
-  const [theme, setTheme] = useState(() => {
+  const [theme, setTheme] = React.useState(() => {
     if (typeof window === "undefined") return defaultTheme;
     
     try {
@@ -27,7 +28,7 @@ export function ThemeProvider({
     }
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     const root = window.document.documentElement;
 
     const applyTheme = (newTheme) => {
@@ -59,17 +60,20 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
-  const value = {
-    theme,
-    setTheme: (newTheme) => {
-      try {
-        localStorage.setItem(storageKey, newTheme);
-      } catch (error) {
-        console.warn("LocalStorage access denied:", error);
-      }
-      setTheme(newTheme);
-    },
-  };
+  const value = React.useMemo(
+    () => ({
+      theme,
+      setTheme: (newTheme) => {
+        try {
+          localStorage.setItem(storageKey, newTheme);
+        } catch (error) {
+          console.warn("LocalStorage access denied:", error);
+        }
+        setTheme(newTheme);
+      },
+    }),
+    [theme, storageKey]
+  );
 
   return (
     <ThemeProviderContext.Provider value={value}>
