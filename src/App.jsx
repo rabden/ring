@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import * as React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -17,13 +18,6 @@ import Documentation from '@/pages/Documentation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/supabase';
 
-// Add this at the top of your App.jsx to debug React initialization
-if (!React) {
-  console.error('React is not defined!');
-} else {
-  console.log('React version:', React.version);
-}
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -37,9 +31,9 @@ const queryClient = new QueryClient({
 const ProtectedRoute = ({ children }) => {
   const { session, loading } = useSupabaseAuth();
   const location = useLocation();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!loading) {
       setIsInitialLoad(false);
     }
@@ -60,9 +54,9 @@ const ProtectedRoute = ({ children }) => {
 const AuthRoute = ({ children }) => {
   const { session, loading } = useSupabaseAuth();
   const location = useLocation();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
   
-  useEffect(() => {
+  React.useEffect(() => {
     if (!loading) {
       setIsInitialLoad(false);
     }
@@ -81,10 +75,10 @@ const AuthRoute = ({ children }) => {
 };
 
 // Main App Component
-function App() {
-  const [isLoading, setIsLoading] = useState(true);
+const App = () => {
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2500);
@@ -158,14 +152,14 @@ function App() {
       </BrowserRouter>
     </QueryClientProvider>
   );
-}
+};
 
 // Auth Callback Component
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
+  const [error, setError] = React.useState(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleCallback = async () => {
       try {
         const { error } = await supabase.auth.getSession();
