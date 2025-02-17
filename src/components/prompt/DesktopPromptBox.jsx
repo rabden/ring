@@ -16,6 +16,7 @@ const PROMPT_TIPS = [
   "Tips: Play with the slider to change the aspect ratio",
   "Tips: Explore Inspiration page for more ideas",
   "Tips: Use Stable Diffusion 3.5 large for more vibrant results",
+  "Always improve prompt for better results",
 ];
 
 const DesktopPromptBox = ({ 
