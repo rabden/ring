@@ -133,7 +133,7 @@ const ImageGeneratorContent = ({
         </div>
 
         {isSidebarMounted && !searchQuery && <div className={cn("w-full md:w-[350px] bg-background text-card-foreground", "md:fixed md:right-0 md:top-12 md:bottom-0", isGenerateTab ? 'block' : 'hidden md:block', "md:h-[calc(100vh-3rem)] relative", "transition-transform duration-300 ease-in-out overflow-visible", "z-20", isSidebarVisible ? "translate-x-0" : isMobile ? "translate-x-full" : "md:translate-x-full")}>
-            <div className="min-h-[calc(100vh-56px)] md:h-full overflow-visible px-4 md:px-6 py-4 md:py-4">
+            <div className="min-h-[calc(100vh-56px)] md:h-full overflow-visible px-2 md:px-6 py-4 md:py-4">
               <ImageGeneratorSettings {...imageGeneratorProps} hidePromptOnDesktop={!isMobile && !isGenerateTab} credits={credits} bonusCredits={bonusCredits} session={session} updateCredits={imageGeneratorProps.updateCredits} proMode={proMode} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} negativePrompt={imageGeneratorProps.negativePrompt} setNegativePrompt={imageGeneratorProps.setNegativePrompt} />
             </div>
           </div>}
