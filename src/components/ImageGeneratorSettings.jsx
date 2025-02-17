@@ -98,8 +98,8 @@ const ImageGeneratorSettings = ({
   };
 
   return (
-    <ScrollArea className="h-full pr-0 md:pr-4">
-      <div className="space-y-4 pb-20 md:pb-4">
+    <ScrollArea className="h-full pr-4 md:pr-4">
+      <div className="space-y-4 pb-20 md:pb-4 px-2 md:px-4">
         <div className={hidePromptOnDesktop ? 'md:hidden' : ''}>
           <PromptInput
             prompt={prompt}
