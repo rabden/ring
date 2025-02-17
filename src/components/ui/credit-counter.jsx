@@ -1,3 +1,4 @@
+
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Zap } from 'lucide-react';
@@ -12,8 +13,6 @@ import {
 } from "@/components/ui/tooltip";
 
 const CreditCounter = ({ credits, bonusCredits, className }) => {
-  const MAX_CREDITS = 50;
-  const creditsProgress = (credits / MAX_CREDITS) * 100;
   const { session } = useSupabaseAuth();
 
   const { data: profile } = useQuery({
@@ -22,13 +21,16 @@ const CreditCounter = ({ credits, bonusCredits, className }) => {
       if (!session?.user?.id) return null;
       const { data } = await supabase
         .from('profiles')
-        .select('last_refill_time')
+        .select('last_refill_time, is_pro')
         .eq('id', session.user.id)
         .single();
       return data;
     },
     enabled: !!session?.user?.id
   });
+
+  const MAX_CREDITS = profile?.is_pro ? 50 : 25;
+  const creditsProgress = (credits / MAX_CREDITS) * 100;
 
   const getHoursUntilRefill = () => {
     if (!profile?.last_refill_time) return 24;
