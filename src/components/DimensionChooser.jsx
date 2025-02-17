@@ -319,7 +319,7 @@ const DimensionChooser = ({
         />
       </div>
     </div>
-  )
+  );
 }
 
-export default DimensionChooser 
+export default DimensionChooser;

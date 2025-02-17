@@ -14,7 +14,6 @@ import CreditCounter from '@/components/ui/credit-counter';
 import { useLocation } from 'react-router-dom';
 import { Textarea } from "@/components/ui/textarea";
 import { qualityOptions } from '@/utils/imageConfigs';
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const ImageGeneratorSettings = ({
@@ -98,87 +97,84 @@ const ImageGeneratorSettings = ({
   };
 
   return (
-    <ScrollArea className="h-full pr-4 md:pr-4">
-      <div className="space-y-4 pb-20 md:pb-4 px-2 md:px-4">
-        <div className={hidePromptOnDesktop ? 'md:hidden' : ''}>
-          <PromptInput
-            prompt={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={handlePromptKeyDown}
-            onSubmit={handleGenerate}
-            hasEnoughCredits={hasEnoughCredits}
-            onClear={handleClearPrompt}
-            onImprove={handleImprovePrompt}
-            isImproving={isImproving}
-            userId={session?.user?.id}
-            credits={credits}
-            bonusCredits={bonusCredits}
-          />
-        </div>
-
-        {isGenerateTab && (
-          <div className="flex justify-center w-full mb-2">
-            <CreditCounter credits={credits} bonusCredits={bonusCredits} />
-          </div>
-        )}
-
-        <ModelChooser
-          model={model}
-          setModel={handleModelChange}
-          nsfwEnabled={nsfwEnabled}
-          proMode={isMobile ? false : proMode}
-          modelConfigs={modelConfigs}
+    <div className="space-y-4 pb-20 md:pb-4 px-2">
+      <div className={hidePromptOnDesktop ? 'md:hidden' : ''}>
+        <PromptInput
+          prompt={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={handlePromptKeyDown}
+          onSubmit={handleGenerate}
+          hasEnoughCredits={hasEnoughCredits}
+          onClear={handleClearPrompt}
+          onImprove={handleImprovePrompt}
+          isImproving={isImproving}
+          userId={session?.user?.id}
+          credits={credits}
+          bonusCredits={bonusCredits}
         />
-
-        <SettingSection label="Dimensions" tooltip="Choose the aspect ratio and quality for your generated image">
-          <DimensionChooser 
-            aspectRatio={aspectRatio} 
-            setAspectRatio={setAspectRatio}
-            quality={quality}
-            setQuality={setQuality}
-            proMode={isMobile ? false : proMode}
-            qualityLimits={modelConfigs?.[model]?.qualityLimits}
-          />
-        </SettingSection>
-
-        <ImageCountChooser
-          count={imageCount}
-          setCount={setImageCount}
-        />
-
-        {modelConfigs[model]?.use_negative_prompt && (
-          <SettingSection label="Negative Prompt" tooltip="Specify what you don't want to see in the generated image">
-            <Textarea
-              placeholder={modelConfigs[model]?.default_negative_prompt || "Enter negative prompt..."}
-              className="resize-none"
-              value={negativePrompt}
-              onChange={(e) => setNegativePrompt(e.target.value)}
-            />
-          </SettingSection>
-        )}
-
-        <SettingSection label="Seed" tooltip="A seed is a number that initializes the random generation process. Using the same seed with the same settings will produce the same image.">
-          <div className="flex items-center space-x-2">
-            <Input
-              type="number"
-              value={seed}
-              onChange={(e) => setSeed(parseInt(e.target.value))}
-              disabled={randomizeSeed}
-            />
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="randomizeSeed"
-                checked={randomizeSeed}
-                onCheckedChange={setRandomizeSeed}
-              />
-              <Label htmlFor="randomizeSeed">Random</Label>
-            </div>
-          </div>
-        </SettingSection>
       </div>
-    </ScrollArea>
+
+      {isGenerateTab && (
+        <div className="flex justify-center w-full mb-2">
+          <CreditCounter credits={credits} bonusCredits={bonusCredits} />
+        </div>
+      )}
+
+      <ModelChooser
+        model={model}
+        setModel={handleModelChange}
+        nsfwEnabled={nsfwEnabled}
+        proMode={proMode}
+        modelConfigs={modelConfigs}
+      />
+
+      <SettingSection label="Dimensions" tooltip="Choose the aspect ratio and quality for your generated image">
+        <DimensionChooser 
+          aspectRatio={aspectRatio} 
+          setAspectRatio={setAspectRatio}
+          quality={quality}
+          setQuality={setQuality}
+          proMode={proMode}
+          qualityLimits={modelConfigs?.[model]?.qualityLimits}
+        />
+      </SettingSection>
+
+      <ImageCountChooser
+        count={imageCount}
+        setCount={setImageCount}
+      />
+
+      {modelConfigs[model]?.use_negative_prompt && (
+        <SettingSection label="Negative Prompt" tooltip="Specify what you don't want to see in the generated image">
+          <Textarea
+            placeholder={modelConfigs[model]?.default_negative_prompt || "Enter negative prompt..."}
+            className="resize-none"
+            value={negativePrompt}
+            onChange={(e) => setNegativePrompt(e.target.value)}
+          />
+        </SettingSection>
+      )}
+
+      <SettingSection label="Seed" tooltip="A seed is a number that initializes the random generation process. Using the same seed with the same settings will produce the same image.">
+        <div className="flex items-center space-x-2">
+          <Input
+            type="number"
+            value={seed}
+            onChange={(e) => setSeed(parseInt(e.target.value))}
+            disabled={randomizeSeed}
+          />
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="randomizeSeed"
+              checked={randomizeSeed}
+              onCheckedChange={setRandomizeSeed}
+            />
+            <Label htmlFor="randomizeSeed">Random</Label>
+          </div>
+        </div>
+      </SettingSection>
+    </div>
   );
 };
 
 export default ImageGeneratorSettings;
-
