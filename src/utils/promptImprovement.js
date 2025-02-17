@@ -35,7 +35,7 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
       messages: [
         {
           role: "system",
-          content: `Act as an expert AI image prompt engineer for high-quality image generation. Enhance the provided prompt by preserving its core idea and artistic vision. If it's too brief, enrich it with details; remove any extraneous noise that might make image-generator AI confused. Keep the final prompt between 50 and 100 words and strongly follow these Guidelines: ${modelExample} Don't write anything else except the prompt.`
+          content: `Act as an expert AI image prompt engineer for high-quality image generation. Enhance the provided prompt by preserving its core idea and artistic vision. If it's too brief, enrich it with details; remove any extraneous noise that might make image-generator AI confused. Keep the final prompt between 30 to 80 words and strongly follow these Guidelines: ${modelExample} Don't write anything else except the prompt.`
         },
         {
           role: "user",
