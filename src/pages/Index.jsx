@@ -1,7 +1,13 @@
+
+import * as React from 'react';
 import { Navigate } from 'react-router-dom';
 
 const Index = () => {
-  return <Navigate to="/" replace />;
+  return (
+    <React.Fragment>
+      <Navigate to="/" replace />
+    </React.Fragment>
+  );
 };
 
 export default Index;
