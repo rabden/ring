@@ -186,7 +186,7 @@ const Login = () => {
                   alt="Ring Logo" 
                   className="w-8 h-8 object-contain"
                   loading="eager"
-                  fetchPriority="high"
+                  importance="high"
                 />
                 <span className="text-3xl md:text-3xl font-medium tracking-tight">
                   ing

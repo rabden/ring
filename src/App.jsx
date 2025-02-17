@@ -17,6 +17,13 @@ import Documentation from '@/pages/Documentation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/supabase';
 
+// Add this at the top of your App.jsx to debug React initialization
+if (!React) {
+  console.error('React is not defined!');
+} else {
+  console.log('React version:', React.version);
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

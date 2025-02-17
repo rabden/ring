@@ -1,9 +1,13 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+import { Toaster } from 'sonner';
 
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
-import { Toaster } from 'sonner'
+// Ensure React is available in development
+if (process.env.NODE_ENV === 'development') {
+  window.React = React;
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -20,4 +24,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     />
     <App />
   </React.StrictMode>
-)
+);
