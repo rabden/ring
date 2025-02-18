@@ -136,8 +136,8 @@ const ProfileMenu = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent 
           className={cn(
-            "w-80 p-4 m-4",
-            "border-border bg-card",
+            "w-80 p-4 m-2 md:m-4",
+            "border-border bg-card/95 backdrop-blur-[30px]",
             "animate-in fade-in-0 zoom-in-95 duration-200"
           )}
           align={isMobile ? "center" : "end"}

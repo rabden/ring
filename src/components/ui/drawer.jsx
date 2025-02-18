@@ -25,24 +25,40 @@ const DrawerOverlay = React.forwardRef(({ className, ...props }, ref) => (
 ))
 DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName
 
-const DrawerContent = React.forwardRef(({ className, children, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-xl bg-card transition-all duration-200",
-        "h-[90vh] min-h-[90vh]",
-        className
-      )}
-      {...props}>
-      <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-muted" />
-      <div className="flex-1 min-h-0">
-        {children}
-      </div>
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-))
+const DrawerContent = React.forwardRef(({ className, children, ...props }, ref) => {
+  const [snapPoint, setSnapPoint] = React.useState(0.5); // 50vh initial height
+  const contentRef = React.useRef(null);
+
+  const handleScroll = React.useCallback((e) => {
+    if (e.target.scrollTop > 0 && snapPoint !== 1) {
+      setSnapPoint(1); // Expand to 100vh when scrolling
+    }
+  }, [snapPoint]);
+
+  return (
+    <DrawerPortal>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={ref}
+        snapPoints={[0, 0.5, 1]}
+        activeSnapPoint={snapPoint}
+        setActiveSnapPoint={setSnapPoint}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl bg-card/70 backdrop-blur-[15px] transition-all duration-200",
+          className
+        )}
+        {...props}>
+        <div className="mx-auto mt-3 h-1 w-12 rounded-full bg-accent" />
+        <div 
+          ref={contentRef}
+          onScroll={handleScroll}
+          className="flex-1 min-h-0 overflow-y-auto">
+          {children}
+        </div>
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  );
+})
 DrawerContent.displayName = "DrawerContent"
 
 const DrawerHeader = ({
@@ -50,7 +66,7 @@ const DrawerHeader = ({
   ...props
 }) => (
   <div
-    className={cn("grid gap-1 p-2 text-center sm:text-left", className)}
+    className={cn("grid gap-1 text-center sm:text-left", className)}
     {...props} />
 )
 DrawerHeader.displayName = "DrawerHeader"
@@ -59,7 +75,7 @@ const DrawerFooter = ({
   className,
   ...props
 }) => (
-  <div className={cn("mt-auto flex flex-col gap-2 p-4", className)} {...props} />
+  <div className={cn("mt-auto flex flex-col gap-2 p-2", className)} {...props} />
 )
 DrawerFooter.displayName = "DrawerFooter"
 
