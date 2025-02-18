@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, Trash2, RefreshCw, ArrowLeft, Copy, Share2, Check, Wand2 } from "lucide-react";
+import { Download, Trash2, RefreshCw, ArrowLeft, Copy, Share2, Check, Wand2, RotateCw } from "lucide-react";
 import { useModelConfigs } from '@/hooks/useModelConfigs';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useLikes } from '@/hooks/useLikes';
@@ -43,9 +43,9 @@ const MobileImageView = ({
   const { userLikes, toggleLike } = useLikes(session?.user?.id);
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isRotated, setIsRotated] = useState(false);
+  const [imageStyle, setImageStyle] = useState({});
   const imageRef = useRef(null);
-  const [targetDimensions, setTargetDimensions] = useState(null);
-  const [imagePosition, setImagePosition] = useState(null);
   const containerRef = useRef(null);
 
   const getImageUrl = () => {
@@ -134,49 +134,69 @@ const MobileImageView = ({
     navigate(`/?remix=${image.id}#imagegenerate`, { replace: true });
   };
 
-  const calculateImageTransform = () => {
-    if (!imageRef.current || !containerRef.current) return null;
-  
-    const img = imageRef.current;
-    const rect = img.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    let scale, targetX, targetY;
-  
-    if (rect.width > rect.height) {
-      // For landscape images: fit horizontally
-      scale = viewportWidth / rect.width;
-      targetX = 0;
-      targetY = (viewportHeight - rect.height * scale) / 2;
-    } else {
-      // For non-landscape images: fit entirely in the viewport
-      const scaleX = viewportWidth / rect.width;
-      const scaleY = viewportHeight / rect.height;
-      scale = Math.min(scaleX, scaleY);
-      targetX = (viewportWidth - rect.width * scale) / 2;
-      targetY = (viewportHeight - rect.height * scale) / 2;
-    }
-  
-    return {
-      originX: rect.left,
-      originY: rect.top,
-      originWidth: rect.width,
-      originHeight: rect.height,
-      scale,
-      targetX,
-      targetY
-    };
-  };
+  const isLandscape = image?.width > image?.height;
 
-  const toggleFullscreen = () => {
+  const handleImageClick = () => {
     if (!isFullscreen) {
-      const transform = calculateImageTransform();
-      setImagePosition(transform);
-    } else {
-      setImagePosition(null);
+      setIsRotated(false); // Reset rotation when entering fullscreen
     }
     setIsFullscreen(!isFullscreen);
   };
+
+  const handleRotate = (e) => {
+    e.stopPropagation(); // Prevent fullscreen toggle
+    setIsRotated(!isRotated);
+  };
+
+  useEffect(() => {
+    if (isFullscreen && imageRef.current) {
+      const img = imageRef.current;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const isLandscape = image.width > image.height;
+
+      if (isLandscape) {
+        // For landscape images
+        const aspectRatio = image.width / image.height;
+        const rotatedAspectRatio = 1 / aspectRatio;
+        
+        // Calculate dimensions that will fit the screen after rotation
+        let width = viewportHeight;
+        let height = viewportHeight * rotatedAspectRatio;
+        
+        // If the height would overflow the width, scale down
+        if (height > viewportWidth) {
+          const scale = viewportWidth / height;
+          width *= scale;
+          height *= scale;
+        }
+
+        setImageStyle({
+          transform: 'rotate(90deg)',
+          width: `${height}px`,
+          height: `${width}px`,
+        });
+      } else {
+        // For portrait/square images
+        const aspectRatio = image.width / image.height;
+        let width = viewportWidth;
+        let height = viewportWidth / aspectRatio;
+        
+        if (height > viewportHeight) {
+          height = viewportHeight;
+          width = height * aspectRatio;
+        }
+
+        setImageStyle({
+          width: `${width}px`,
+          height: `${height}px`,
+          transform: 'none'
+        });
+      }
+    } else {
+      setImageStyle({}); // Reset styles when not fullscreen
+    }
+  }, [isFullscreen, image.width, image.height]);
 
   const detailItems = [
     { label: 'Model', value: modelConfigs?.[image.model]?.name || image.model },
@@ -193,86 +213,97 @@ const MobileImageView = ({
       "bg-background/95 backdrop-blur-[2px]",
       "transition-all duration-300"
     )}>
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        onClick={onClose} 
-        className={cn(
-          "fixed top-4 left-4 z-50",
-          "h-8 w-8 p-0 rounded-lg",
-          "bg-background/80 backdrop-blur-[2px]",
-          "hover:bg-background/90",
-          "transition-all duration-200"
-        )}
-      >
-        <ArrowLeft className="h-5 w-5 text-foreground/70" />
-      </Button>
+      {!isFullscreen && (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onClose} 
+          className={cn(
+            "fixed top-4 left-4 z-[60]",
+            "h-8 w-8 p-0 rounded-lg",
+            "bg-background/80 backdrop-blur-[2px]",
+            "hover:bg-background/90",
+            "transition-all duration-200"
+          )}
+        >
+          <ArrowLeft className="h-5 w-5 text-foreground/70" />
+        </Button>
+      )}
 
       <ScrollArea 
         ref={containerRef}
         className={cn(
-        isMobile ? "h-[100dvh]" : "h-screen",
-        isFullscreen ? "overflow-hidden" : ""
-      )}>
-        <div className="space-y-6 pb-6">
+          isMobile ? "h-[100dvh]" : "h-screen",
+          isFullscreen ? "overflow-hidden" : ""
+        )}
+      >
+        <div className={cn(
+          !isFullscreen && ["space-y-6 pb-6"]
+        )}>
           {image && (
-            <motion.div
+            <div 
               className={cn(
                 "relative",
-                isFullscreen ? "fixed inset-0 z-50 bg-black/90" : "relative",
-                "transition-none" // Remove default transitions
+                isFullscreen && "fixed inset-0 z-50 bg-black/95",
+                "transition-all duration-300",
+                isFullscreen && "m-0 p-0"
               )}
-              onClick={toggleFullscreen}
+              onClick={handleImageClick}
             >
-              <motion.img
-                ref={imageRef}
-                src={supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl}
-                alt={image.prompt || 'Generated image'}
-                initial={false}
-                animate={
-                  isFullscreen && imagePosition
-                    ? {
-                        position: 'fixed',
-                        top: imagePosition.targetY,
-                        left: imagePosition.targetX,
-                        width: imagePosition.originWidth,
-                        height: imagePosition.originHeight,
-                        scale: imagePosition.scale,
-                        transition: {
-                          duration: 0.3,
-                          ease: [0.4, 0, 0.2, 1] // Custom ease for smooth animation
-                        }
-                      }
-                    : {
-                        position: 'relative',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: 'auto',
-                        scale: 1,
-                        transition: {
-                          duration: 0.3,
-                          ease: [0.4, 0, 0.2, 1]
-                        }
-                      }
-                }
-                className={cn(
-                  "origin-top-left", // Important for scale animation
-                  "object-contain",
-                  isFullscreen ? "cursor-zoom-out" : "cursor-zoom-in"
-                )}
-                loading="eager"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  if (!isFullscreen) {
-                    handleDoubleClick(e);
-                  }
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <HeartAnimation isAnimating={isAnimating} />
+              {isFullscreen && isLandscape && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRotate}
+                  className={cn(
+                    "absolute top-4 right-4 z-[70]",
+                    "h-8 w-8 p-0 rounded-lg",
+                    "bg-background/80 backdrop-blur-[2px]",
+                    "hover:bg-background/90",
+                    "transition-all duration-200"
+                  )}
+                >
+                  <RotateCw className={cn(
+                    "h-4 w-4 text-foreground/70",
+                    "transition-transform duration-300",
+                    isRotated && "rotate-90"
+                  )} />
+                </Button>
+              )}
+
+              <div className={cn(
+                "w-full h-full flex items-center justify-center",
+                isFullscreen && "min-h-screen",
+                isFullscreen && "m-0 p-0"
+              )}>
+                <img
+                  ref={imageRef}
+                  src={supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl}
+                  alt={image.prompt || 'Generated image'}
+                  className={cn(
+                    "object-contain transition-all duration-300",
+                    !isFullscreen && "w-full h-auto",
+                    isFullscreen && !isRotated && "max-h-[100vh] max-w-[100vw]",
+                    isFullscreen && isRotated && isLandscape && [
+                      "rotate-90",
+                      "max-h-[100vw]",
+                      "max-w-[100vh]",
+                    ],
+                    isFullscreen ? "cursor-zoom-out" : "cursor-zoom-in",
+                    isFullscreen && "m-0 p-0"
+                  )}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    if (!isFullscreen) {
+                      handleDoubleClick(e);
+                    }
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <HeartAnimation isAnimating={isAnimating} />
+                </div>
               </div>
-            </motion.div>
+            </div>
           )}
 
           <AnimatePresence>
