@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
@@ -61,7 +60,7 @@ const PromptInput = ({
   };
 
   const highlightedText = useMemo(() => {
-    if (!prompt || nsfwMatches.length === 0) return prompt;
+    if (!prompt || nsfwMatches.length === 0 || nsfwEnabled) return prompt;
 
     const parts = [];
     let lastIndex = 0;
@@ -92,14 +91,14 @@ const PromptInput = ({
       const matchedText = prompt.substr(match.index, match.length);
       parts.push(
         <TooltipProvider key={`tooltip-${i}`}>
-          <Tooltip>
+          <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
-              <span className="text-red-500 cursor-help">
+              <span className="text-[#ea384c] cursor-help font-medium">
                 {matchedText}
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              <p>This term is not allowed. Please modify or enable NSFW mode.</p>
+              <p className="text-sm">This term is not allowed. Please modify or enable NSFW mode.</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -114,7 +113,27 @@ const PromptInput = ({
     }
 
     return parts;
-  }, [prompt, nsfwMatches]);
+  }, [prompt, nsfwMatches, nsfwEnabled]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const textarea = e.target;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
+      
+      const newValue = value.substring(0, start) + '\n' + value.substring(end);
+      onChange({ target: { value: newValue } });
+      
+      // Set cursor position after the new line
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+      }, 0);
+    } else if (onKeyDown) {
+      onKeyDown(e);
+    }
+  };
 
   const handleImprovePrompt = async () => {
     if (!userId) {
@@ -200,22 +219,21 @@ const PromptInput = ({
         <div
           className={cn(
             "relative z-10",
-            "w-full min-h-[450px] md:min-h-[350px] bg-transparent text-base",
+            "w-full min-h-[450px] md:min-h-[350px] bg-transparent text-base whitespace-pre-wrap",
             "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
             "border-y border-border/5 py-6 px-3",
             "transition-colors duration-200",
             isImproving && "opacity-80"
           )}
         >
-          {highlightedText}
+          {highlightedText || <span className="text-muted-foreground/40">{PROMPT_TIPS[currentTipIndex]}</span>}
         </div>
         
         <textarea
           value={prompt}
           onChange={handlePromptChange}
           onKeyDown={onKeyDown}
-          placeholder={PROMPT_TIPS[currentTipIndex]}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-text"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-text resize-none"
           style={{ caretColor: 'currentColor' }}
           disabled={isImproving}
         />
