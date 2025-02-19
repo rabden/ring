@@ -37,7 +37,7 @@ const PromptInput = ({
   userId,
   activeModel,
   modelConfigs,
-  nsfwEnabled = false  // Add default value
+  nsfwEnabled = false
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [nsfwMatches, setNsfwMatches] = useState([]);
@@ -56,79 +56,24 @@ const PromptInput = ({
 
   const handlePromptChange = (e) => {
     const newValue = e.target.value;
-    // Only check for NSFW content if NSFW mode is disabled
     if (!nsfwEnabled) {
       const { matches } = checkForNSFWContent(newValue);
       setNsfwMatches(matches);
     } else {
-      setNsfwMatches([]); // Clear any existing NSFW matches when NSFW mode is enabled
+      setNsfwMatches([]);
     }
     onChange(e);
   };
 
-  // Effect to clear NSFW matches when NSFW mode is toggled on
   useEffect(() => {
-    console.log('NSFW Mode in PromptInput:', nsfwEnabled); // Debug log
     if (nsfwEnabled) {
       setNsfwMatches([]);
       setDialogContent(prev => ({ ...prev, isOpen: false }));
     } else if (prompt) {
-      // Recheck content when NSFW mode is disabled
       const { matches } = checkForNSFWContent(prompt);
       setNsfwMatches(matches);
     }
   }, [nsfwEnabled, prompt]);
-
-  const highlightedText = useMemo(() => {
-    if (!prompt || nsfwMatches.length === 0 || nsfwEnabled) return prompt;
-
-    const parts = [];
-    let lastIndex = 0;
-
-    // Sort matches by their position in the text
-    const matches = [];
-    nsfwMatches.forEach(term => {
-      let index = prompt.toLowerCase().indexOf(term.toLowerCase());
-      while (index !== -1) {
-        matches.push({
-          term,
-          index,
-          length: term.length
-        });
-        index = prompt.toLowerCase().indexOf(term.toLowerCase(), index + 1);
-      }
-    });
-
-    matches.sort((a, b) => a.index - b.index);
-
-    matches.forEach((match, i) => {
-      // Add text before the match
-      if (match.index > lastIndex) {
-        parts.push(prompt.substring(lastIndex, match.index));
-      }
-
-      // Add the highlighted match with click handler
-      const matchedText = prompt.substr(match.index, match.length);
-      parts.push(
-        <span 
-          key={`nsfw-${i}`}
-          className="text-[#ea384c] cursor-help font-medium"
-          onClick={() => setDialogContent({ isOpen: true, term: matchedText })}
-        >
-          {matchedText}
-        </span>
-      );
-
-      lastIndex = match.index + match.length;
-    });
-
-    // Add remaining text
-    if (lastIndex < prompt.length) {
-      parts.push(prompt.substring(lastIndex));
-    }
-
-    return parts;
-  }, [prompt, nsfwMatches, nsfwEnabled]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -141,7 +86,6 @@ const PromptInput = ({
       const newValue = value.substring(0, start) + '\n' + value.substring(end);
       onChange({ target: { value: newValue } });
       
-      // Set cursor position after the new line
       setTimeout(() => {
         textarea.selectionStart = textarea.selectionEnd = start + 1;
       }, 0);
@@ -203,7 +147,6 @@ const PromptInput = ({
       return;
     }
 
-    // Only check for NSFW content if NSFW mode is disabled
     if (nsfwMatches.length > 0 && !nsfwEnabled) {
       toast.error('Please modify NSFW content or enable NSFW mode');
       return;
@@ -240,39 +183,22 @@ const PromptInput = ({
             size={500}
           />
         )}
-        <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-background/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
-        <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
-        
-        <div className="relative">
-          <div
-            className={cn(
-              "w-full min-h-[450px] md:min-h-[350px] bg-transparent text-base whitespace-pre-wrap",
-              "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
-              "border-y border-border/5 py-6 px-3",
-              "transition-colors duration-200",
-              isImproving && "opacity-80"
-            )}
-          >
-            {highlightedText || <span className="text-muted-foreground/40">{PROMPT_TIPS[currentTipIndex]}</span>}
-          </div>
-          
-          <textarea
-            value={prompt}
-            onChange={handlePromptChange}
-            onKeyDown={handleKeyDown}
-            placeholder={PROMPT_TIPS[currentTipIndex]}
-            className={cn(
-              "absolute inset-0 w-full h-full resize-none bg-transparent text-base focus:outline-none",
-              "placeholder:text-muted-foreground/40",
-              "overflow-y-auto scrollbar-none"
-            )}
-            style={{ 
-              caretColor: 'currentColor',
-              color: nsfwMatches.length > 0 && !nsfwEnabled ? 'transparent' : 'inherit'
-            }}
-            disabled={isImproving}
-          />
-        </div>
+        <textarea
+          value={prompt}
+          onChange={handlePromptChange}
+          onKeyDown={handleKeyDown}
+          placeholder={PROMPT_TIPS[currentTipIndex]}
+          className={cn(
+            "w-full min-h-[450px] md:min-h-[350px] resize-none bg-transparent text-base focus:outline-none",
+            "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
+            "border-y border-border/5 py-6 px-3",
+            "transition-colors duration-200",
+            isImproving && "opacity-80",
+            nsfwMatches.length > 0 && !nsfwEnabled && "text-[#ea384c]"
+          )}
+          style={{ caretColor: 'currentColor' }}
+          disabled={isImproving}
+        />
       </div>
       
       <div className="flex justify-end items-center mt-4 gap-2">
