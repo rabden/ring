@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
@@ -225,27 +226,36 @@ const PromptInput = ({
         <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-background/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
         <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
         
-        <div
-          className={cn(
-            "relative z-10",
-            "w-full min-h-[450px] md:min-h-[350px] bg-transparent text-base whitespace-pre-wrap",
-            "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
-            "border-y border-border/5 py-6 px-3",
-            "transition-colors duration-200",
-            isImproving && "opacity-80"
-          )}
-        >
-          {highlightedText || <span className="text-muted-foreground/40">{PROMPT_TIPS[currentTipIndex]}</span>}
+        <div className="relative">
+          <div
+            className={cn(
+              "w-full min-h-[450px] md:min-h-[350px] bg-transparent text-base whitespace-pre-wrap",
+              "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
+              "border-y border-border/5 py-6 px-3",
+              "transition-colors duration-200",
+              isImproving && "opacity-80"
+            )}
+          >
+            {highlightedText || <span className="text-muted-foreground/40">{PROMPT_TIPS[currentTipIndex]}</span>}
+          </div>
+          
+          <textarea
+            value={prompt}
+            onChange={handlePromptChange}
+            onKeyDown={handleKeyDown}
+            placeholder={PROMPT_TIPS[currentTipIndex]}
+            className={cn(
+              "absolute inset-0 w-full h-full resize-none bg-transparent text-base focus:outline-none",
+              "placeholder:text-muted-foreground/40",
+              "overflow-y-auto scrollbar-none"
+            )}
+            style={{ 
+              caretColor: 'currentColor',
+              color: nsfwMatches.length > 0 && !nsfwEnabled ? 'transparent' : 'inherit'
+            }}
+            disabled={isImproving}
+          />
         </div>
-        
-        <textarea
-          value={prompt}
-          onChange={handlePromptChange}
-          onKeyDown={handleKeyDown}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-text resize-none"
-          style={{ caretColor: 'currentColor' }}
-          disabled={isImproving}
-        />
       </div>
       
       <div className="flex justify-end items-center mt-4 gap-2">
