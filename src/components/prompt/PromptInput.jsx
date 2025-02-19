@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
@@ -69,6 +68,7 @@ const PromptInput = ({
 
   // Effect to clear NSFW matches when NSFW mode is toggled on
   useEffect(() => {
+    console.log('NSFW Mode:', nsfwEnabled); // Debug log
     if (nsfwEnabled) {
       setNsfwMatches([]);
       setDialogContent(prev => ({ ...prev, isOpen: false }));
