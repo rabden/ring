@@ -57,10 +57,27 @@ const PromptInput = ({
 
   const handlePromptChange = (e) => {
     const newValue = e.target.value;
-    const { matches } = checkForNSFWContent(newValue);
-    setNsfwMatches(matches);
+    // Only check for NSFW content if NSFW mode is disabled
+    if (!nsfwEnabled) {
+      const { matches } = checkForNSFWContent(newValue);
+      setNsfwMatches(matches);
+    } else {
+      setNsfwMatches([]); // Clear any existing NSFW matches when NSFW mode is enabled
+    }
     onChange(e);
   };
+
+  // Effect to clear NSFW matches when NSFW mode is toggled on
+  useEffect(() => {
+    if (nsfwEnabled) {
+      setNsfwMatches([]);
+      setDialogContent(prev => ({ ...prev, isOpen: false }));
+    } else if (prompt) {
+      // Recheck content when NSFW mode is disabled
+      const { matches } = checkForNSFWContent(prompt);
+      setNsfwMatches(matches);
+    }
+  }, [nsfwEnabled, prompt]);
 
   const highlightedText = useMemo(() => {
     if (!prompt || nsfwMatches.length === 0 || nsfwEnabled) return prompt;
