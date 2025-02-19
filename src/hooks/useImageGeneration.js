@@ -1,8 +1,10 @@
+
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
 import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
+import { checkForNSFWContent } from '@/utils/nsfwDetection';
 import { useState, useRef, useCallback } from 'react';
 
 export const useImageGeneration = ({
@@ -20,7 +22,8 @@ export const useImageGeneration = ({
   setGeneratingImages,
   modelConfigs,
   imageCount = 1,
-  negativePrompt
+  negativePrompt,
+  nsfwEnabled = false
 }) => {
   // Queue to store pending generations
   const generationQueue = useRef([]);
@@ -185,6 +188,13 @@ export const useImageGeneration = ({
       !session && toast.error('Please sign in to generate images');
       !prompt && toast.error('Please enter a prompt');
       !modelConfigs && console.error('Model configs not loaded');
+      return;
+    }
+
+    // Check for NSFW content before proceeding
+    const { isNSFW, matches } = checkForNSFWContent(prompt);
+    if (isNSFW && !nsfwEnabled) {
+      toast.error(`NSFW content detected (${matches.join(', ')}). Please modify your prompt or enable NSFW mode.`);
       return;
     }
 
