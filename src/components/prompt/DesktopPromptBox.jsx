@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ArrowRight, Sparkles, Loader } from 'lucide-react';
@@ -7,8 +6,6 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
-import { checkForNSFWContent } from '@/utils/nsfwDetection';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -35,13 +32,10 @@ const DesktopPromptBox = ({
   userId,
   onVisibilityChange,
   activeModel,
-  modelConfigs,
-  nsfwEnabled
+  modelConfigs
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
-  const [nsfwMatches, setNsfwMatches] = useState([]);
-  const [dialogContent, setDialogContent] = useState({ isOpen: false, term: '' });
   const boxRef = useRef(null);
   const textareaRef = useRef(null);
   const totalCredits = (credits || 0) + (bonusCredits || 0);
@@ -51,11 +45,12 @@ const DesktopPromptBox = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTipIndex((prev) => (prev + 1) % PROMPT_TIPS.length);
-    }, 10000);
+    }, 10000); // Change every 10 seconds
 
     return () => clearInterval(interval);
   }, []);
 
+  // Handle scroll visibility
   useEffect(() => {
     if (!boxRef.current) return;
 
@@ -75,40 +70,8 @@ const DesktopPromptBox = ({
   }, [onVisibilityChange]);
 
   const handlePromptChange = (e) => {
-    const newValue = e.target.value;
-    if (!nsfwEnabled) {
-      const { matches } = checkForNSFWContent(newValue);
-      setNsfwMatches(matches);
-    } else {
-      setNsfwMatches([]);
-    }
-    onChange(e);
-  };
-
-  useEffect(() => {
-    if (nsfwEnabled) {
-      setNsfwMatches([]);
-      setDialogContent(prev => ({ ...prev, isOpen: false }));
-    } else if (prompt) {
-      const { matches } = checkForNSFWContent(prompt);
-      setNsfwMatches(matches);
-    }
-  }, [nsfwEnabled, prompt]);
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      const textarea = e.target;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const value = textarea.value;
-      
-      const newValue = value.substring(0, start) + '\n' + value.substring(end);
-      onChange({ target: { value: newValue } });
-      
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = start + 1;
-      }, 0);
+    if (typeof onChange === 'function') {
+      onChange({ target: { value: e.target.value } });
     }
   };
 
@@ -132,6 +95,7 @@ const DesktopPromptBox = ({
         modelConfigs, 
         (chunk, isStreaming) => {
           if (isStreaming) {
+            // Clear the prompt just before the first chunk arrives
             if (isFirstChunk) {
               onChange({ target: { value: "" } });
               isFirstChunk = false;
@@ -154,18 +118,13 @@ const DesktopPromptBox = ({
       toast.error('Please enter a prompt');
       return;
     }
-
-    if (nsfwMatches.length > 0 && !nsfwEnabled) {
-      toast.error('Please modify NSFW content or enable NSFW mode');
-      return;
-    }
-
-    onClear();
+    onClear(); // Clear prompt immediately when generation starts
     await onSubmit();
   };
 
   return (
     <>
+      {/* Normal position box */}
       <div 
         ref={boxRef}
         className={cn(
@@ -173,17 +132,6 @@ const DesktopPromptBox = ({
           className
         )}
       >
-        <Dialog open={dialogContent.isOpen} onOpenChange={(open) => setDialogContent(prev => ({ ...prev, isOpen: open }))}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Content Warning</DialogTitle>
-              <DialogDescription>
-                The term "{dialogContent.term}" is not allowed. Please modify your prompt or enable NSFW mode to proceed.
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
-
         <div className="relative bg-card border border-border/80 rounded-2xl transition-all duration-300">
           {isImproving && (
             <MeshGradient 
@@ -199,15 +147,14 @@ const DesktopPromptBox = ({
                 ref={textareaRef}
                 value={prompt}
                 onChange={handlePromptChange}
-                onKeyDown={handleKeyDown}
+                onKeyDown={onKeyDown}
                 placeholder={PROMPT_TIPS[currentTipIndex]}
                 className={cn(
                   "w-full min-h-[250px] resize-none bg-transparent text-base focus:outline-none",
                   "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
                   "border-y border-border/5 py-6 px-3",
                   "transition-colors duration-200",
-                  isImproving && "opacity-80",
-                  nsfwMatches.length > 0 && !nsfwEnabled && "text-[#ea384c]"
+                  isImproving && "opacity-80"
                 )}
                 style={{ caretColor: 'currentColor' }}
                 disabled={isImproving}
@@ -235,7 +182,7 @@ const DesktopPromptBox = ({
                   variant="outline"
                   className="h-8 rounded-xl bg-card hover:bg-background/10 transition-all duration-200"
                   onClick={handleImprovePrompt}
-                  disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement || (nsfwMatches.length > 0 && !nsfwEnabled)}
+                  disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
                 >
                   {isImproving ? (
                     <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
@@ -248,7 +195,7 @@ const DesktopPromptBox = ({
                   size="sm"
                   className="h-8 rounded-xl bg-primary/90 hover:bg-primary/80 transition-all duration-200"
                   onClick={handleSubmit}
-                  disabled={!prompt?.length || !hasEnoughCredits || (nsfwMatches.length > 0 && !nsfwEnabled)}
+                  disabled={!prompt?.length || !hasEnoughCredits || isImproving}
                 >
                   <span className="text-sm">Create</span>
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -259,6 +206,7 @@ const DesktopPromptBox = ({
         </div>
       </div>
 
+      {/* Fixed position box */}
       <div 
         className={cn(
           "hidden md:block fixed top-11 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
@@ -269,10 +217,7 @@ const DesktopPromptBox = ({
           <div className="relative bg-card backdrop-blur-[2px] border border-border/80 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300">
             <div className="flex items-center gap-4 p-1.5">
               <div 
-                className={cn(
-                  "flex-1 px-4 truncate cursor-pointer transition-colors duration-200",
-                  nsfwMatches.length > 0 && !nsfwEnabled ? "text-[#ea384c]" : "text-muted-foreground/90 hover:text-muted-foreground/80"
-                )}
+                className="flex-1 px-4 text-muted-foreground/90 truncate cursor-pointer transition-colors duration-200 hover:text-muted-foreground/80"
                 onClick={() => {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                   setTimeout(() => {
@@ -288,7 +233,7 @@ const DesktopPromptBox = ({
                 size="sm"
                 className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
                 onClick={handleSubmit}
-                disabled={!prompt?.length || !hasEnoughCredits || (nsfwMatches.length > 0 && !nsfwEnabled)}
+                disabled={!prompt?.length || !hasEnoughCredits}
               >
                 <span className="text-sm">Create</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
