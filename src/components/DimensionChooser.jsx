@@ -188,28 +188,22 @@ const CustomSlider = ({ value, onChange, min, max }) => {
   const updateSliderProgress = (value) => {
     if (!sliderRef.current || !progressRef.current) return;
     
-    // Calculate the percentage from center
     const center = (max + min) / 2;
     const progress = progressRef.current;
-
+    
+    // Convert value to percentage (0-100)
+    const totalRange = max - min;
+    const valueFromMin = value - min;
+    const percentage = (valueFromMin / totalRange) * 100;
+    
     if (value < center) {
-      // Left side of center - progress goes from current position to center
-      const totalRange = center - min;
-      const currentFromMin = value - min;
-      const percentage = (currentFromMin / totalRange) * 50;
-      
-      // Ensure progress starts from current position to center
+      // Left side - progress goes from current position to center
       progress.style.left = `${percentage}%`;
       progress.style.right = '50%';
     } else {
-      // Right side of center - progress goes from center to current position
-      const totalRange = max - center;
-      const currentFromCenter = value - center;
-      const percentage = (currentFromCenter / totalRange) * 50;
-      
-      // Ensure progress starts from center to current position
+      // Right side - progress goes from center to current position
       progress.style.left = '50%';
-      progress.style.right = `${50 - percentage}%`;
+      progress.style.right = `${100 - percentage}%`;
     }
   };
 
@@ -217,18 +211,12 @@ const CustomSlider = ({ value, onChange, min, max }) => {
     updateSliderProgress(value);
   }, [value]);
 
-  const handleChange = (e) => {
-    const newValue = parseFloat(e.target.value);
-    onChange(newValue);
-    updateSliderProgress(newValue);
-  };
-
   return (
     <div className="relative w-full h-8 flex items-center">
       <div className="absolute w-full h-2 bg-muted rounded-full">
         <div 
           ref={progressRef}
-          className="absolute h-full bg-primary rounded-full transition-all duration-150"
+          className="absolute h-full bg-foreground rounded-full transition-all duration-150"
           style={{ left: '50%', right: '50%' }}
         />
       </div>
@@ -238,24 +226,27 @@ const CustomSlider = ({ value, onChange, min, max }) => {
         min={min}
         max={max}
         value={value}
-        onChange={handleChange}
+        onChange={(e) => {
+          const newValue = parseFloat(e.target.value);
+          onChange(newValue);
+        }}
         className={cn(
           "absolute w-full h-2",
           "appearance-none bg-transparent cursor-pointer",
           // Thumb styles
           "[&::-webkit-slider-thumb]:appearance-none",
-          "[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4",
-          "[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary",
-          "[&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-background",
+          "[&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-4",
+          "[&::-webkit-slider-thumb]:rounded-sm [&::-webkit-slider-thumb]:bg-foreground",
+          "[&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-foreground",
           "[&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:transition-all",
-          "[&::-webkit-slider-thumb]:hover:bg-primary/90",
+          "[&::-webkit-slider-thumb]:hover:bg-foreground/90",
           // Firefox thumb styles
           "[&::-moz-range-thumb]:appearance-none",
-          "[&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4",
-          "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary",
-          "[&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-background",
+          "[&::-moz-range-thumb]:w-2 [&::-moz-range-thumb]:h-4",
+          "[&::-moz-range-thumb]:rounded-sm [&::-moz-range-thumb]:bg-foreground",
+          "[&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-foreground",
           "[&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:transition-all",
-          "[&::-moz-range-thumb]:hover:bg-primary/90"
+          "[&::-moz-range-thumb]:hover:bg-foreground/90"
         )}
       />
     </div>
