@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ArrowRight, Sparkles, Loader } from 'lucide-react';
@@ -80,7 +79,7 @@ const DesktopPromptBox = ({
     if (isNSFW && !nsfwEnabled) {
       setNsfwWarning({
         terms: matches,
-        message: "Your prompt contains NSFW content. Please modify it or enable NSFW mode to continue."
+        message: "Please modify content or enable NSFW mode."
       });
     } else {
       setNsfwWarning(null);
@@ -88,6 +87,24 @@ const DesktopPromptBox = ({
     
     if (typeof onChange === 'function') {
       onChange({ target: { value: newValue } });
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const textarea = e.target;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
+      
+      const newValue = value.substring(0, start) + '\n' + value.substring(end);
+      onChange({ target: { value: newValue } });
+      
+      // Set cursor position after the new line
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+      }, 0);
     }
   };
 
@@ -165,11 +182,9 @@ const DesktopPromptBox = ({
           <div className="p-2">
             <div className="relative">
               {nsfwWarning && (
-                <Alert variant="destructive" className="mb-4">
-                  <AlertTitle>NSFW Content Detected</AlertTitle>
-                  <AlertDescription>
-                    The following terms are not allowed: {nsfwWarning.terms.join(', ')}. 
-                    {nsfwWarning.message}
+                <Alert variant="destructive" className="mb-2 py-2">
+                  <AlertDescription className="text-sm">
+                    NSFW terms detected: {nsfwWarning.terms.join(', ')}. {nsfwWarning.message}
                   </AlertDescription>
                 </Alert>
               )}
@@ -177,7 +192,7 @@ const DesktopPromptBox = ({
                 ref={textareaRef}
                 value={prompt}
                 onChange={handlePromptChange}
-                onKeyDown={onKeyDown}
+                onKeyDown={handleKeyDown}
                 placeholder={PROMPT_TIPS[currentTipIndex]}
                 className={cn(
                   "w-full min-h-[250px] resize-none bg-transparent text-base focus:outline-none",
@@ -212,7 +227,7 @@ const DesktopPromptBox = ({
                   variant="outline"
                   className="h-8 rounded-xl bg-card hover:bg-background/10 transition-all duration-200"
                   onClick={handleImprovePrompt}
-                  disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
+                  disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement || nsfwWarning}
                 >
                   {isImproving ? (
                     <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
