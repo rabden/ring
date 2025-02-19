@@ -37,7 +37,7 @@ const PromptInput = ({
   userId,
   activeModel,
   modelConfigs,
-  nsfwEnabled
+  nsfwEnabled = false  // Add default value
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [nsfwMatches, setNsfwMatches] = useState([]);
@@ -68,7 +68,7 @@ const PromptInput = ({
 
   // Effect to clear NSFW matches when NSFW mode is toggled on
   useEffect(() => {
-    console.log('NSFW Mode:', nsfwEnabled); // Debug log
+    console.log('NSFW Mode in PromptInput:', nsfwEnabled); // Debug log
     if (nsfwEnabled) {
       setNsfwMatches([]);
       setDialogContent(prev => ({ ...prev, isOpen: false }));
