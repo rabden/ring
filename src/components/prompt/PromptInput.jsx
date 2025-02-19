@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
@@ -5,6 +6,8 @@ import { toast } from "sonner";
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { cn } from "@/lib/utils";
 import { MeshGradient } from '@/components/ui/mesh-gradient';
+import { checkForNSFWContent } from '@/utils/nsfwDetection';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -28,9 +31,11 @@ const PromptInput = ({
   bonusCredits,
   userId,
   activeModel,
-  modelConfigs
+  modelConfigs,
+  nsfwEnabled
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [nsfwWarning, setNsfwWarning] = useState(null);
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
@@ -42,6 +47,22 @@ const PromptInput = ({
 
     return () => clearInterval(interval);
   }, []);
+
+  const handlePromptChange = (e) => {
+    const newValue = e.target.value;
+    const { isNSFW, matches } = checkForNSFWContent(newValue);
+    
+    if (isNSFW && !nsfwEnabled) {
+      setNsfwWarning({
+        terms: matches,
+        message: "Your prompt contains NSFW content. Please modify it or enable NSFW mode to continue."
+      });
+    } else {
+      setNsfwWarning(null);
+    }
+    
+    onChange(e);
+  };
 
   const handleImprovePrompt = async () => {
     if (!userId) {
@@ -91,6 +112,12 @@ const PromptInput = ({
       return;
     }
 
+    const { isNSFW } = checkForNSFWContent(prompt);
+    if (isNSFW && !nsfwEnabled) {
+      toast.error('Please modify NSFW content or enable NSFW mode');
+      return;
+    }
+
     if (!hasEnoughCredits) {
       toast.error('Not enough credits');
       return;
@@ -119,9 +146,19 @@ const PromptInput = ({
         <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-background/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
         <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
         
+        {nsfwWarning && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>NSFW Content Detected</AlertTitle>
+            <AlertDescription>
+              The following terms are not allowed: {nsfwWarning.terms.join(', ')}. 
+              {nsfwWarning.message}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <textarea
           value={prompt}
-          onChange={onChange}
+          onChange={handlePromptChange}
           onKeyDown={onKeyDown}
           placeholder={PROMPT_TIPS[currentTipIndex]}
           className={cn(
@@ -169,7 +206,7 @@ const PromptInput = ({
           size="sm"
           className="h-8 rounded-xl bg-primary/90 hover:bg-primary/80 transition-all duration-200"
           onClick={handleSubmit}
-          disabled={!prompt?.length || !hasEnoughCredits || !userId || isImproving}
+          disabled={!prompt?.length || !hasEnoughCredits || !userId || isImproving || nsfwWarning}
         >
           <span className="text-sm">Create</span>
           <ArrowRight className="ml-2 h-4 w-4" />

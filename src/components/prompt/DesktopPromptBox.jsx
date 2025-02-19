@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ArrowRight, Sparkles, Loader } from 'lucide-react';
@@ -6,6 +7,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
+import { checkForNSFWContent } from '@/utils/nsfwDetection';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -32,10 +35,12 @@ const DesktopPromptBox = ({
   userId,
   onVisibilityChange,
   activeModel,
-  modelConfigs
+  modelConfigs,
+  nsfwEnabled
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [nsfwWarning, setNsfwWarning] = useState(null);
   const boxRef = useRef(null);
   const textareaRef = useRef(null);
   const totalCredits = (credits || 0) + (bonusCredits || 0);
@@ -45,12 +50,11 @@ const DesktopPromptBox = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTipIndex((prev) => (prev + 1) % PROMPT_TIPS.length);
-    }, 10000); // Change every 10 seconds
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Handle scroll visibility
   useEffect(() => {
     if (!boxRef.current) return;
 
@@ -70,8 +74,20 @@ const DesktopPromptBox = ({
   }, [onVisibilityChange]);
 
   const handlePromptChange = (e) => {
+    const newValue = e.target.value;
+    const { isNSFW, matches } = checkForNSFWContent(newValue);
+    
+    if (isNSFW && !nsfwEnabled) {
+      setNsfwWarning({
+        terms: matches,
+        message: "Your prompt contains NSFW content. Please modify it or enable NSFW mode to continue."
+      });
+    } else {
+      setNsfwWarning(null);
+    }
+    
     if (typeof onChange === 'function') {
-      onChange({ target: { value: e.target.value } });
+      onChange({ target: { value: newValue } });
     }
   };
 
@@ -95,7 +111,6 @@ const DesktopPromptBox = ({
         modelConfigs, 
         (chunk, isStreaming) => {
           if (isStreaming) {
-            // Clear the prompt just before the first chunk arrives
             if (isFirstChunk) {
               onChange({ target: { value: "" } });
               isFirstChunk = false;
@@ -118,13 +133,19 @@ const DesktopPromptBox = ({
       toast.error('Please enter a prompt');
       return;
     }
-    onClear(); // Clear prompt immediately when generation starts
+
+    const { isNSFW } = checkForNSFWContent(prompt);
+    if (isNSFW && !nsfwEnabled) {
+      toast.error('Please modify NSFW content or enable NSFW mode');
+      return;
+    }
+
+    onClear();
     await onSubmit();
   };
 
   return (
     <>
-      {/* Normal position box */}
       <div 
         ref={boxRef}
         className={cn(
@@ -143,6 +164,15 @@ const DesktopPromptBox = ({
           )}
           <div className="p-2">
             <div className="relative">
+              {nsfwWarning && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertTitle>NSFW Content Detected</AlertTitle>
+                  <AlertDescription>
+                    The following terms are not allowed: {nsfwWarning.terms.join(', ')}. 
+                    {nsfwWarning.message}
+                  </AlertDescription>
+                </Alert>
+              )}
               <textarea
                 ref={textareaRef}
                 value={prompt}
@@ -195,7 +225,7 @@ const DesktopPromptBox = ({
                   size="sm"
                   className="h-8 rounded-xl bg-primary/90 hover:bg-primary/80 transition-all duration-200"
                   onClick={handleSubmit}
-                  disabled={!prompt?.length || !hasEnoughCredits || isImproving}
+                  disabled={!prompt?.length || !hasEnoughCredits || nsfwWarning}
                 >
                   <span className="text-sm">Create</span>
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -206,7 +236,6 @@ const DesktopPromptBox = ({
         </div>
       </div>
 
-      {/* Fixed position box */}
       <div 
         className={cn(
           "hidden md:block fixed top-11 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
@@ -233,7 +262,7 @@ const DesktopPromptBox = ({
                 size="sm"
                 className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
                 onClick={handleSubmit}
-                disabled={!prompt?.length || !hasEnoughCredits}
+                disabled={!prompt?.length || !hasEnoughCredits || nsfwWarning}
               >
                 <span className="text-sm">Create</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
