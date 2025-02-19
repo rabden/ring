@@ -7,7 +7,7 @@ import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { cn } from "@/lib/utils";
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { checkForNSFWContent } from '@/utils/nsfwDetection';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -55,33 +55,13 @@ const PromptInput = ({
     if (isNSFW && !nsfwEnabled) {
       setNsfwWarning({
         terms: matches,
-        message: "Please modify content or enable NSFW mode."
+        message: "Your prompt contains NSFW content. Please modify it or enable NSFW mode to continue."
       });
     } else {
       setNsfwWarning(null);
     }
     
     onChange(e);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      const textarea = e.target;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const value = textarea.value;
-      
-      const newValue = value.substring(0, start) + '\n' + value.substring(end);
-      onChange({ target: { value: newValue } });
-      
-      // Set cursor position after the new line
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = start + 1;
-      }, 0);
-    } else if (onKeyDown) {
-      onKeyDown(e);
-    }
   };
 
   const handleImprovePrompt = async () => {
@@ -132,13 +112,14 @@ const PromptInput = ({
       return;
     }
 
-    if (!hasEnoughCredits) {
-      toast.error('Not enough credits');
+    const { isNSFW } = checkForNSFWContent(prompt);
+    if (isNSFW && !nsfwEnabled) {
+      toast.error('Please modify NSFW content or enable NSFW mode');
       return;
     }
 
-    if (nsfwWarning) {
-      toast.error('Please modify NSFW content or enable NSFW mode');
+    if (!hasEnoughCredits) {
+      toast.error('Not enough credits');
       return;
     }
 
@@ -166,9 +147,11 @@ const PromptInput = ({
         <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
         
         {nsfwWarning && (
-          <Alert variant="destructive" className="mb-2 py-2">
-            <AlertDescription className="text-sm">
-              NSFW terms detected: {nsfwWarning.terms.join(', ')}. {nsfwWarning.message}
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>NSFW Content Detected</AlertTitle>
+            <AlertDescription>
+              The following terms are not allowed: {nsfwWarning.terms.join(', ')}. 
+              {nsfwWarning.message}
             </AlertDescription>
           </Alert>
         )}
@@ -176,7 +159,7 @@ const PromptInput = ({
         <textarea
           value={prompt}
           onChange={handlePromptChange}
-          onKeyDown={handleKeyDown}
+          onKeyDown={onKeyDown}
           placeholder={PROMPT_TIPS[currentTipIndex]}
           className={cn(
             "relative z-10",
@@ -210,7 +193,7 @@ const PromptInput = ({
           variant="outline"
           className="h-8 rounded-xl bg-background/50 hover:bg-accent/10 transition-all duration-200"
           onClick={handleImprovePrompt}
-          disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement || nsfwWarning}
+          disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
         >
           {isImproving ? (
             <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
