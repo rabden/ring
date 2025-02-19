@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
@@ -7,11 +8,12 @@ import { cn } from "@/lib/utils";
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { checkForNSFWContent } from '@/utils/nsfwDetection';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -40,6 +42,7 @@ const PromptInput = ({
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [nsfwMatches, setNsfwMatches] = useState([]);
+  const [dialogContent, setDialogContent] = useState({ isOpen: false, term: '' });
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
@@ -87,21 +90,16 @@ const PromptInput = ({
         parts.push(prompt.substring(lastIndex, match.index));
       }
 
-      // Add the highlighted match
+      // Add the highlighted match with click handler
       const matchedText = prompt.substr(match.index, match.length);
       parts.push(
-        <TooltipProvider key={`tooltip-${i}`}>
-          <Tooltip delayDuration={100}>
-            <TooltipTrigger asChild>
-              <span className="text-[#ea384c] cursor-help font-medium">
-                {matchedText}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-sm">This term is not allowed. Please modify or enable NSFW mode.</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <span 
+          key={`nsfw-${i}`}
+          className="text-[#ea384c] cursor-help font-medium"
+          onClick={() => setDialogContent({ isOpen: true, term: matchedText })}
+        >
+          {matchedText}
+        </span>
       );
 
       lastIndex = match.index + match.length;
@@ -204,6 +202,17 @@ const PromptInput = ({
 
   return (
     <div className="relative mb-8">
+      <Dialog open={dialogContent.isOpen} onOpenChange={(open) => setDialogContent(prev => ({ ...prev, isOpen: open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Content Warning</DialogTitle>
+            <DialogDescription>
+              The term "{dialogContent.term}" is not allowed. Please modify your prompt or enable NSFW mode to proceed.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+
       <div className="relative bg-background transition-all duration-300">
         {isImproving && (
           <MeshGradient 
