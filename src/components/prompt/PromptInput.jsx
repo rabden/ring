@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
@@ -7,12 +8,11 @@ import { cn } from "@/lib/utils";
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { checkForNSFWContent } from '@/utils/nsfwDetection';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -41,7 +41,6 @@ const PromptInput = ({
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [nsfwMatches, setNsfwMatches] = useState([]);
-  const [dialogContent, setDialogContent] = useState({ isOpen: false, term: '' });
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
@@ -62,7 +61,7 @@ const PromptInput = ({
   };
 
   const highlightedText = useMemo(() => {
-    if (!prompt || nsfwMatches.length === 0 || nsfwEnabled) return prompt;
+    if (!prompt || nsfwMatches.length === 0) return prompt;
 
     const parts = [];
     let lastIndex = 0;
@@ -89,16 +88,21 @@ const PromptInput = ({
         parts.push(prompt.substring(lastIndex, match.index));
       }
 
-      // Add the highlighted match with click handler
+      // Add the highlighted match
       const matchedText = prompt.substr(match.index, match.length);
       parts.push(
-        <span 
-          key={`nsfw-${i}`}
-          className="text-[#ea384c] cursor-help font-medium"
-          onClick={() => setDialogContent({ isOpen: true, term: matchedText })}
-        >
-          {matchedText}
-        </span>
+        <TooltipProvider key={`tooltip-${i}`}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-red-500 cursor-help">
+                {matchedText}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>This term is not allowed. Please modify or enable NSFW mode.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       );
 
       lastIndex = match.index + match.length;
@@ -110,27 +114,7 @@ const PromptInput = ({
     }
 
     return parts;
-  }, [prompt, nsfwMatches, nsfwEnabled]);
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      const textarea = e.target;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const value = textarea.value;
-      
-      const newValue = value.substring(0, start) + '\n' + value.substring(end);
-      onChange({ target: { value: newValue } });
-      
-      // Set cursor position after the new line
-      setTimeout(() => {
-        textarea.selectionStart = textarea.selectionEnd = start + 1;
-      }, 0);
-    } else if (onKeyDown) {
-      onKeyDown(e);
-    }
-  };
+  }, [prompt, nsfwMatches]);
 
   const handleImprovePrompt = async () => {
     if (!userId) {
@@ -185,7 +169,6 @@ const PromptInput = ({
       return;
     }
 
-    // Only check for NSFW content if NSFW mode is disabled
     if (nsfwMatches.length > 0 && !nsfwEnabled) {
       toast.error('Please modify NSFW content or enable NSFW mode');
       return;
@@ -202,17 +185,6 @@ const PromptInput = ({
 
   return (
     <div className="relative mb-8">
-      <Dialog open={dialogContent.isOpen} onOpenChange={(open) => setDialogContent(prev => ({ ...prev, isOpen: open }))}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Content Warning</DialogTitle>
-            <DialogDescription>
-              The term "{dialogContent.term}" is not allowed. Please modify your prompt or enable NSFW mode to proceed.
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-
       <div className="relative bg-background transition-all duration-300">
         {isImproving && (
           <MeshGradient 
@@ -228,21 +200,22 @@ const PromptInput = ({
         <div
           className={cn(
             "relative z-10",
-            "w-full min-h-[450px] md:min-h-[350px] bg-transparent text-base whitespace-pre-wrap",
+            "w-full min-h-[450px] md:min-h-[350px] bg-transparent text-base",
             "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
             "border-y border-border/5 py-6 px-3",
             "transition-colors duration-200",
             isImproving && "opacity-80"
           )}
         >
-          {highlightedText || <span className="text-muted-foreground/40">{PROMPT_TIPS[currentTipIndex]}</span>}
+          {highlightedText}
         </div>
         
         <textarea
           value={prompt}
           onChange={handlePromptChange}
-          onKeyDown={handleKeyDown}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-text resize-none"
+          onKeyDown={onKeyDown}
+          placeholder={PROMPT_TIPS[currentTipIndex]}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-text"
           style={{ caretColor: 'currentColor' }}
           disabled={isImproving}
         />
