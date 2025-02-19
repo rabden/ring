@@ -7,7 +7,7 @@ import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { cn } from "@/lib/utils";
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { checkForNSFWContent } from '@/utils/nsfwDetection';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -79,6 +79,8 @@ const PromptInput = ({
       setTimeout(() => {
         textarea.selectionStart = textarea.selectionEnd = start + 1;
       }, 0);
+    } else if (onKeyDown) {
+      onKeyDown(e);
     }
   };
 
