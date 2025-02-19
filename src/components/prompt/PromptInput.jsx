@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
 import { toast } from "sonner";
@@ -7,7 +7,12 @@ import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { cn } from "@/lib/utils";
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { checkForNSFWContent } from '@/utils/nsfwDetection';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -35,7 +40,7 @@ const PromptInput = ({
   nsfwEnabled
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
-  const [nsfwWarning, setNsfwWarning] = useState(null);
+  const [nsfwMatches, setNsfwMatches] = useState([]);
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
@@ -50,19 +55,66 @@ const PromptInput = ({
 
   const handlePromptChange = (e) => {
     const newValue = e.target.value;
-    const { isNSFW, matches } = checkForNSFWContent(newValue);
-    
-    if (isNSFW && !nsfwEnabled) {
-      setNsfwWarning({
-        terms: matches,
-        message: "Your prompt contains NSFW content. Please modify it or enable NSFW mode to continue."
-      });
-    } else {
-      setNsfwWarning(null);
-    }
-    
+    const { matches } = checkForNSFWContent(newValue);
+    setNsfwMatches(matches);
     onChange(e);
   };
+
+  const highlightedText = useMemo(() => {
+    if (!prompt || nsfwMatches.length === 0) return prompt;
+
+    const parts = [];
+    let lastIndex = 0;
+
+    // Sort matches by their position in the text
+    const matches = [];
+    nsfwMatches.forEach(term => {
+      let index = prompt.toLowerCase().indexOf(term.toLowerCase());
+      while (index !== -1) {
+        matches.push({
+          term,
+          index,
+          length: term.length
+        });
+        index = prompt.toLowerCase().indexOf(term.toLowerCase(), index + 1);
+      }
+    });
+
+    matches.sort((a, b) => a.index - b.index);
+
+    matches.forEach((match, i) => {
+      // Add text before the match
+      if (match.index > lastIndex) {
+        parts.push(prompt.substring(lastIndex, match.index));
+      }
+
+      // Add the highlighted match
+      const matchedText = prompt.substr(match.index, match.length);
+      parts.push(
+        <TooltipProvider key={`tooltip-${i}`}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-red-500 cursor-help">
+                {matchedText}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>This term is not allowed. Please modify or enable NSFW mode.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+
+      lastIndex = match.index + match.length;
+    });
+
+    // Add remaining text
+    if (lastIndex < prompt.length) {
+      parts.push(prompt.substring(lastIndex));
+    }
+
+    return parts;
+  }, [prompt, nsfwMatches]);
 
   const handleImprovePrompt = async () => {
     if (!userId) {
@@ -112,14 +164,13 @@ const PromptInput = ({
       return;
     }
 
-    const { isNSFW } = checkForNSFWContent(prompt);
-    if (isNSFW && !nsfwEnabled) {
-      toast.error('Please modify NSFW content or enable NSFW mode');
+    if (!hasEnoughCredits) {
+      toast.error('Not enough credits');
       return;
     }
 
-    if (!hasEnoughCredits) {
-      toast.error('Not enough credits');
+    if (nsfwMatches.length > 0 && !nsfwEnabled) {
+      toast.error('Please modify NSFW content or enable NSFW mode');
       return;
     }
 
@@ -146,32 +197,26 @@ const PromptInput = ({
         <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-background/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
         <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
         
-        {nsfwWarning && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertTitle>NSFW Content Detected</AlertTitle>
-            <AlertDescription>
-              The following terms are not allowed: {nsfwWarning.terms.join(', ')}. 
-              {nsfwWarning.message}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <textarea
-          value={prompt}
-          onChange={handlePromptChange}
-          onKeyDown={onKeyDown}
-          placeholder={PROMPT_TIPS[currentTipIndex]}
+        <div
           className={cn(
             "relative z-10",
-            "w-full min-h-[450px] md:min-h-[350px] resize-none bg-transparent text-base focus:outline-none",
+            "w-full min-h-[450px] md:min-h-[350px] bg-transparent text-base",
             "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
             "border-y border-border/5 py-6 px-3",
             "transition-colors duration-200",
             isImproving && "opacity-80"
           )}
-          style={{ 
-            caretColor: 'currentColor',
-          }}
+        >
+          {highlightedText}
+        </div>
+        
+        <textarea
+          value={prompt}
+          onChange={handlePromptChange}
+          onKeyDown={onKeyDown}
+          placeholder={PROMPT_TIPS[currentTipIndex]}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-text"
+          style={{ caretColor: 'currentColor' }}
           disabled={isImproving}
         />
       </div>
@@ -193,7 +238,7 @@ const PromptInput = ({
           variant="outline"
           className="h-8 rounded-xl bg-background/50 hover:bg-accent/10 transition-all duration-200"
           onClick={handleImprovePrompt}
-          disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
+          disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement || (nsfwMatches.length > 0 && !nsfwEnabled)}
         >
           {isImproving ? (
             <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
@@ -206,7 +251,7 @@ const PromptInput = ({
           size="sm"
           className="h-8 rounded-xl bg-primary/90 hover:bg-primary/80 transition-all duration-200"
           onClick={handleSubmit}
-          disabled={!prompt?.length || !hasEnoughCredits || !userId || isImproving || nsfwWarning}
+          disabled={!prompt?.length || !hasEnoughCredits || !userId || isImproving || (nsfwMatches.length > 0 && !nsfwEnabled)}
         >
           <span className="text-sm">Create</span>
           <ArrowRight className="ml-2 h-4 w-4" />
