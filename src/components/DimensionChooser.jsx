@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Lock, ChevronUp, ChevronDown } from "lucide-react"
+import { Lock, ChevronUp, ChevronDown, RefreshCcw, ChevronsUp, ChevronsDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 
@@ -19,7 +19,19 @@ const useMediaQuery = (query) => {
   return matches;
 }
 
-const DimensionVisualizer = ({ ratio = "1:1", isPremium, quality, onQualityToggle, qualityLimits }) => {
+const DimensionVisualizer = ({ 
+  ratio = "1:1", 
+  isPremium, 
+  quality, 
+  onQualityToggle, 
+  qualityLimits,
+  onToggleView,
+  showButtons,
+  ratios,
+  onRatioChange,
+  proMode,
+  premiumRatios
+}) => {
   const [width, height] = (ratio || "1:1").split(':').map(Number)
   const isMobile = useMediaQuery('(max-width: 768px)')
   const baseHeight = isMobile ? 300 : 250 // Responsive base height
@@ -45,7 +57,7 @@ const DimensionVisualizer = ({ ratio = "1:1", isPremium, quality, onQualityToggl
   const isQualityLocked = qualityLimits?.length === 1 && qualityLimits[0] === "HD";
   
   return (
-    <div className="flex flex-col items-center space-y-1">
+    <div className="flex flex-col items-center space-y-2">
       <div className="relative w-full h-auto aspect-square">
         <div className="relative w-full h-full flex items-center justify-center">
           <div className="relative">
@@ -70,7 +82,7 @@ const DimensionVisualizer = ({ ratio = "1:1", isPremium, quality, onQualityToggl
               >
                 {quality}
                 {!isQualityLocked && (
-                  quality === "HD" ? <ChevronUp className="h-2.5 w-2.5" /> : <ChevronDown className="h-2.5 w-2.5" />
+                  quality === "HD" ? <ChevronsUp className="h-3 w-3" /> : <ChevronsDown className="h-3 w-3" />
                 )}
               </span>
             </span>
@@ -119,18 +131,50 @@ const DimensionVisualizer = ({ ratio = "1:1", isPremium, quality, onQualityToggl
               {/* Aspect ratio text */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className={cn(
-                  "flex items-center gap-2",
-                )}>
-                  <span className="text-sm font-medium">
-                    {ratio}
+                  "flex items-center gap-2 group cursor-pointer",
+                  "text-base font-medium hover:text-primary transition-colors"
+                )} onClick={onToggleView}>
+                  <span className="flex items-center gap-1.5">
+                    {ratio.split(':')[0]}
+                    <RefreshCcw className="h-3.5 w-3.5 group-hover:rotate-180 transition-transform duration-300" />
+                    {ratio.split(':')[1]}
                   </span>
                   {isPremium && (
-                    <Lock className="h-3.5 w-3.5 text-primary opacity-80 group-hover:opacity-100 transition-opacity duration-200" />
+                    <Lock className="h-3 w-3 text-primary opacity-80 group-hover:opacity-100 transition-opacity duration-200" />
                   )}
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="w-full transition-all duration-300">
+        <div className={cn(
+          "transition-all duration-300 transform",
+          showButtons ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0 pointer-events-none absolute"
+        )}>
+          <AspectRatioButtons
+            ratios={ratios}
+            currentRatio={ratio}
+            onChange={onRatioChange}
+            proMode={proMode}
+            premiumRatios={premiumRatios}
+          />
+        </div>
+        <div className={cn(
+          "transition-all duration-300 transform",
+          !showButtons ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0 pointer-events-none absolute"
+        )}>
+          <CustomSlider
+            value={getCurrentRatioIndex(ratio, ratios)}
+            onChange={value => {
+              const newRatio = getRatioFromSliderValue(value, ratios);
+              onRatioChange(newRatio);
+            }}
+            min={-50}
+            max={50}
+          />
         </div>
       </div>
     </div>
@@ -145,18 +189,25 @@ const CustomSlider = ({ value, onChange, min, max }) => {
     if (!sliderRef.current || !progressRef.current) return;
     
     // Calculate the percentage from center
-    const range = max - min;
     const center = (max + min) / 2;
-    
     const progress = progressRef.current;
+
     if (value < center) {
-      // Left side of center
-      const percentage = ((value - min) / (center - min)) * 50;
+      // Left side of center - progress goes from current position to center
+      const totalRange = center - min;
+      const currentFromMin = value - min;
+      const percentage = (currentFromMin / totalRange) * 50;
+      
+      // Ensure progress starts from current position to center
       progress.style.left = `${percentage}%`;
       progress.style.right = '50%';
     } else {
-      // Right side of center
-      const percentage = ((value - center) / (max - center)) * 50;
+      // Right side of center - progress goes from center to current position
+      const totalRange = max - center;
+      const currentFromCenter = value - center;
+      const percentage = (currentFromCenter / totalRange) * 50;
+      
+      // Ensure progress starts from center to current position
       progress.style.left = '50%';
       progress.style.right = `${50 - percentage}%`;
     }
@@ -211,6 +262,92 @@ const CustomSlider = ({ value, onChange, min, max }) => {
   );
 };
 
+const AspectRatioButtons = ({ ratios, currentRatio, onChange, proMode, premiumRatios }) => {
+  // Pair the ratios for the button layout
+  const pairedRatios = [
+    ["9:21", "21:9"],
+    ["1:3", "3:1"],
+    ["1:2", "2:1"],
+    ["10:16", "16:10"],
+    ["9:16", "16:9"],
+    ["2:3", "3:2"],
+    ["3:4", "4:3"],
+    ["4:5", "5:4"],
+    ["1:1"]
+  ];
+
+  return (
+    <div className="grid grid-cols-4 gap-1.5 animate-in fade-in slide-in-from-top-4 duration-300">
+      {pairedRatios.map((group, idx) => (
+        <React.Fragment key={idx}>
+          {group.map((ratio) => {
+            const isPremium = !proMode && premiumRatios.includes(ratio);
+            return (
+              <button
+                key={ratio}
+                onClick={() => !isPremium && onChange(ratio)}
+                className={cn(
+                  "relative px-2 py-1.5 text-sm rounded-md border transition-all duration-200",
+                  "hover:border-primary/50 hover:bg-primary/5",
+                  currentRatio === ratio && "border-primary bg-primary/10",
+                  !isPremium && "cursor-pointer",
+                  isPremium && "opacity-50 cursor-not-allowed",
+                  // Center 1:1 ratio
+                  group.length === 1 && "col-span-4"
+                )}
+                disabled={isPremium}
+              >
+                {ratio}
+                {isPremium && (
+                  <Lock className="absolute top-1 right-1 h-3 w-3 text-primary/70" />
+                )}
+              </button>
+            );
+          })}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
+// Helper functions for slider calculations
+const getCurrentRatioIndex = (currentRatio, ratios) => {
+  const centerIndex = ratios.indexOf("1:1");
+  const currentIndex = ratios.indexOf(currentRatio);
+  
+  if (currentIndex === centerIndex || !ratios.includes(currentRatio)) return 0;
+  
+  if (currentIndex < centerIndex) {
+    const percentage = currentIndex / centerIndex;
+    return -50 * (1 - percentage);
+  } else {
+    const stepsAfterCenter = currentIndex - centerIndex;
+    const totalStepsAfterCenter = ratios.length - 1 - centerIndex;
+    return (stepsAfterCenter / totalStepsAfterCenter) * 50;
+  }
+}
+
+const getRatioFromSliderValue = (value, ratios) => {
+  const centerIndex = ratios.indexOf("1:1");
+  
+  if (Math.abs(value) < 1) {
+    return "1:1";
+  }
+  
+  let index;
+  if (value < 0) {
+    const beforeCenterSteps = centerIndex;
+    const normalizedValue = ((value + 50) / 50) * beforeCenterSteps;
+    index = Math.round(normalizedValue);
+  } else {
+    const afterCenterSteps = ratios.length - 1 - centerIndex;
+    const normalizedValue = (value / 50) * afterCenterSteps;
+    index = centerIndex + Math.round(normalizedValue);
+  }
+  
+  return ratios[Math.max(0, Math.min(ratios.length - 1, index))] || "1:1";
+}
+
 const DimensionChooser = ({ 
   aspectRatio = "1:1", 
   setAspectRatio, 
@@ -219,23 +356,28 @@ const DimensionChooser = ({
   proMode,
   qualityLimits = null
 }) => {
-  const premiumRatios = ['9:21', '21:9', '3:2', '2:3', '4:5', '5:4', '10:16', '16:10'];
+  const [showButtons, setShowButtons] = useState(false);
+  const premiumRatios = ['16:10', '10:16', '4:3', '3:4', '2:1', '1:2', '3:1', '1:3'];
   
   // Reorder ratios from most extreme portrait to most extreme landscape
   const ratios = [
-    "9:21",  // Most extreme portrait
-    "1:2",
+    "1:3",     // Most extreme portrait 
+    "9:21",    
+    "1:2",  
     "9:16",
+    "10:16", 
     "2:3",
     "3:4",
     "4:5",
-    "1:1",   // Center - largest state
+    "1:1",     // Center - largest state
     "5:4",
     "4:3",
     "3:2",
-    "16:9",
+    "16:10",  
+    "16:9", 
     "2:1",
-    "21:9"   // Most extreme landscape
+    "21:9",
+    "3:1"      // Most extreme landscape
   ].filter(ratio => proMode || !premiumRatios.includes(ratio));
 
   useEffect(() => {
@@ -309,15 +451,13 @@ const DimensionChooser = ({
         quality={quality}
         onQualityToggle={handleQualityToggle}
         qualityLimits={qualityLimits}
+        onToggleView={() => setShowButtons(prev => !prev)}
+        showButtons={showButtons}
+        ratios={ratios}
+        onRatioChange={setAspectRatio}
+        proMode={proMode}
+        premiumRatios={premiumRatios}
       />
-      <div className="relative">
-        <CustomSlider
-          value={getCurrentRatioIndex()}
-          onChange={handleSliderChange}
-          min={-50}
-          max={50}
-        />
-      </div>
     </div>
   );
 }

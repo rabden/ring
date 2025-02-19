@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useRealtimeProfile } from '@/hooks/useRealtimeProfile';
 import { handleAvatarUpload } from '@/utils/profileUtils';
 import { useQueryClient } from '@tanstack/react-query';
-import { LogOut, ChevronRight, Repeat } from 'lucide-react';
+import { LogOut, ChevronRight, Repeat, MousePointerClick } from 'lucide-react';
 import ProfileAvatar from './profile/ProfileAvatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CreditCounter from '@/components/ui/credit-counter';
@@ -202,12 +202,13 @@ const ProfileMenu = ({
                   "h-8 rounded-lg text-xs",
                   "transition-all duration-200",
                   nsfwEnabled ? (
-                    "bg-destructive/5 hover:bg-destructive/10 text-destructive/90 hover:text-destructive"
+                    "bg-destructive/10 hover:bg-destructive/20 text-destructive/90 hover:text-destructive"
                   ) : (
                     "bg-card hover:bg-background/50 text-primary/90 hover:text-primary"
                   )
                 )}
               >
+                <MousePointerClick className="w-4 h-4 mr-1" />
                 {nsfwEnabled ? 'Unsafe' : 'Safe'}
               </Button>
               <Button 
@@ -216,12 +217,12 @@ const ProfileMenu = ({
                 onClick={() => logout()}
                 className={cn(
                   "h-8 rounded-lg text-xs",
-                  "bg-destructive/5 hover:bg-destructive/10",
+                  "bg-destructive/10 hover:bg-destructive/20",
                   "text-destructive/90 hover:text-destructive",
                   "transition-all duration-200"
                 )}
               >
-                <LogOut className="w-3.5 h-3.5 mr-1.5" />
+                <LogOut className="w-4 h-4 mr-1" />
                 Sign out
               </Button>
             </div>
