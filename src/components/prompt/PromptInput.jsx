@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
@@ -186,6 +185,7 @@ const PromptInput = ({
       return;
     }
 
+    // Only check for NSFW content if NSFW mode is disabled
     if (nsfwMatches.length > 0 && !nsfwEnabled) {
       toast.error('Please modify NSFW content or enable NSFW mode');
       return;
@@ -241,7 +241,7 @@ const PromptInput = ({
         <textarea
           value={prompt}
           onChange={handlePromptChange}
-          onKeyDown={onKeyDown}
+          onKeyDown={handleKeyDown}
           className="absolute inset-0 w-full h-full opacity-0 cursor-text resize-none"
           style={{ caretColor: 'currentColor' }}
           disabled={isImproving}
