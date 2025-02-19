@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ const FullScreenImageView = ({
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const [showSidebarButton, setShowSidebarButton] = useState(false);
 
   const { handleRemix } = useImageRemix(session, onRemix, onClose);
 
@@ -125,6 +126,30 @@ const FullScreenImageView = ({
     }
   };
 
+  useEffect(() => {
+    let timeout;
+    const handleMouseMove = (e) => {
+      const screenWidth = window.innerWidth;
+      const threshold = screenWidth - 350; // Show when cursor is within 100px of right edge
+      
+      if (e.clientX >= threshold) {
+        setShowSidebarButton(true);
+      } else {
+        // Add small delay before hiding to prevent flickering
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          setShowSidebarButton(false);
+        }, 300);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      clearTimeout(timeout);
+    };
+  }, []);
+
   if (!image) return null;
 
   return (
@@ -148,18 +173,17 @@ const FullScreenImageView = ({
             className={cn(
               "group flex items-center gap-2 hover:gap-3",
               "transition-all duration-300",
-              "bg-card/90 backdrop-blur-[2px]",
-              "hover:bg-card"
             )}
           >
-            <ArrowLeft className="h-5 w-5 text-foreground" />
-            <span className="hidden md:inline text-sm bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">Back</span>
+            <ArrowLeft className="h-5 w-6 text-foreground" />
+            <span className="hidden md:inline text-lg bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">Back</span>
           </Button>
         </div>
         
         <div className="flex h-full">
           <div className={cn(
-            "flex-1 relative flex items-center justify-center p-3 bg-background backdrop-blur-[2px]",
+            "flex-1 relative flex items-center justify-center",
+            isSidebarOpen ? "p-3" : "p-0",
             "transition-all duration-300"
           )}>
             <img
@@ -167,6 +191,7 @@ const FullScreenImageView = ({
               alt={image.prompt}
               className={cn(
                 "max-w-full max-h-[calc(100vh-2rem)]",
+                isSidebarOpen ? "" : "max-h-screen",
                 "object-contain",
                 "transition-all duration-300"
               )}
@@ -188,7 +213,8 @@ const FullScreenImageView = ({
               "border border-border/80",
               "hover:bg-card/90",
               "transition-all duration-300",
-              isSidebarOpen ? "right-[388px]" : "right-2"
+              isSidebarOpen ? "right-[384px]" : "right-2",
+              !isSidebarOpen && !showSidebarButton && "opacity-0 pointer-events-none"
             )}
           >
             {isSidebarOpen ? (
