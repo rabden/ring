@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
 import { toast } from "sonner";
@@ -6,13 +7,7 @@ import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { cn } from "@/lib/utils";
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { checkForNSFWContent } from '@/utils/nsfwDetection';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -40,8 +35,7 @@ const PromptInput = ({
   nsfwEnabled
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
-  const [nsfwMatches, setNsfwMatches] = useState([]);
-  const [dialogContent, setDialogContent] = useState({ isOpen: false, term: '' });
+  const [nsfwWarning, setNsfwWarning] = useState(null);
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
@@ -56,61 +50,19 @@ const PromptInput = ({
 
   const handlePromptChange = (e) => {
     const newValue = e.target.value;
-    const { matches } = checkForNSFWContent(newValue);
-    setNsfwMatches(matches);
+    const { isNSFW, matches } = checkForNSFWContent(newValue);
+    
+    if (isNSFW && !nsfwEnabled) {
+      setNsfwWarning({
+        terms: matches,
+        message: "Please modify content or enable NSFW mode."
+      });
+    } else {
+      setNsfwWarning(null);
+    }
+    
     onChange(e);
   };
-
-  const highlightedText = useMemo(() => {
-    if (!prompt || nsfwMatches.length === 0 || nsfwEnabled) return prompt;
-
-    const parts = [];
-    let lastIndex = 0;
-
-    // Sort matches by their position in the text
-    const matches = [];
-    nsfwMatches.forEach(term => {
-      let index = prompt.toLowerCase().indexOf(term.toLowerCase());
-      while (index !== -1) {
-        matches.push({
-          term,
-          index,
-          length: term.length
-        });
-        index = prompt.toLowerCase().indexOf(term.toLowerCase(), index + 1);
-      }
-    });
-
-    matches.sort((a, b) => a.index - b.index);
-
-    matches.forEach((match, i) => {
-      // Add text before the match
-      if (match.index > lastIndex) {
-        parts.push(prompt.substring(lastIndex, match.index));
-      }
-
-      // Add the highlighted match with click handler
-      const matchedText = prompt.substr(match.index, match.length);
-      parts.push(
-        <span 
-          key={`nsfw-${i}`}
-          className="text-[#ea384c] cursor-help font-medium"
-          onClick={() => setDialogContent({ isOpen: true, term: matchedText })}
-        >
-          {matchedText}
-        </span>
-      );
-
-      lastIndex = match.index + match.length;
-    });
-
-    // Add remaining text
-    if (lastIndex < prompt.length) {
-      parts.push(prompt.substring(lastIndex));
-    }
-
-    return parts;
-  }, [prompt, nsfwMatches, nsfwEnabled]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -185,8 +137,7 @@ const PromptInput = ({
       return;
     }
 
-    // Only check for NSFW content if NSFW mode is disabled
-    if (nsfwMatches.length > 0 && !nsfwEnabled) {
+    if (nsfwWarning) {
       toast.error('Please modify NSFW content or enable NSFW mode');
       return;
     }
@@ -202,17 +153,6 @@ const PromptInput = ({
 
   return (
     <div className="relative mb-8">
-      <Dialog open={dialogContent.isOpen} onOpenChange={(open) => setDialogContent(prev => ({ ...prev, isOpen: open }))}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Content Warning</DialogTitle>
-            <DialogDescription>
-              The term "{dialogContent.term}" is not allowed. Please modify your prompt or enable NSFW mode to proceed.
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-
       <div className="relative bg-background transition-all duration-300">
         {isImproving && (
           <MeshGradient 
@@ -225,25 +165,30 @@ const PromptInput = ({
         <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-background/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
         <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
         
-        <div
+        {nsfwWarning && (
+          <Alert variant="destructive" className="mb-2 py-2">
+            <AlertDescription className="text-sm">
+              NSFW terms detected: {nsfwWarning.terms.join(', ')}. {nsfwWarning.message}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <textarea
+          value={prompt}
+          onChange={handlePromptChange}
+          onKeyDown={handleKeyDown}
+          placeholder={PROMPT_TIPS[currentTipIndex]}
           className={cn(
             "relative z-10",
-            "w-full min-h-[450px] md:min-h-[350px] bg-transparent text-base whitespace-pre-wrap",
+            "w-full min-h-[450px] md:min-h-[350px] resize-none bg-transparent text-base focus:outline-none",
             "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
             "border-y border-border/5 py-6 px-3",
             "transition-colors duration-200",
             isImproving && "opacity-80"
           )}
-        >
-          {highlightedText || <span className="text-muted-foreground/40">{PROMPT_TIPS[currentTipIndex]}</span>}
-        </div>
-        
-        <textarea
-          value={prompt}
-          onChange={handlePromptChange}
-          onKeyDown={handleKeyDown}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-text resize-none"
-          style={{ caretColor: 'currentColor' }}
+          style={{ 
+            caretColor: 'currentColor',
+          }}
           disabled={isImproving}
         />
       </div>
@@ -265,7 +210,7 @@ const PromptInput = ({
           variant="outline"
           className="h-8 rounded-xl bg-background/50 hover:bg-accent/10 transition-all duration-200"
           onClick={handleImprovePrompt}
-          disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement || (nsfwMatches.length > 0 && !nsfwEnabled)}
+          disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement || nsfwWarning}
         >
           {isImproving ? (
             <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
@@ -278,7 +223,7 @@ const PromptInput = ({
           size="sm"
           className="h-8 rounded-xl bg-primary/90 hover:bg-primary/80 transition-all duration-200"
           onClick={handleSubmit}
-          disabled={!prompt?.length || !hasEnoughCredits || !userId || isImproving || (nsfwMatches.length > 0 && !nsfwEnabled)}
+          disabled={!prompt?.length || !hasEnoughCredits || !userId || isImproving || nsfwWarning}
         >
           <span className="text-sm">Create</span>
           <ArrowRight className="ml-2 h-4 w-4" />
