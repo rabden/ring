@@ -117,6 +117,8 @@ const ImageGallery = ({
       if (entries[0].isIntersecting && hasNextPage) {
         fetchNextPage();
       }
+    }, {
+      rootMargin: '1000px'
     });
     
     if (node) observer.current.observe(node);

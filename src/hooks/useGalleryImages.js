@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 200;
 const NSFW_MODELS = ['nsfwMaster', 'animeNsfw', 'animeNsfwfast', 'deepthroat'];
 
 export const useGalleryImages = ({
