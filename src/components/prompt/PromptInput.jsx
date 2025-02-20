@@ -20,7 +20,6 @@ const PROMPT_TIPS = [
 const PromptInput = ({ 
   prompt = '',
   onChange,
-  onKeyDown,
   onSubmit,
   hasEnoughCredits = true,
   onClear,
@@ -97,7 +96,6 @@ const PromptInput = ({
     }
 
     try {
-      onClear();
       await onSubmit();
     } catch (error) {
       console.error('Error generating:', error);
@@ -122,7 +120,6 @@ const PromptInput = ({
         <textarea
           value={prompt}
           onChange={onChange}
-          onKeyDown={onKeyDown}
           placeholder={PROMPT_TIPS[currentTipIndex]}
           className={cn(
             "relative z-10",

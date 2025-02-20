@@ -51,13 +51,6 @@ export const useImageHandlers = ({
     setModel(newModel);
   }
 
-  const handlePromptKeyDown = async (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      await handleGenerateImage()
-    }
-  }
-
   const handleRemix = (image) => {
     if (!session) {
       return;
@@ -117,9 +110,9 @@ export const useImageHandlers = ({
   }
 
   return {
+    handleGenerateImage,
     handleImageClick,
     handleModelChange,
-    handlePromptKeyDown,
     handleRemix,
     handleDownload,
     handleDiscard,

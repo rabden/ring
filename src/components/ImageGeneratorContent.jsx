@@ -124,7 +124,19 @@ const ImageGeneratorContent = ({
               <DesktopHeader user={session.user} credits={credits} bonusCredits={bonusCredits} generatingImages={generatingImages} activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
               <MobileHeader activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} isVisible={isHeaderVisible} nsfwEnabled={nsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
               
-              {!isInspiration && !searchQuery && <DesktopPromptBox prompt={imageGeneratorProps.prompt} onChange={e => imageGeneratorProps.setPrompt(e.target.value)} onKeyDown={imageGeneratorProps.handlePromptKeyDown} onSubmit={imageGeneratorProps.generateImage} hasEnoughCredits={true} onClear={() => imageGeneratorProps.setPrompt('')} credits={credits} bonusCredits={bonusCredits} userId={session?.user?.id} onVisibilityChange={setIsPromptVisible} activeModel={imageGeneratorProps.model} modelConfigs={imageGeneratorProps.modelConfigs} />}
+              {!isInspiration && !searchQuery && <DesktopPromptBox 
+                prompt={imageGeneratorProps.prompt} 
+                onChange={e => imageGeneratorProps.setPrompt(e.target.value)} 
+                onSubmit={imageGeneratorProps.generateImage} 
+                hasEnoughCredits={true} 
+                onClear={() => imageGeneratorProps.setPrompt('')} 
+                credits={credits} 
+                bonusCredits={bonusCredits} 
+                userId={session?.user?.id} 
+                onVisibilityChange={setIsPromptVisible} 
+                activeModel={imageGeneratorProps.model} 
+                modelConfigs={imageGeneratorProps.modelConfigs} 
+              />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
                 <ImageGallery userId={session?.user?.id} onImageClick={handleImageClick} onDownload={handleDownload} onDiscard={handleDiscard} onRemix={handleRemix} onViewDetails={handleViewDetails} generatingImages={generatingImages} nsfwEnabled={nsfwEnabled} modelConfigs={imageGeneratorProps.modelConfigs} activeFilters={activeFilters} searchQuery={searchQuery} showPrivate={showPrivate} showFollowing={showFollowing} showTop={showTop} following={following} className="px-1" />

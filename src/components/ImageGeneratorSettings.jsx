@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -18,7 +17,6 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const ImageGeneratorSettings = ({
   prompt, setPrompt,
-  handlePromptKeyDown,
   generateImage,
   model, setModel,
   seed, setSeed,
@@ -102,7 +100,6 @@ const ImageGeneratorSettings = ({
         <PromptInput
           prompt={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={handlePromptKeyDown}
           onSubmit={handleGenerate}
           hasEnoughCredits={hasEnoughCredits}
           onClear={handleClearPrompt}

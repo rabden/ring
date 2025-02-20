@@ -221,7 +221,6 @@ const ImageGenerator = () => {
       imageGeneratorProps={{
         prompt,
         setPrompt,
-        handlePromptKeyDown,
         generateImage: handleGenerateImage,
         model,
         setModel: handleModelChange,

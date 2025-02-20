@@ -22,7 +22,6 @@ const PROMPT_TIPS = [
 const DesktopPromptBox = ({ 
   prompt,
   onChange,
-  onKeyDown,
   onSubmit,
   hasEnoughCredits,
   onClear,
@@ -118,7 +117,6 @@ const DesktopPromptBox = ({
       toast.error('Please enter a prompt');
       return;
     }
-    onClear(); // Clear prompt immediately when generation starts
     await onSubmit();
   };
 
@@ -147,7 +145,6 @@ const DesktopPromptBox = ({
                 ref={textareaRef}
                 value={prompt}
                 onChange={handlePromptChange}
-                onKeyDown={onKeyDown}
                 placeholder={PROMPT_TIPS[currentTipIndex]}
                 className={cn(
                   "w-full min-h-[250px] resize-none bg-transparent text-base focus:outline-none",
