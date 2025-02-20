@@ -1,3 +1,4 @@
+
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
@@ -35,7 +36,7 @@ export const useGalleryImages = ({
         .from('user_images')
         .select(`
           *,
-          user_image_likes!inner (
+          user_image_likes (
             user_id
           )
         `);
@@ -111,6 +112,7 @@ export const useGalleryImages = ({
           .order('created_at', { ascending: false });
       } 
       else if (showTop) {
+        // Remove the inner join and order directly by like_count
         baseQuery = baseQuery.order('like_count', { ascending: false });
       }
       else if (showLatest) {
@@ -150,7 +152,7 @@ export const useGalleryImages = ({
       return {
         data: result.map(image => ({
           ...image,
-          is_liked: image.user_image_likes.some(like => like.user_id === userId),
+          is_liked: image.user_image_likes?.some(like => like.user_id === userId) || false,
           image_url: supabase.storage
             .from('user-images')
             .getPublicUrl(image.storage_path).data.publicUrl
