@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 const LoadingScreen = () => {
-  const [progress, setProgress] = React.useState(0);
+  const [progress, setProgress] = useState(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       setProgress((oldProgress) => {
         const newProgress = oldProgress + 2;

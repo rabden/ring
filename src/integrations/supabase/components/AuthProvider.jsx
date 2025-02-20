@@ -1,11 +1,17 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { supabase } from '../supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext();
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -14,17 +20,13 @@ export const AuthProvider = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const clearAuthData = (shouldClearStorage = false) => {
+  const clearAuthData = useCallback((shouldClearStorage = false) => {
     setSession(null);
     queryClient.invalidateQueries('user');
     
-    // Only clear localStorage when explicitly requested (like during logout)
     if (shouldClearStorage) {
       try {
-        // Remove session from Supabase storage
         supabase.auth.storage.removeItem('sb-auth-token');
-        
-        // Clear any other auth-related items
         Object.keys(localStorage).forEach(key => {
           if (key.startsWith('supabase.auth.')) {
             localStorage.removeItem(key);
@@ -34,7 +36,7 @@ export const AuthProvider = ({ children }) => {
         console.error('Error clearing auth data:', error);
       }
     }
-  };
+  }, [queryClient]);
 
   const handleAuthSession = async () => {
     try {
@@ -98,10 +100,8 @@ export const AuthProvider = ({ children }) => {
     let mounted = true;
     let authSubscription = null;
 
-    // Initialize auth state
     const initializeAuth = async () => {
       try {
-        // Get initial session
         const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -123,10 +123,7 @@ export const AuthProvider = ({ children }) => {
             clearAuthData(false);
           }
           
-          // Set up auth listener after initial check
           const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-            console.log('Auth state change:', event, currentSession);
-            
             if (!mounted) return;
 
             switch (event) {
@@ -176,20 +173,26 @@ export const AuthProvider = ({ children }) => {
         authSubscription.unsubscribe();
       }
     };
-  }, [queryClient]);
+  }, [queryClient, clearAuthData]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await supabase.auth.signOut();
-      clearAuthData(true); // Clear storage during explicit logout
+      clearAuthData(true);
     } catch (error) {
       console.error('Error signing out:', error);
     }
     setLoading(false);
+  }, [clearAuthData]);
+
+  const value = {
+    session,
+    loading,
+    logout
   };
 
   return (
-    <AuthContext.Provider value={{ session, loading, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
