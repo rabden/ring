@@ -14,7 +14,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import ImageGeneratorContent from '@/components/ImageGeneratorContent';
-import { containsNSFWContent, sanitizePrompt } from '@/utils/nsfwDetection';
 
 const ImageGenerator = () => {
   const [searchParams] = useSearchParams();
@@ -119,28 +118,12 @@ const ImageGenerator = () => {
       return;
     }
 
-    if (!credits) {
-      toast.error('Not enough credits');
-      return;
-    }
-
-    // Check for NSFW content if NSFW mode is disabled
-    if (!nsfwEnabled && containsNSFWContent(prompt)) {
-      toast.error('NSFW content detected. Please enable NSFW mode or modify your prompt.');
-      return;
-    }
-
     setIsGenerating(true);
     try {
       let finalPrompt = prompt;
       
-      // If NSFW is disabled, sanitize the prompt
-      if (!nsfwEnabled) {
-        finalPrompt = sanitizePrompt(prompt);
-      }
-      
       if (isImproving) {
-        const improved = await improveCurrentPrompt(finalPrompt, model, modelConfigs);
+        const improved = await improveCurrentPrompt(prompt, model, modelConfigs);
         if (!improved) {
           setIsGenerating(false);
           return;
