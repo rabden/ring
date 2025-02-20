@@ -4,14 +4,19 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 
+// Ensure React is available globally
+window.React = React;
+
 const root = document.getElementById('root');
 
 if (!root) {
-  throw new Error('Root element not found. Make sure there is a <div id="root"></div> in your HTML');
+  throw new Error('Root element not found');
 }
 
-// Create root and render app
-ReactDOM.createRoot(root).render(
+const app = ReactDOM.createRoot(root);
+
+// Mount app with error boundary
+app.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
