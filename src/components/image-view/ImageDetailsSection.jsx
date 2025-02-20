@@ -3,19 +3,20 @@ import { cn } from "@/lib/utils";
 
 const ImageDetailsSection = ({ detailItems }) => {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-6 pt-5">
       {detailItems.map((item, index) => (
         <div 
           key={index} 
           className={cn(
-            "space-y-1 rounded-md",
+            "space-y-1 rounded-none",
+            "transition-all duration-200",
             "group"
           )}
         >
-          <p className="text-xs text-foreground/40 uppercase tracking-wider group-hover:text-muted-foreground/70 transition-colors duration-200">
+          <p className="text-sm font-medium text-foreground/60 uppercase tracking-wide group-hover:text-foreground/80 transition-colors duration-200">
             {item.label}
           </p>
-          <p className="text-sm font-medium text-foreground/90">
+          <p className="text-[15px] font-semibold text-foreground/90 group-hover:text-foreground transition-colors duration-200">
             {item.value}
           </p>
         </div>

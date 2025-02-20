@@ -1,29 +1,13 @@
 import React from 'react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { HelpCircle } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
-const SettingSection = ({ label, tooltip, children }) => {
+const SettingSection = ({ label, children, className }) => {
   return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-1">
-        <span className="text-sm font-medium">{label}</span>
-        {tooltip && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="w-2.5 h-2.5 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-[300px]">
-                <p className="text-xs">{tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
+    <div className={cn("space-y-2", className)}>
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-medium text-foreground/90">
+          {label}
+        </h3>
       </div>
       {children}
     </div>

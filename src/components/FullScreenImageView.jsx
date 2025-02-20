@@ -172,7 +172,7 @@ const FullScreenImageView = ({
             onClick={onClose}
             className={cn(
               "group flex items-center gap-2 hover:gap-3",
-              "transition-all duration-300",
+              "transition-all duration-300 bg-card/80 hover:bg-background border border-border/0 hover:border-border",
             )}
           >
             <ArrowLeft className="h-5 w-6 text-foreground" />

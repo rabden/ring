@@ -139,7 +139,7 @@ const ImageCardActions = ({
                         size="sm"
                         className={cn(
                           "flex-1 h-9 rounded-lg text-xs",
-                          "bg-destructive/5 hover:bg-destructive/10",
+                          "bg-background hover:bg-destructive/10",
                           "text-destructive/90 hover:text-destructive",
                           "transition-all duration-200"
                         )}
@@ -219,7 +219,7 @@ const ImageCardActions = ({
               className={cn(
                 "flex items-center gap-3 py-2 px-3 rounded-lg",
                 "cursor-pointer transition-colors duration-200",
-                "hover:bg-accent/30 focus:bg-accent/10",
+                "hover:bg-accent/30 focus:bg-background/50",
                 "group"
               )}
             >
@@ -229,7 +229,7 @@ const ImageCardActions = ({
 
             {session && (
               <>
-                <DropdownMenuSeparator className="my-2 bg-border/5" />
+                <DropdownMenuSeparator className="my-2 bg-border/80" />
                 {image.user_id === userId && (
                   <DropdownMenuItem 
                     onClick={handleDiscard}
@@ -250,7 +250,7 @@ const ImageCardActions = ({
                   className={cn(
                     "flex items-center gap-3 py-2 px-3 rounded-lg",
                     "cursor-pointer transition-colors duration-200",
-                    "hover:bg-accent/30 focus:bg-accent/10",
+                    "hover:bg-accent/30 focus:bg-background/50",
                     "group"
                   )}
                 >
@@ -260,13 +260,13 @@ const ImageCardActions = ({
               </>
             )}
 
-            <DropdownMenuSeparator className="my-2 bg-border/5" />
+            <DropdownMenuSeparator className="my-2 bg-border/80" />
             <DropdownMenuItem 
               onClick={handleViewDetails}
               className={cn(
                 "flex items-center gap-3 py-2 px-3 rounded-lg",
                 "cursor-pointer transition-colors duration-200",
-                "hover:bg-accent/30 focus:bg-accent/10",
+                "hover:bg-accent/30 focus:bg-background/50",
                 "group"
               )}
             >

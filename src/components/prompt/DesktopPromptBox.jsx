@@ -159,6 +159,8 @@ const DesktopPromptBox = ({
           )}
           <div className="p-2">
             <div className="relative">
+              <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-card/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
+              <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-card/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
               <textarea
                 ref={textareaRef}
                 value={prompt}
@@ -167,7 +169,7 @@ const DesktopPromptBox = ({
                 className={cn(
                   "w-full min-h-[250px] resize-none bg-transparent text-base focus:outline-none",
                   "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
-                  "border-y border-border/5 py-6 px-3",
+                  "pt-4 pb-40 px-3",
                   "transition-colors duration-200",
                   isImproving && "opacity-80"
                 )}
@@ -185,7 +187,7 @@ const DesktopPromptBox = ({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 w-8 p-0 rounded-xl hover:bg-background/10"
+                    className="h-8 w-8 p-0 rounded-full hover:bg-background/50"
                     onClick={onClear}
                     disabled={isImproving}
                   >
@@ -195,7 +197,7 @@ const DesktopPromptBox = ({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 rounded-xl bg-card hover:bg-background/10 transition-all duration-200"
+                  className="h-8 rounded-xl bg-card hover:bg-background/50 transition-all duration-200"
                   onClick={handleImprovePrompt}
                   disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
                 >

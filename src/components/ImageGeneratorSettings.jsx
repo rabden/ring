@@ -125,7 +125,7 @@ const ImageGeneratorSettings = ({
         modelConfigs={modelConfigs}
       />
 
-      <SettingSection label="Dimensions" tooltip="Choose the aspect ratio and quality for your generated image">
+      <SettingSection label="Dimensions">
         <DimensionChooser 
           aspectRatio={aspectRatio} 
           setAspectRatio={setAspectRatio}
@@ -142,7 +142,7 @@ const ImageGeneratorSettings = ({
       />
 
       {modelConfigs[model]?.use_negative_prompt && (
-        <SettingSection label="Negative Prompt" tooltip="Specify what you don't want to see in the generated image">
+        <SettingSection label="Negative Prompt">
           <Textarea
             placeholder={modelConfigs[model]?.default_negative_prompt || "Enter negative prompt..."}
             className="resize-none"
@@ -152,7 +152,7 @@ const ImageGeneratorSettings = ({
         </SettingSection>
       )}
 
-      <SettingSection label="Seed" tooltip="A seed is a number that initializes the random generation process. Using the same seed with the same settings will produce the same image.">
+      <SettingSection label="Seed">
         <div className="flex items-center space-x-2">
           <Input
             type="number"

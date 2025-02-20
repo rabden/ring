@@ -13,18 +13,6 @@ const ActionButtons = ({ generatingImages }) => {
   return (
     <div className="hidden md:flex items-center gap-2">
       <Button
-        variant={isMyImages ? 'default' : 'ghost'}
-        onClick={() => navigate('/#myimages')}
-        className={cn(
-          "h-8 text-xs px-4 rounded-xl bg-background/50 hover:bg-background/70",
-          isMyImages && "bg-primary hover:bg-primary/80 text-primary-foreground",
-          "transition-all duration-200"
-        )}
-        aria-pressed={isMyImages}
-      >
-        My Images
-      </Button>
-      <Button
         variant={isInspiration ? 'default' : 'ghost'}
         onClick={() => navigate('/inspiration')}
         className={cn(
@@ -35,6 +23,18 @@ const ActionButtons = ({ generatingImages }) => {
         aria-pressed={isInspiration}
       >
         Inspiration
+      </Button>
+      <Button
+        variant={isMyImages ? 'default' : 'ghost'}
+        onClick={() => navigate('/#myimages')}
+        className={cn(
+          "h-8 text-xs px-4 rounded-xl bg-background/50 hover:bg-background/70",
+          isMyImages && "bg-primary hover:bg-primary/80 text-primary-foreground",
+          "transition-all duration-200"
+        )}
+        aria-pressed={isMyImages}
+      >
+        My Images
       </Button>
       <GeneratingImagesDropdown generatingImages={generatingImages} />
     </div>

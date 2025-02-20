@@ -127,14 +127,14 @@ const PromptInput = ({
       <div className="relative bg-background transition-all duration-300">
         {isImproving && (
           <MeshGradient 
-            className="absolute inset-0 rounded-2xl animate-faster z-0" 
+            className="absolute inset-0 animate-faster z-0" 
             intensity="strong"
             speed="fast"
             size={500}
           />
         )}
-        <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-background/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
-        <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
+        <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-background/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
+        <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
         
         <textarea
           value={prompt}
