@@ -10,34 +10,41 @@ export default defineConfig(({ mode }) => ({
     host: true,
     port: 8080,
     hmr: {
-      overlay: true
+      overlay: true,
+      timeout: 30000
     },
   },
   plugins: [
     react({
-      // Enable Fast Refresh
+      jsxRuntime: 'automatic',
       fastRefresh: true,
-      // Include React imports automatically
       include: "**/*.{jsx,tsx}",
+      babel: {
+        plugins: [
+          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+        ]
+      }
     }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       "lib": resolve(__dirname, "lib"),
-      // Ensure React is properly resolved
       "react": resolve(__dirname, "node_modules/react"),
       "react-dom": resolve(__dirname, "node_modules/react-dom"),
     },
   },
   optimizeDeps: {
     include: ['react', 'react-dom'],
+    force: true
   },
   build: {
     sourcemap: true,
     commonjsOptions: {
       include: [/node_modules/],
+      transformMixedEsModules: true
     },
     rollupOptions: {
       output: {
@@ -47,4 +54,7 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(mode)
+  }
 }));
