@@ -16,7 +16,6 @@ export const useGalleryImages = ({
   modelConfigs = {},
   showFollowing = false,
   showTop = false,
-  showLatest = false,
   following = []
 }) => {
   const queryClient = useQueryClient();
@@ -28,7 +27,7 @@ export const useGalleryImages = ({
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, showLatest, following],
+    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following],
     queryFn: async ({ pageParam = { page: 0 } }) => {
       if (!userId) return { data: [], nextPage: null };
 
@@ -36,7 +35,7 @@ export const useGalleryImages = ({
         .from('user_images')
         .select(`
           *,
-          user_image_likes (
+          user_image_likes!inner (
             user_id
           )
         `);
@@ -105,27 +104,23 @@ export const useGalleryImages = ({
         baseQuery = baseQuery.not('model', 'in', '(' + NSFW_MODELS.join(',') + ')');
       }
 
-      // Handle following, top, and latest filters
-      if (showFollowing && following?.length > 0) {
-        baseQuery = baseQuery
-          .in('user_id', following)
-          .order('created_at', { ascending: false });
-      } 
-      else if (showTop) {
-        // Remove the inner join and order directly by like_count
-        baseQuery = baseQuery.order('like_count', { ascending: false });
+      // Handle following and top filters
+      if (showFollowing && !showTop && following?.length > 0) {
+        baseQuery = baseQuery.in('user_id', following);
       }
-      else if (showLatest) {
-        baseQuery = baseQuery.order('created_at', { ascending: false });
+      else if (showTop && !showFollowing) {
+        baseQuery = baseQuery.or('is_hot.eq.true,is_trending.eq.true');
       }
+      else if (showTop && showFollowing && following?.length > 0) {
+        baseQuery = baseQuery.or(`user_id.in.(${following.join(',')}),is_hot.eq.true,is_trending.eq.true`);
+      }
+      // If following is selected but following list is empty, return empty result
       else if (showFollowing && following?.length === 0) {
+        // Return empty result without making database query
         return {
           data: [],
           nextPage: undefined
         };
-      } else {
-        // Default sorting by creation date if no specific filter
-        baseQuery = baseQuery.order('created_at', { ascending: false });
       }
 
       // Apply style and model filters
@@ -141,9 +136,10 @@ export const useGalleryImages = ({
         baseQuery = baseQuery.ilike('prompt', `%${searchQuery}%`);
       }
 
-      // Apply pagination
+      // Apply pagination and sort by latest first
       const start = pageParam.page * ITEMS_PER_PAGE;
       const { data: result, error, count } = await baseQuery
+        .order('created_at', { ascending: false })
         .range(start, start + ITEMS_PER_PAGE - 1);
       
       if (error) throw error;
@@ -152,7 +148,7 @@ export const useGalleryImages = ({
       return {
         data: result.map(image => ({
           ...image,
-          is_liked: image.user_image_likes?.some(like => like.user_id === userId) || false,
+          is_liked: image.user_image_likes.some(like => like.user_id === userId),
           image_url: supabase.storage
             .from('user-images')
             .getPublicUrl(image.storage_path).data.publicUrl
