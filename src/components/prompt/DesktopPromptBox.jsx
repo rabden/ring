@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ArrowRight, Sparkles, Loader } from 'lucide-react';
+import { X, ArrowRight, ChevronRight, Sparkles, Loader } from 'lucide-react';
 import CreditCounter from '@/components/ui/credit-counter';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -37,9 +37,18 @@ const DesktopPromptBox = ({
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const boxRef = useRef(null);
   const textareaRef = useRef(null);
+  const videoRef = useRef(null);
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
+  const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
+
+  // Preload the video
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -117,11 +126,20 @@ const DesktopPromptBox = ({
       toast.error('Please enter a prompt');
       return;
     }
+    setIsPlayingAnimation(true);
     await onSubmit();
   };
 
   return (
     <>
+      {/* Preloaded video */}
+      <video 
+        ref={videoRef}
+        className="hidden"
+        src="https://res.cloudinary.com/drhx7imeb/video/upload/v1740045809/Animation_-_1740045046812_wtedox.webm"
+        preload="auto"
+      />
+
       {/* Normal position box */}
       <div 
         ref={boxRef}
@@ -181,12 +199,14 @@ const DesktopPromptBox = ({
                   onClick={handleImprovePrompt}
                   disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
                 >
-                  {isImproving ? (
-                    <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2 text-foreground/70" />
-                  )}
-                  <span className="text-sm">Improve</span>
+                  <div className="flex items-center">
+                    {isImproving ? (
+                      <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 mr-2 text-foreground/70" />
+                    )}
+                    <span className="text-sm">Improve</span>
+                  </div>
                 </Button>
                 <Button
                   size="sm"
@@ -194,8 +214,21 @@ const DesktopPromptBox = ({
                   onClick={handleSubmit}
                   disabled={!prompt?.length || !hasEnoughCredits || isImproving}
                 >
-                  <span className="text-sm">Create</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <div className="flex items-center">
+                    <span className="text-sm">Create</span>
+                    {isPlayingAnimation ? (
+                      <video 
+                        className="h-5 w-5 ml-2 rotate-[270deg] scale-150" 
+                        src={videoRef.current?.src}
+                        autoPlay
+                        muted
+                        playsInline
+                        onEnded={() => setIsPlayingAnimation(false)}
+                      />
+                    ) : (
+                      <ChevronRight className="ml-2 h-5 w-5" />
+                    )}
+                  </div>
                 </Button>
               </div>
             </div>
@@ -232,8 +265,21 @@ const DesktopPromptBox = ({
                 onClick={handleSubmit}
                 disabled={!prompt?.length || !hasEnoughCredits}
               >
-                <span className="text-sm">Create</span>
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <div className="flex items-center">
+                  <span className="text-sm">Create</span>
+                  {isPlayingAnimation ? (
+                    <video 
+                      className="h-5 w-5 ml-2 rotate-[270deg] scale-150" 
+                      src={videoRef.current?.src}
+                      autoPlay
+                      muted
+                      playsInline
+                      onEnded={() => setIsPlayingAnimation(false)}
+                    />
+                  ) : (
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  )}
+                </div>
               </Button>
             </div>
           </div>

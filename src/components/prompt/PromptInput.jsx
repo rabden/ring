@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { X, ArrowRight, Sparkles, Loader } from "lucide-react";
+import { X, ArrowRight, ChevronRight, Sparkles, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { cn } from "@/lib/utils";
@@ -33,6 +33,15 @@ const PromptInput = ({
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
+  const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
+  const videoRef = useRef(null);
+
+  // Preload the video
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -96,15 +105,25 @@ const PromptInput = ({
     }
 
     try {
+      setIsPlayingAnimation(true);
       await onSubmit();
     } catch (error) {
       console.error('Error generating:', error);
       toast.error('Failed to generate image');
+      setIsPlayingAnimation(false);
     }
   };
 
   return (
     <div className="relative mb-8">
+      {/* Preloaded video */}
+      <video 
+        ref={videoRef}
+        className="hidden"
+        src="https://res.cloudinary.com/drhx7imeb/video/upload/v1740045809/Animation_-_1740045046812_wtedox.webm"
+        preload="auto"
+      />
+
       <div className="relative bg-background transition-all duration-300">
         {isImproving && (
           <MeshGradient 
@@ -155,12 +174,14 @@ const PromptInput = ({
           onClick={handleImprovePrompt}
           disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
         >
-          {isImproving ? (
-            <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
-          ) : (
-            <Sparkles className="h-4 w-4 mr-2 text-foreground/70" />
-          )}
-          <span className="text-sm">Improve</span>
+          <div className="flex items-center">
+            {isImproving ? (
+              <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
+            ) : (
+              <Sparkles className="h-4 w-4 mr-2 text-foreground/70" />
+            )}
+            <span className="text-sm">Improve</span>
+          </div>
         </Button>
         <Button
           size="sm"
@@ -168,8 +189,21 @@ const PromptInput = ({
           onClick={handleSubmit}
           disabled={!prompt?.length || !hasEnoughCredits || !userId || isImproving}
         >
-          <span className="text-sm">Create</span>
-          <ArrowRight className="ml-2 h-4 w-4" />
+          <div className="flex items-center">
+            <span className="text-sm">Create</span>
+            {isPlayingAnimation ? (
+              <video 
+                className="h-5 w-5 ml-2 rotate-[270deg] scale-150" 
+                src={videoRef.current?.src}
+                autoPlay
+                muted
+                playsInline
+                onEnded={() => setIsPlayingAnimation(false)}
+              />
+            ) : (
+              <ChevronRight className="ml-2 h-5 w-5" />
+            )}
+          </div>
         </Button>
       </div>
     </div>
