@@ -1,88 +1,108 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Search, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const SearchBar = ({ onSearch, initialQuery = '', className, onSearchOpenChange }) => {
-  const [isSearchOpen, setIsSearchOpen] = useState(!!initialQuery);
-  const [query, setQuery] = useState(initialQuery);
+const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
+  const [searchValue, setSearchValue] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
-  // Sync with external changes
   useEffect(() => {
-    if (initialQuery !== query) {
-      setQuery(initialQuery);
-      setIsSearchOpen(!!initialQuery);
+    if (onSearchOpenChange) {
+      onSearchOpenChange(isExpanded);
     }
-  }, [initialQuery]);
+  }, [isExpanded, onSearchOpenChange]);
 
-  // Notify parent when search state changes
-  useEffect(() => {
-    onSearchOpenChange?.(isSearchOpen);
-  }, [isSearchOpen, onSearchOpenChange]);
-
-  const handleSearch = (value) => {
-    setQuery(value);
-    onSearch(value);
-  };
-
-  const toggleSearch = () => {
-    if (isSearchOpen) {
-      handleSearch('');
+  const handleSearch = () => {
+    if (searchValue.trim()) {
+      onSearch(searchValue.trim());
     }
-    setIsSearchOpen(!isSearchOpen);
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      handleSearch('');
-      setIsSearchOpen(false);
+    if (e.key === 'Enter') {
+      handleSearch();
+    } else if (e.key === 'Escape') {
+      handleClear();
+    }
+  };
+
+  const handleClear = () => {
+    setSearchValue('');
+    onSearch('');
+    setIsExpanded(false);
+  };
+
+  const handleSearchClick = () => {
+    setIsExpanded(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    if (!searchValue) {
+      setIsExpanded(false);
     }
   };
 
   return (
     <div className={cn(
-      "flex items-center gap-1.5 transition-all duration-200",
-      isSearchOpen ? "w-full" : "w-8",
+      "relative flex items-center",
+      "h-8",
+      "transition-all duration-300 ease-in-out",
+      isExpanded ? "md:w-[250px] w-full" : "w-8",
       className
     )}>
-      {isSearchOpen ? (
-        <div className="flex items-center gap-1.5 w-full animate-in fade-in-0 zoom-in-95 duration-200">
-          <div className="relative flex-1">
-            <Input
-              placeholder="Search..."
-              value={query}
-              onChange={(e) => handleSearch(e.target.value)}
+      <div className={cn(
+        "absolute inset-0",
+        "flex items-center",
+        "bg-muted/5 hover:bg-muted/10",
+        "rounded-xl",
+        "transition-all duration-200",
+        (isFocused || isExpanded) && "bg-muted/10 ring-1 ring-border",
+      )}>
+        {!isExpanded ? (
+          <button
+            onClick={handleSearchClick}
+            className="w-full h-full flex items-center justify-center"
+          >
+            <Search className="h-4 w-4 text-muted-foreground/50" />
+          </button>
+        ) : (
+          <div className="flex-1 flex items-center px-2.5">
+            <Search className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => setIsFocused(true)}
+              onBlur={handleBlur}
+              placeholder="Search..."
               className={cn(
-                "h-8 w-full text-sm",
-                "bg-muted/5 hover:bg-muted/10 focus:bg-muted/10",
-                "border-border/5 focus-visible:border-border/80",
-                "rounded-xl transition-all duration-200",
-                "placeholder:text-muted-foreground/40"
+                "flex-1 h-full bg-transparent",
+                "text-sm text-foreground placeholder:text-muted-foreground/50",
+                "focus:outline-none",
+                "px-2"
               )}
               autoFocus
             />
+            {(searchValue || isExpanded) && (
+              <button
+                onClick={handleClear}
+                className={cn(
+                  "flex items-center justify-center",
+                  "w-5 h-5",
+                  "rounded-lg",
+                  "hover:bg-muted/20",
+                  "transition-all duration-200"
+                )}
+              >
+                <X className="h-3.5 w-3.5 text-muted-foreground/50" />
+              </button>
+            )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 rounded-xl hover:bg-accent/10 flex-shrink-0"
-            onClick={toggleSearch}
-          >
-            <X className="h-4 w-4 text-foreground/70" />
-          </Button>
-        </div>
-      ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 rounded-xl hover:bg-accent/10"
-          onClick={toggleSearch}
-        >
-          <Search className="h-4 w-4 text-foreground/70" />
-        </Button>
-      )}
+        )}
+      </div>
     </div>
   );
 };

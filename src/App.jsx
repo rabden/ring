@@ -1,10 +1,11 @@
-
 import React, { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/integrations/supabase/components/AuthProvider';
 import { NotificationProvider } from '@/contexts/NotificationContext';
+import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
+import { GeneratingImagesProvider } from '@/contexts/GeneratingImagesContext';
 import { Toaster } from 'sonner';
 import LoadingScreen from '@/components/LoadingScreen';
 import AppRoutes from './AppRoutes';
@@ -28,10 +29,14 @@ function App() {
         <AuthProvider>
           <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
             <NotificationProvider>
-              <Suspense fallback={<LoadingScreen />}>
-                <AppRoutes />
-                <Toaster />
-              </Suspense>
+              <UserPreferencesProvider>
+                <GeneratingImagesProvider>
+                  <Suspense fallback={<LoadingScreen />}>
+                    <AppRoutes />
+                    <Toaster />
+                  </Suspense>
+                </GeneratingImagesProvider>
+              </UserPreferencesProvider>
             </NotificationProvider>
           </ThemeProvider>
         </AuthProvider>

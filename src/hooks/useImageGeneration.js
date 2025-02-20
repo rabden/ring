@@ -5,6 +5,13 @@ import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
 import { useState, useRef, useCallback } from 'react';
 
+const generateRandomSeed = () => {
+  // Generate a number between 10000000 and 999999999999 (8-12 digits)
+  const min = 10000000; // 8 digits
+  const max = 999999999999; // 12 digits
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
 export const useImageGeneration = ({
   session,
   prompt,
@@ -237,7 +244,7 @@ export const useImageGeneration = ({
 
     // Add all requested images to the queue with captured states
     for (let i = 0; i < imageCount; i++) {
-      const actualSeed = randomizeSeed ? Math.floor(Math.random() * 1000000) : seed + i;
+      const actualSeed = randomizeSeed ? generateRandomSeed() : seed + i;
       const generationId = Date.now().toString() + i;
       
       const modifiedPrompt = await getModifiedPrompt(finalPrompt || prompt, generationStates.model, modelConfigs);

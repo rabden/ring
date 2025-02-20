@@ -20,43 +20,12 @@ export const useImageGeneratorState = () => {
     detailsDialogOpen: false,
     fullScreenViewOpen: false,
     fullScreenImageIndex: 0,
-    generatingImages: [],
     activeView: 'myImages',
-    nsfwEnabled: false,
     style: null,
     imageCount: 1,
     isPrivate: false
   });
 
-  // Add auto-removal of completed images
-  useEffect(() => {
-    const completedImages = state.generatingImages.filter(img => img.status === 'completed');
-    
-    if (completedImages.length > 0) {
-      const timeouts = completedImages.map(img => {
-        return setTimeout(() => {
-          setState(prev => ({
-            ...prev,
-            generatingImages: prev.generatingImages.filter(i => i.id !== img.id)
-          }));
-        }, 10000); // 10 seconds
-      });
-
-      // Cleanup timeouts
-      return () => {
-        timeouts.forEach(timeout => clearTimeout(timeout));
-      };
-    }
-  }, [state.generatingImages]);
-
-  const setGeneratingImages = (value) => {
-    setState(prev => ({
-      ...prev,
-      generatingImages: Array.isArray(value) ? value : typeof value === 'function' ? value(prev.generatingImages) : []
-    }));
-  };
-
-  // Create setters for each state property
   const setters = {
     setPrompt: (value) => setState(prev => ({ ...prev, prompt: value })),
     setSeed: (value) => setState(prev => ({ ...prev, seed: value })),
@@ -73,9 +42,7 @@ export const useImageGeneratorState = () => {
     setDetailsDialogOpen: (value) => setState(prev => ({ ...prev, detailsDialogOpen: value })),
     setFullScreenViewOpen: (value) => setState(prev => ({ ...prev, fullScreenViewOpen: value })),
     setFullScreenImageIndex: (value) => setState(prev => ({ ...prev, fullScreenImageIndex: value })),
-    setGeneratingImages,
     setActiveView: (value) => setState(prev => ({ ...prev, activeView: value })),
-    setNsfwEnabled: (value) => setState(prev => ({ ...prev, nsfwEnabled: value })),
     setStyle: (value) => setState(prev => ({ ...prev, style: value })),
     setImageCount: (value) => setState(prev => ({ ...prev, imageCount: value })),
     setIsPrivate: (value) => setState(prev => ({ ...prev, isPrivate: value }))

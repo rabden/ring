@@ -14,6 +14,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import ImageGeneratorContent from '@/components/ImageGeneratorContent';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 
 const ImageGenerator = () => {
   const [searchParams] = useSearchParams();
@@ -43,11 +45,13 @@ const ImageGenerator = () => {
     useAspectRatio, setUseAspectRatio, quality, setQuality,
     selectedImage, setSelectedImage,
     detailsDialogOpen, setDetailsDialogOpen, fullScreenViewOpen, setFullScreenViewOpen,
-    fullScreenImageIndex, setFullScreenImageIndex, generatingImages, setGeneratingImages,
-    activeView, setActiveView, nsfwEnabled, setNsfwEnabled,
+    fullScreenImageIndex, setFullScreenImageIndex,
+    activeView, setActiveView,
     imageCount, setImageCount
   } = useImageGeneratorState();
 
+  const { nsfwEnabled, setNsfwEnabled } = useUserPreferences();
+  const { generatingImages, setGeneratingImages } = useGeneratingImages();
   const [showPrivate, setShowPrivate] = useState(false);
   const [negativePrompt, setNegativePrompt] = useState("");
 
@@ -194,6 +198,7 @@ const ImageGenerator = () => {
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       generatingImages={generatingImages}
+      setGeneratingImages={setGeneratingImages}
       nsfwEnabled={nsfwEnabled}
       setNsfwEnabled={setNsfwEnabled}
       showPrivate={showPrivate}

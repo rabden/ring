@@ -3,6 +3,8 @@ import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useFollows } from '@/hooks/useFollows';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 import ImageGallery from '@/components/ImageGallery';
 import DesktopHeader from '@/components/header/DesktopHeader';
 import MobileHeader from '@/components/header/MobileHeader';
@@ -11,6 +13,7 @@ import FullScreenImageView from '@/components/FullScreenImageView';
 import BottomNavbar from '@/components/BottomNavbar';
 import MobileNotificationsMenu from '@/components/MobileNotificationsMenu';
 import MobileProfileMenu from '@/components/MobileProfileMenu';
+import GeneratingImagesDropdown from '@/components/GeneratingImagesDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProUser } from '@/hooks/useProUser';
 
@@ -23,7 +26,8 @@ const Inspiration = () => {
   const [fullScreenViewOpen, setFullScreenViewOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState({});
-  const [nsfwEnabled, setNsfwEnabled] = useState(false);
+  const { nsfwEnabled, setNsfwEnabled } = useUserPreferences();
+  const { generatingImages } = useGeneratingImages();
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTop, setShowTop] = useState(true);
   const [showLatest, setShowLatest] = useState(false);
@@ -117,6 +121,13 @@ const Inspiration = () => {
         onFollowingChange={setShowFollowing}
         onTopChange={setShowTop}
         onLatestChange={setShowLatest}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        rightContent={
+          <div className="flex items-center gap-2">
+            <GeneratingImagesDropdown generatingImages={generatingImages} />
+          </div>
+        }
       />
 
       {/* Mobile Header */}
@@ -167,7 +178,7 @@ const Inspiration = () => {
         session={session}
         credits={credits}
         bonusCredits={bonusCredits}
-        generatingImages={[]}
+        generatingImages={generatingImages}
         nsfwEnabled={nsfwEnabled}
         setNsfwEnabled={setNsfwEnabled}
       />

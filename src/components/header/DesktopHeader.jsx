@@ -21,7 +21,8 @@ const DesktopHeader = ({
   showFollowing,
   showTop,
   onFollowingChange,
-  onTopChange
+  onTopChange,
+  rightContent
 }) => {
   const location = useLocation();
   const isInspiration = location.pathname === '/inspiration';
@@ -35,7 +36,8 @@ const DesktopHeader = ({
         "border-b border-border/50",
       )}>
         <div className="flex justify-between items-center h-full px-10 max-w-full">
-          <div className="flex items-center gap-3">
+          {/* Left side - Profile, Notifications, Search */}
+          <div className="flex items-center gap-4">
             <div className="h-8">
               <ProfileMenu 
                 user={user} 
@@ -48,16 +50,11 @@ const DesktopHeader = ({
             <div className="h-8">
               <NotificationBell />
             </div>
-            <ActionButtons 
-              generatingImages={generatingImages}
-              className="gap-3"
-              buttonClassName={cn(
-                "h-8 rounded-lg px-3",
-                "bg-transparent hover:bg-muted/10",
-                "text-foreground/70 hover:text-foreground",
-                "transition-colors duration-200"
-              )}
-            />
+            <SearchBar onSearch={onSearch} />
+          </div>
+
+          {/* Right side - Navigation Buttons and Generating Status */}
+          <div className="flex items-center gap-3">
             {isMyImages && (
               <PrivateFilterButton
                 showPrivate={showPrivate}
@@ -69,7 +66,17 @@ const DesktopHeader = ({
                 className="flex-1"
               />
             )}
-            <SearchBar onSearch={onSearch} />
+            <ActionButtons 
+              generatingImages={generatingImages}
+              className="gap-3"
+              buttonClassName={cn(
+                "h-8 rounded-lg px-3",
+                "bg-transparent hover:bg-muted/10",
+                "text-foreground/70 hover:text-foreground",
+                "transition-colors duration-200"
+              )}
+            />
+            {rightContent}
           </div>
         </div>
       </div>
