@@ -7,7 +7,7 @@ import { useState, useRef, useCallback } from 'react';
 
 const generateRandomSeed = () => {
   // Generate a number within PostgreSQL integer range (-2147483648 to 2147483647)
-  return Math.floor(Math.random() * 4294967295) - 2147483648;
+  return Math.floor(Math.random() * (2147483647 - (-2147483648) + 1)) + (-2147483648);
 };
 
 export const useImageGeneration = ({
@@ -133,6 +133,7 @@ export const useImageGeneration = ({
             throw uploadError;
           }
 
+          // Insert new image record with like_count initialized to 0
           const { data: insertData, error: insertError } = await supabase
             .from('user_images')
             .insert([{
@@ -147,7 +148,7 @@ export const useImageGeneration = ({
               aspect_ratio: currentGeneration.finalAspectRatio,
               is_private: isPrivate,
               negative_prompt: negativePrompt,
-              like_count: 0 // Initialize like_count
+              like_count: 0
             }])
             .select()
             .single();
