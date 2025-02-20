@@ -1,4 +1,3 @@
-
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
@@ -33,12 +32,7 @@ export const useGalleryImages = ({
 
       let baseQuery = supabase
         .from('user_images')
-        .select(`
-          *,
-          user_image_likes!inner (
-            user_id
-          )
-        `);
+        .select('*', { count: 'exact' });
 
       // Handle MyImages view
       if (activeView === 'myImages') {
@@ -81,7 +75,6 @@ export const useGalleryImages = ({
         return {
           data: result?.map(image => ({
             ...image,
-            is_liked: image.user_image_likes.some(like => like.user_id === userId),
             image_url: supabase.storage
               .from('user-images')
               .getPublicUrl(image.storage_path).data.publicUrl
@@ -148,7 +141,6 @@ export const useGalleryImages = ({
       return {
         data: result.map(image => ({
           ...image,
-          is_liked: image.user_image_likes.some(like => like.user_id === userId),
           image_url: supabase.storage
             .from('user-images')
             .getPublicUrl(image.storage_path).data.publicUrl

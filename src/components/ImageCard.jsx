@@ -1,8 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import ImageStatusIndicators from './ImageStatusIndicators';
 import { useModelConfigs } from '@/hooks/useModelConfigs';
+import { useQuery } from '@tanstack/react-query';
+import { downloadImage } from '@/utils/downloadUtils';
 import ImageCardActions from './ImageCardActions';
 import { supabase } from '@/integrations/supabase/supabase';
 import ImageDetailsDialog from './ImageDetailsDialog';
@@ -19,6 +20,7 @@ const ImageCard = ({
   onDiscard = () => {}, 
   userId,
   isMobile,
+  isLiked,
   onToggleLike = () => {},
 }) => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -27,6 +29,19 @@ const ImageCard = ({
   const { data: modelConfigs } = useModelConfigs();
   const isMobileDevice = useMediaQuery('(max-width: 768px)');
   const navigate = useNavigate();
+
+  const { data: likeCount = 0 } = useQuery({
+    queryKey: ['imageLikes', image.id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('user_image_likes')
+        .select('*', { count: 'exact' })
+        .eq('image_id', image.id);
+      
+      if (error) throw error;
+      return count || 0;
+    },
+  });
 
   const handleImageClick = (e) => {
     e.preventDefault();
@@ -48,7 +63,7 @@ const ImageCard = ({
   const handleDoubleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!image.is_liked) {
+    if (!isLiked) {
       handleLike();
       onToggleLike(image.id);
     }
@@ -108,10 +123,10 @@ const ImageCard = ({
           <ImageCardActions
             image={image}
             isMobile={isMobile}
-            isLiked={image.is_liked}
-            likeCount={image.like_count}
+            isLiked={isLiked}
+            likeCount={likeCount}
             onToggleLike={(id) => {
-              if (!image.is_liked) handleLike();
+              if (!isLiked) handleLike();
               onToggleLike(id);
             }}
             onViewDetails={() => setDetailsDialogOpen(true)}

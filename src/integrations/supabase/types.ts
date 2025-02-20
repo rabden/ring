@@ -197,7 +197,6 @@ export type Database = {
           is_hot: boolean
           is_private: boolean
           is_trending: boolean
-          like_count: number
           model: string
           negative_prompt: string | null
           prompt: string
@@ -215,7 +214,6 @@ export type Database = {
           is_hot?: boolean
           is_private?: boolean
           is_trending?: boolean
-          like_count?: number
           model: string
           negative_prompt?: string | null
           prompt: string
@@ -233,7 +231,6 @@ export type Database = {
           is_hot?: boolean
           is_private?: boolean
           is_trending?: boolean
-          like_count?: number
           model?: string
           negative_prompt?: string | null
           prompt?: string

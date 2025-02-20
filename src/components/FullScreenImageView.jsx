@@ -59,6 +59,19 @@ const FullScreenImageView = ({
     enabled: !!image?.user_id
   });
 
+  const { data: likeCount = 0 } = useQuery({
+    queryKey: ['likes', image?.id],
+    queryFn: async () => {
+      if (!image?.id) return 0;
+      const { count } = await supabase
+        .from('user_image_likes')
+        .select('*', { count: 'exact' })
+        .eq('image_id', image.id);
+      return count || 0;
+    },
+    enabled: !!image?.id
+  });
+
   const handleCopyPrompt = async () => {
     await navigator.clipboard.writeText(image.user_prompt || image.prompt);
     setCopyIcon('check');
@@ -233,7 +246,7 @@ const FullScreenImageView = ({
                         isOwner={isOwner}
                         userLikes={userLikes}
                         toggleLike={toggleLike}
-                        likeCount={image.like_count}
+                        likeCount={likeCount}
                         onLike={handleLike}
                       />
 
