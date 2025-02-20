@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
@@ -54,6 +55,16 @@ export const useLikes = (userId) => {
           .eq('user_id', userId)
           .eq('image_id', imageId);
         if (error) throw error;
+
+        // Optimistically update the like count
+        queryClient.setQueryData(['images'], (oldData) => {
+          if (!oldData) return oldData;
+          return oldData.map(image => 
+            image.id === imageId 
+              ? { ...image, like_count: Math.max(0, image.like_count - 1) }
+              : image
+          );
+        });
       } else {
         // First check if the like already exists
         const { data: existingLike } = await supabase
@@ -90,6 +101,16 @@ export const useLikes = (userId) => {
               created_by: imageData.user_id 
             }]);
           if (error && error.code !== '23505') throw error; // Ignore duplicate key errors
+
+          // Optimistically update the like count
+          queryClient.setQueryData(['images'], (oldData) => {
+            if (!oldData) return oldData;
+            return oldData.map(image => 
+              image.id === imageId 
+                ? { ...image, like_count: image.like_count + 1 }
+                : image
+            );
+          });
 
           // Create notification for the image owner
           if (!error) {

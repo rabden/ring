@@ -1,9 +1,8 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import ImageStatusIndicators from './ImageStatusIndicators';
 import { useModelConfigs } from '@/hooks/useModelConfigs';
-import { useQuery } from '@tanstack/react-query';
-import { downloadImage } from '@/utils/downloadUtils';
 import ImageCardActions from './ImageCardActions';
 import { supabase } from '@/integrations/supabase/supabase';
 import ImageDetailsDialog from './ImageDetailsDialog';
@@ -29,19 +28,6 @@ const ImageCard = ({
   const { data: modelConfigs } = useModelConfigs();
   const isMobileDevice = useMediaQuery('(max-width: 768px)');
   const navigate = useNavigate();
-
-  const { data: likeCount = 0 } = useQuery({
-    queryKey: ['imageLikes', image.id],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('user_image_likes')
-        .select('*', { count: 'exact' })
-        .eq('image_id', image.id);
-      
-      if (error) throw error;
-      return count || 0;
-    },
-  });
 
   const handleImageClick = (e) => {
     e.preventDefault();
@@ -124,7 +110,7 @@ const ImageCard = ({
             image={image}
             isMobile={isMobile}
             isLiked={isLiked}
-            likeCount={likeCount}
+            likeCount={image.like_count}
             onToggleLike={(id) => {
               if (!isLiked) handleLike();
               onToggleLike(id);
