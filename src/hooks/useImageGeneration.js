@@ -6,10 +6,8 @@ import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
 import { useState, useRef, useCallback } from 'react';
 
 const generateRandomSeed = () => {
-  // Generate a number between 10000000 and 999999999999 (8-12 digits)
-  const min = 10000000; // 8 digits
-  const max = 999999999999; // 12 digits
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  // Generate a number within PostgreSQL integer range (-2147483648 to 2147483647)
+  return Math.floor(Math.random() * 4294967295) - 2147483648;
 };
 
 export const useImageGeneration = ({
@@ -147,7 +145,9 @@ export const useImageGeneration = ({
               model,
               quality,
               aspect_ratio: currentGeneration.finalAspectRatio,
-              is_private: isPrivate
+              is_private: isPrivate,
+              negative_prompt: negativePrompt,
+              like_count: 0 // Initialize like_count
             }])
             .select()
             .single();
@@ -185,7 +185,7 @@ export const useImageGeneration = ({
         processQueue();
       }
     }
-  }, [isProcessing, session, setGeneratingImages, updateCredits]);
+  }, [isProcessing, session, setGeneratingImages]);
 
   const generateImage = async (isPrivate = false, finalPrompt = null) => {
     if (!session || !prompt || !modelConfigs) {
@@ -244,7 +244,7 @@ export const useImageGeneration = ({
 
     // Add all requested images to the queue with captured states
     for (let i = 0; i < imageCount; i++) {
-      const actualSeed = randomizeSeed ? generateRandomSeed() : seed + i;
+      const actualSeed = randomizeSeed ? generateRandomSeed() : (seed + i);
       const generationId = Date.now().toString() + i;
       
       const modifiedPrompt = await getModifiedPrompt(finalPrompt || prompt, generationStates.model, modelConfigs);
@@ -261,7 +261,7 @@ export const useImageGeneration = ({
         actualSeed,
         isPrivate,
         negativePrompt: generationStates.negativePrompt,
-        modelConfig: generationStates.modelConfig // Keep for API URL and specific settings
+        modelConfig: generationStates.modelConfig
       };
 
       generationQueue.current.push(queueItem);
