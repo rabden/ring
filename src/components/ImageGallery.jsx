@@ -80,6 +80,7 @@ const ImageGallery = ({
   style,
   showFollowing,
   showTop,
+  showLatest,
   following
 }) => {
   const { userLikes, toggleLike } = useLikes(userId);
@@ -89,7 +90,7 @@ const ImageGallery = ({
   const activeView = location.pathname === '/inspiration' ? 'inspiration' : 'myImages';
   
   const { 
-    images, 
+    images,
     isLoading,
     fetchNextPage,
     hasNextPage,

@@ -101,15 +101,8 @@ export const useGalleryImages = ({
       if (showFollowing && !showTop && following?.length > 0) {
         baseQuery = baseQuery.in('user_id', following);
       }
-      else if (showTop && !showFollowing) {
-        baseQuery = baseQuery.or('is_hot.eq.true,is_trending.eq.true');
-      }
-      else if (showTop && showFollowing && following?.length > 0) {
-        baseQuery = baseQuery.or(`user_id.in.(${following.join(',')}),is_hot.eq.true,is_trending.eq.true`);
-      }
       // If following is selected but following list is empty, return empty result
       else if (showFollowing && following?.length === 0) {
-        // Return empty result without making database query
         return {
           data: [],
           nextPage: undefined
@@ -129,10 +122,22 @@ export const useGalleryImages = ({
         baseQuery = baseQuery.ilike('prompt', `%${searchQuery}%`);
       }
 
-      // Apply pagination and sort by latest first
+      // Apply pagination
       const start = pageParam.page * ITEMS_PER_PAGE;
-      const { data: result, error, count } = await baseQuery
-        .order('created_at', { ascending: false })
+      
+      // Order by likes and then by date to ensure consistent ordering
+      let query = baseQuery;
+      if (showTop) {
+        // For Top view: Sort by likes first, then by date
+        query = query
+          .order('like_count', { ascending: false, nullsLast: true })
+          .order('created_at', { ascending: false });
+      } else {
+        // For other views: Sort by date only
+        query = query.order('created_at', { ascending: false });
+      }
+      
+      const { data: result, error, count } = await query
         .range(start, start + ITEMS_PER_PAGE - 1);
       
       if (error) throw error;
