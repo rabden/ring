@@ -19,7 +19,6 @@ const ImageCard = ({
   onDiscard = () => {}, 
   userId,
   isMobile,
-  isLiked,
   onToggleLike = () => {},
 }) => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -49,7 +48,7 @@ const ImageCard = ({
   const handleDoubleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isLiked) {
+    if (!image.is_liked) {
       handleLike();
       onToggleLike(image.id);
     }
@@ -109,10 +108,10 @@ const ImageCard = ({
           <ImageCardActions
             image={image}
             isMobile={isMobile}
-            isLiked={isLiked}
+            isLiked={image.is_liked}
             likeCount={image.like_count}
             onToggleLike={(id) => {
-              if (!isLiked) handleLike();
+              if (!image.is_liked) handleLike();
               onToggleLike(id);
             }}
             onViewDetails={() => setDetailsDialogOpen(true)}
