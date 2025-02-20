@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React from 'react';
 import { improvePrompt } from '@/utils/promptImprovement';
 import { toast } from 'sonner';
 import { usePromptCredits } from './usePromptCredits';
