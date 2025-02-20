@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 const ThemeProviderContext = createContext({});
@@ -15,16 +16,18 @@ export function ThemeProvider({
   defaultTheme = "system",
   storageKey = "vite-ui-theme",
 }) {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === "undefined") return defaultTheme;
-    
+  // Ensure proper initialization of useState
+  const [theme, setTheme] = useState(defaultTheme);
+
+  // Initialize theme from localStorage on mount
+  useEffect(() => {
     try {
-      return localStorage.getItem(storageKey) || defaultTheme;
+      const stored = localStorage.getItem(storageKey);
+      if (stored) setTheme(stored);
     } catch (error) {
       console.warn("LocalStorage access denied:", error);
-      return defaultTheme;
     }
-  });
+  }, [storageKey]);
 
   const applyTheme = useCallback((newTheme) => {
     const root = window.document.documentElement;
