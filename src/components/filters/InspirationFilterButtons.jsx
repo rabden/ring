@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
@@ -68,4 +69,4 @@ const InspirationFilterButtons = ({ className }) => {
   );
 };
 
-export default InspirationFilterButtons; 
+export default InspirationFilterButtons;

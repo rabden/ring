@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -28,48 +29,32 @@ const Inspiration = () => {
   const [activeFilters, setActiveFilters] = useState({});
   const { nsfwEnabled, setNsfwEnabled } = useUserPreferences();
   const { generatingImages } = useGeneratingImages();
-  const [showFollowing, setShowFollowing] = useState(false);
-  const [showTop, setShowTop] = useState(true);
-  const [showLatest, setShowLatest] = useState(false);
   const { credits, bonusCredits } = useUserCredits(session?.user?.id);
   const { following } = useFollows(session?.user?.id);
   const isHeaderVisible = useScrollDirection();
   const [activeTab, setActiveTab] = useState('images');
   const { isPro } = useProUser();
+  const hash = location.hash.replace('#', '');
 
-  // Sync activeTab with URL hash and update filters based on hash
+  // Sync filter states with URL hash
+  const [showFollowing, setShowFollowing] = useState(hash === 'following');
+  const [showTop, setShowTop] = useState(hash === 'top');
+  const [showLatest, setShowLatest] = useState(hash === 'latest');
+
+  // Update filter states when hash changes
   useEffect(() => {
-    const hash = location.hash.replace('#', '');
-    switch (hash) {
-      case 'notifications':
-        setActiveTab('notifications');
-        break;
-      case 'following':
-        setShowFollowing(true);
-        setShowTop(false);
-        setShowLatest(false);
-        break;
-      case 'top':
-        setShowFollowing(false);
-        setShowTop(true);
-        setShowLatest(false);
-        break;
-      case 'latest':
-        setShowFollowing(false);
-        setShowTop(false);
-        setShowLatest(true);
-        break;
-      default:
-        setActiveTab('images');
-        // If no hash, default to top
-        if (!hash) {
-          setShowFollowing(false);
-          setShowTop(true);
-          setShowLatest(false);
-          navigate('/inspiration#top', { replace: true });
-        }
-    }
+    const newHash = location.hash.replace('#', '');
+    setShowFollowing(newHash === 'following');
+    setShowTop(newHash === 'top');
+    setShowLatest(newHash === 'latest');
   }, [location.hash]);
+
+  // Handle case when no hash is present
+  useEffect(() => {
+    if (!location.hash) {
+      navigate('/inspiration#latest', { replace: true });
+    }
+  }, [location.hash, navigate]);
 
   const handleImageClick = (image) => {
     setSelectedImage(image);
@@ -210,4 +195,4 @@ const Inspiration = () => {
   );
 };
 
-export default Inspiration; 
+export default Inspiration;

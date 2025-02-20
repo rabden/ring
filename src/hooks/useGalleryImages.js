@@ -1,4 +1,3 @@
-
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
@@ -16,6 +15,7 @@ export const useGalleryImages = ({
   modelConfigs = {},
   showFollowing = false,
   showTop = false,
+  showLatest = false,
   following = []
 }) => {
   const queryClient = useQueryClient();
@@ -27,7 +27,7 @@ export const useGalleryImages = ({
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following],
+    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, showLatest, following],
     queryFn: async ({ pageParam = { page: 0 } }) => {
       if (!userId) return { data: [], nextPage: null };
 
@@ -104,19 +104,17 @@ export const useGalleryImages = ({
         baseQuery = baseQuery.not('model', 'in', '(' + NSFW_MODELS.join(',') + ')');
       }
 
-      // Handle following and top filters
-      if (showFollowing && !showTop && following?.length > 0) {
-        baseQuery = baseQuery.in('user_id', following);
-      }
-      else if (showTop && !showFollowing) {
-        // Order by like_count instead of using is_hot/is_trending flags
-        baseQuery = baseQuery.order('like_count', { ascending: false });
-      }
-      else if (showTop && showFollowing && following?.length > 0) {
-        // For combined top and following, get most liked images from followed users
+      // Handle following, top, and latest filters
+      if (showFollowing && following?.length > 0) {
         baseQuery = baseQuery
           .in('user_id', following)
-          .order('like_count', { ascending: false });
+          .order('created_at', { ascending: false });
+      } 
+      else if (showTop) {
+        baseQuery = baseQuery.order('like_count', { ascending: false });
+      }
+      else if (showLatest) {
+        baseQuery = baseQuery.order('created_at', { ascending: false });
       }
       else if (showFollowing && following?.length === 0) {
         return {
