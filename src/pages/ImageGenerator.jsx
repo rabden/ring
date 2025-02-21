@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import ImageGeneratorContent from '@/components/ImageGeneratorContent';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
+import NSFWAlert from '@/components/alerts/NSFWAlert';
 
 const ImageGenerator = () => {
   const [searchParams] = useSearchParams();
@@ -23,6 +24,7 @@ const ImageGenerator = () => {
   const { session } = useSupabaseAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
+  const [showNSFWAlert, setShowNSFWAlert] = useState(false);
 
   const {
     isImproving,
@@ -94,7 +96,7 @@ const ImageGenerator = () => {
     }
   }, [remixImage]);
 
-  const { generateImage } = useImageGeneration({
+  const { generateImage, nsfwDetected } = useImageGeneration({
     session,
     prompt,
     seed,
@@ -109,7 +111,9 @@ const ImageGenerator = () => {
     setGeneratingImages,
     modelConfigs,
     imageCount,
-    negativePrompt
+    negativePrompt,
+    nsfwEnabled,
+    onNSFWDetected: () => setShowNSFWAlert(true)
   });
 
   const handleGenerateImage = async () => {
@@ -191,67 +195,73 @@ const ImageGenerator = () => {
   }
 
   return (
-    <ImageGeneratorContent
-      session={session}
-      credits={credits}
-      bonusCredits={bonusCredits}
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      generatingImages={generatingImages}
-      setGeneratingImages={setGeneratingImages}
-      nsfwEnabled={nsfwEnabled}
-      setNsfwEnabled={setNsfwEnabled}
-      showPrivate={showPrivate}
-      setShowPrivate={setShowPrivate}
-      activeFilters={activeFilters}
-      onFilterChange={(type, value) => setActiveFilters(prev => ({ ...prev, [type]: value }))}
-      onRemoveFilter={(type) => {
-        const newFilters = { ...activeFilters };
-        delete newFilters[type];
-        setActiveFilters(newFilters);
-      }}
-      onSearch={setSearchQuery}
-      isHeaderVisible={isHeaderVisible}
-      handleImageClick={handleImageClick}
-      handleDownload={handleDownload}
-      handleDiscard={handleDiscard}
-      handleRemix={handleRemix}
-      handleViewDetails={handleViewDetails}
-      selectedImage={selectedImage}
-      detailsDialogOpen={detailsDialogOpen}
-      setDetailsDialogOpen={setDetailsDialogOpen}
-      fullScreenViewOpen={fullScreenViewOpen}
-      setFullScreenViewOpen={setFullScreenViewOpen}
-      proMode={isPro}
-      imageGeneratorProps={{
-        prompt,
-        setPrompt,
-        generateImage: handleGenerateImage,
-        model,
-        setModel: handleModelChange,
-        seed,
-        setSeed,
-        randomizeSeed,
-        setRandomizeSeed,
-        quality,
-        setQuality,
-        useAspectRatio,
-        setUseAspectRatio,
-        aspectRatio,
-        setAspectRatio,
-        width,
-        setWidth,
-        height,
-        setHeight,
-        imageCount,
-        setImageCount,
-        isPrivate,
-        setIsPrivate,
-        nsfwEnabled,
-        setNsfwEnabled,
-        modelConfigs
-      }}
-    />
+    <>
+      <NSFWAlert 
+        isVisible={showNSFWAlert} 
+        onClose={() => setShowNSFWAlert(false)} 
+      />
+      <ImageGeneratorContent
+        session={session}
+        credits={credits}
+        bonusCredits={bonusCredits}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        generatingImages={generatingImages}
+        setGeneratingImages={setGeneratingImages}
+        nsfwEnabled={nsfwEnabled}
+        setNsfwEnabled={setNsfwEnabled}
+        showPrivate={showPrivate}
+        setShowPrivate={setShowPrivate}
+        activeFilters={activeFilters}
+        onFilterChange={(type, value) => setActiveFilters(prev => ({ ...prev, [type]: value }))}
+        onRemoveFilter={(type) => {
+          const newFilters = { ...activeFilters };
+          delete newFilters[type];
+          setActiveFilters(newFilters);
+        }}
+        onSearch={setSearchQuery}
+        isHeaderVisible={isHeaderVisible}
+        handleImageClick={handleImageClick}
+        handleDownload={handleDownload}
+        handleDiscard={handleDiscard}
+        handleRemix={handleRemix}
+        handleViewDetails={handleViewDetails}
+        selectedImage={selectedImage}
+        detailsDialogOpen={detailsDialogOpen}
+        setDetailsDialogOpen={setDetailsDialogOpen}
+        fullScreenViewOpen={fullScreenViewOpen}
+        setFullScreenViewOpen={setFullScreenViewOpen}
+        proMode={isPro}
+        imageGeneratorProps={{
+          prompt,
+          setPrompt,
+          generateImage: handleGenerateImage,
+          model,
+          setModel: handleModelChange,
+          seed,
+          setSeed,
+          randomizeSeed,
+          setRandomizeSeed,
+          quality,
+          setQuality,
+          useAspectRatio,
+          setUseAspectRatio,
+          aspectRatio,
+          setAspectRatio,
+          width,
+          setWidth,
+          height,
+          setHeight,
+          imageCount,
+          setImageCount,
+          isPrivate,
+          setIsPrivate,
+          nsfwEnabled,
+          setNsfwEnabled,
+          modelConfigs
+        }}
+      />
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
 import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
+import { containsNSFWContent } from '@/utils/nsfwUtils';
 import { useState, useRef, useCallback } from 'react';
 
 const generateRandomSeed = () => {
@@ -25,7 +26,9 @@ export const useImageGeneration = ({
   setGeneratingImages,
   modelConfigs,
   imageCount = 1,
-  negativePrompt
+  negativePrompt,
+  nsfwEnabled = false,
+  onNSFWDetected
 }) => {
   // Queue to store pending generations
   const generationQueue = useRef([]);
@@ -194,6 +197,15 @@ export const useImageGeneration = ({
       !prompt && toast.error('Please enter a prompt');
       !modelConfigs && console.error('Model configs not loaded');
       return;
+    }
+
+    // Check for NSFW content if NSFW mode is disabled
+    if (!nsfwEnabled) {
+      const { isNSFW, foundWords } = containsNSFWContent(finalPrompt || prompt);
+      if (isNSFW) {
+        onNSFWDetected?.();
+        return;
+      }
     }
 
     // Capture ALL states at generation time
