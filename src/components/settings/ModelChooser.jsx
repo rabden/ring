@@ -381,18 +381,18 @@ const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) =
           open={isDrawerOpen} 
           onOpenChange={setIsDrawerOpen}
         >
-          <DrawerContent className="focus:outline-none">
-            <DrawerHeader className="border-b border-border/5 px-2 py-2">
+          <DrawerContent className="focus:outline-none h-[90vh]">
+            <DrawerHeader className="border-b border-border/90">
               <DrawerTitle className="text-base font-medium text-foreground/90">Select Model</DrawerTitle>
             </DrawerHeader>
-            <div className="px-3 py-2">
+            <div>
               <MobileModelGrid 
                 filteredModels={filteredModels}
                 model={model}
                 setModel={handleModelSelection}
                 proMode={proMode}
                 onClose={() => setIsDrawerOpen(false)}
-                className="max-h-[70vh]"
+                className="max-h-[75vh]"
               />
             </div>
           </DrawerContent>

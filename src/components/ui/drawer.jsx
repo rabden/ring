@@ -32,7 +32,7 @@ const DrawerContent = React.forwardRef(({ className, children, ...props }, ref) 
       ref={ref}
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl bg-card/70 backdrop-blur-md transition-all duration-200",
-        "max-h-[90vh] min-h-[50vh]",
+        "max-h-[100vh] min-h-[40vh]",
         className
       )}
       {...props}>
@@ -59,7 +59,7 @@ const DrawerFooter = ({
   className,
   ...props
 }) => (
-  <div className={cn("mt-auto flex flex-col gap-2 p-2", className)} {...props} />
+  <div className={cn("mt-auto flex flex-col gap-1 p-1", className)} {...props} />
 )
 DrawerFooter.displayName = "DrawerFooter"
 

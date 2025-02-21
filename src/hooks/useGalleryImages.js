@@ -1,8 +1,7 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-const ITEMS_PER_PAGE = 200;
 const NSFW_MODELS = ['nsfwMaster', 'animeNsfw', 'animeNsfwfast', 'deepthroat'];
 
 export const useGalleryImages = ({
@@ -18,6 +17,16 @@ export const useGalleryImages = ({
   following = []
 }) => {
   const queryClient = useQueryClient();
+  const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth <= 768 ? 50 : 200);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setItemsPerPage(window.innerWidth <= 768 ? 50 : 200);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const {
     data,
@@ -26,7 +35,7 @@ export const useGalleryImages = ({
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following],
+    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following, itemsPerPage],
     queryFn: async ({ pageParam = { page: 0 } }) => {
       if (!userId) return { data: [], nextPage: null };
 
@@ -65,10 +74,10 @@ export const useGalleryImages = ({
         }
 
         // Apply pagination
-        const start = pageParam.page * ITEMS_PER_PAGE;
+        const start = pageParam.page * itemsPerPage;
         const { data: result, error, count } = await baseQuery
           .order('created_at', { ascending: false })
-          .range(start, start + ITEMS_PER_PAGE - 1);
+          .range(start, start + itemsPerPage - 1);
 
         if (error) throw error;
 
@@ -79,7 +88,7 @@ export const useGalleryImages = ({
               .from('user-images')
               .getPublicUrl(image.storage_path).data.publicUrl
           })) || [],
-          nextPage: (result?.length === ITEMS_PER_PAGE && count > start + ITEMS_PER_PAGE) 
+          nextPage: (result?.length === itemsPerPage && count > start + itemsPerPage) 
             ? { page: pageParam.page + 1 } 
             : undefined
         };
@@ -123,7 +132,7 @@ export const useGalleryImages = ({
       }
 
       // Apply pagination
-      const start = pageParam.page * ITEMS_PER_PAGE;
+      const start = pageParam.page * itemsPerPage;
       
       // Order by likes and then by date to ensure consistent ordering
       let query = baseQuery;
@@ -138,7 +147,7 @@ export const useGalleryImages = ({
       }
       
       const { data: result, error, count } = await query
-        .range(start, start + ITEMS_PER_PAGE - 1);
+        .range(start, start + itemsPerPage - 1);
       
       if (error) throw error;
       if (!result) return { data: [], nextPage: null };
@@ -150,7 +159,7 @@ export const useGalleryImages = ({
             .from('user-images')
             .getPublicUrl(image.storage_path).data.publicUrl
         })),
-        nextPage: (result.length === ITEMS_PER_PAGE && count > start + ITEMS_PER_PAGE) 
+        nextPage: (result.length === itemsPerPage && count > start + itemsPerPage) 
           ? { page: pageParam.page + 1 } 
           : undefined
       };

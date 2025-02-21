@@ -130,8 +130,8 @@ const GeneratingImagesDrawer = ({ open, onOpenChange }) => {
                     )}
                   </div>
                   {img.prompt && (
-                    <span className="text-xs text-muted-foreground/60 break-words group-hover:text-muted-foreground/70 transition-colors duration-200">
-                      {img.prompt}
+                    <span className="text-xs text-muted-foreground/60 truncate w-full group-hover:text-muted-foreground/70 transition-colors duration-200">
+                      {img.prompt.length > 50 ? `${img.prompt.substring(0, 50)}...` : img.prompt}
                     </span>
                   )}
                   <div className="flex items-center gap-2 w-full">
