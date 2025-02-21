@@ -71,6 +71,12 @@ const BottomNavbar = ({
     }
   };
 
+  const handleLongPress = () => {
+    if (generatingImages.length > 0) {
+      setDrawerOpen(true);
+    }
+  };
+
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/80 md:hidden z-50 transition-all duration-300">
@@ -92,7 +98,7 @@ const BottomNavbar = ({
               icon={Plus}
               isActive={location.hash === '#imagegenerate'}
               onClick={() => handleNavigation('/#imagegenerate', 'input')}
-              onLongPress={() => setDrawerOpen(true)}
+              onLongPress={handleLongPress}
               badge={!isAllCompleted ? generatingImages.length : undefined}
               showCheckmark={isAllCompleted}
             />
@@ -130,7 +136,6 @@ const BottomNavbar = ({
       <GeneratingImagesDrawer 
         open={drawerOpen} 
         onOpenChange={setDrawerOpen}
-        generatingImages={generatingImages}
       />
     </>
   );

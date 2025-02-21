@@ -23,9 +23,52 @@ export const GeneratingImagesProvider = ({ children }) => {
     }
   }, [generatingImages]);
 
+  // Monitor and manage the generation queue
+  useEffect(() => {
+    const processingCount = generatingImages.filter(img => img.status === 'processing').length;
+    
+    // If there's no image processing and we have pending images
+    if (processingCount === 0) {
+      const pendingImages = generatingImages.filter(img => img.status === 'pending');
+      if (pendingImages.length > 0) {
+        // Update the first pending image to processing
+        setGeneratingImages(prev => prev.map(img => 
+          img.id === pendingImages[0].id ? { ...img, status: 'processing' } : img
+        ));
+      }
+    }
+  }, [generatingImages]);
+
+  const cancelGeneration = (imageId) => {
+    setGeneratingImages(prev => {
+      // Get the image being cancelled
+      const cancelledImage = prev.find(img => img.id === imageId);
+      
+      // If the cancelled image was processing, we need to update the queue
+      const wasProcessing = cancelledImage?.status === 'processing';
+      
+      // Remove the cancelled image
+      const updatedImages = prev.filter(img => img.id !== imageId);
+      
+      // If the cancelled image was processing and we have pending images,
+      // update the first pending image to processing
+      if (wasProcessing) {
+        const firstPending = updatedImages.find(img => img.status === 'pending');
+        if (firstPending) {
+          return updatedImages.map(img =>
+            img.id === firstPending.id ? { ...img, status: 'processing' } : img
+          );
+        }
+      }
+      
+      return updatedImages;
+    });
+  };
+
   const value = {
     generatingImages,
     setGeneratingImages,
+    cancelGeneration
   };
 
   return (

@@ -125,34 +125,36 @@ const PromptInput = ({
       />
 
       <div className="relative bg-background transition-all duration-300">
-        {isImproving && (
-          <MeshGradient 
-            className="absolute inset-0 animate-faster z-0" 
-            intensity="strong"
-            speed="fast"
-            size={500}
-          />
-        )}
         <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-background/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
         <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
         
-        <textarea
-          value={prompt}
-          onChange={onChange}
-          placeholder={PROMPT_TIPS[currentTipIndex]}
-          className={cn(
-            "relative z-10",
-            "w-full min-h-[450px] md:min-h-[350px] resize-none bg-transparent text-base focus:outline-none",
-            "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
-            "border-y border-border/5 py-6 px-3",
-            "transition-colors duration-200",
-            isImproving && "opacity-80"
+        <div className="relative">
+          {isImproving && (
+            <MeshGradient 
+              className="absolute inset-0 animate-faster z-0 rounded-2xl" 
+              intensity="strong"
+              speed="fast"
+              size={500}
+            />
           )}
-          style={{ 
-            caretColor: 'currentColor',
-          }}
-          disabled={isImproving}
-        />
+          <textarea
+            value={prompt}
+            onChange={onChange}
+            placeholder={PROMPT_TIPS[currentTipIndex]}
+            className={cn(
+              "relative z-10 rounded-2xl",
+              "w-full min-h-[450px] md:min-h-[350px] resize-none bg-transparent text-base focus:outline-none",
+              "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
+              "border-y border-border/5 py-6 px-3",
+              "transition-colors duration-200",
+              isImproving && "opacity-80"
+            )}
+            style={{ 
+              caretColor: 'currentColor',
+            }}
+            disabled={isImproving}
+          />
+        </div>
       </div>
       
       <div className="flex justify-end items-center mt-4 gap-2">

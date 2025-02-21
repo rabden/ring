@@ -6,7 +6,7 @@ const NSFW_WORDS = [
   'inappropriate', 'indecent', 'vulgar', 'offensive', 'explicit', 'fuck', 'fucking',
   
   // Body-related terms
-  'topless', 'bottomless', 'nipple', 'nipples', 'cleavage', 'bust','voluptuous', 'thicc',
+  'topless', 'bottomless', 'nipple', 'nipples', 'cleavage', 'bust', 'voluptuous', 'thicc',
   'waist', 'hip', 'hips', 'thighs', 'legs', 'buttocks', 'breasts',
   
   // Suggestive terms
@@ -30,7 +30,6 @@ const NSFW_WORDS = [
   'teasing', 'tease', 'seducing', 'seduce', 'caress', 'caressing',
   'fondling', 'fondle', 'sucking', 'suck',
   
-  
   // Clothing states
   'undressed', 'unclothed', 'disrobed', 'disrobing', 'underdressed',
   'scantily', 'barely dressed', 'half dressed', 'partially dressed',
@@ -52,16 +51,30 @@ const NSFW_WORDS = [
   'sensual art', 'sensual photography', 'adult art', 'adult photography'
 ];
 
+// Helper function to escape special regex characters
+const escapeRegExp = (string) => {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
+// Create a regex pattern for whole word matching
+const createWordBoundaryPattern = (word) => {
+  return new RegExp(`\\b${escapeRegExp(word)}\\b`, 'i');
+};
+
 export const containsNSFWContent = (prompt) => {
-  if (!prompt) return false;
+  if (!prompt) return { isNSFW: false, foundWords: [] };
   
   const lowercasePrompt = prompt.toLowerCase();
-  const words = lowercasePrompt.split(/\s+/);
   
-  // Check each word against the NSFW list
-  const foundNSFWWords = NSFW_WORDS.filter(nsfwWord => 
-    words.some(word => word.includes(nsfwWord))
-  );
+  // Check each word against the NSFW list using word boundaries
+  const foundNSFWWords = NSFW_WORDS.filter(nsfwWord => {
+    // For multi-word NSFW terms
+    if (nsfwWord.includes(' ')) {
+      return lowercasePrompt.includes(nsfwWord);
+    }
+    // For single-word terms, use word boundary check
+    return createWordBoundaryPattern(nsfwWord).test(lowercasePrompt);
+  });
   
   return {
     isNSFW: foundNSFWWords.length > 0,

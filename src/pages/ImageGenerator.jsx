@@ -25,6 +25,7 @@ const ImageGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
   const [showNSFWAlert, setShowNSFWAlert] = useState(false);
+  const [nsfwFoundWords, setNsfwFoundWords] = useState([]);
 
   const {
     isImproving,
@@ -113,7 +114,10 @@ const ImageGenerator = () => {
     imageCount,
     negativePrompt,
     nsfwEnabled,
-    onNSFWDetected: () => setShowNSFWAlert(true)
+    onNSFWDetected: (foundWords) => {
+      setNsfwFoundWords(foundWords);
+      setShowNSFWAlert(true);
+    }
   });
 
   const handleGenerateImage = async () => {
@@ -198,7 +202,8 @@ const ImageGenerator = () => {
     <>
       <NSFWAlert 
         isVisible={showNSFWAlert} 
-        onClose={() => setShowNSFWAlert(false)} 
+        onClose={() => setShowNSFWAlert(false)}
+        foundWords={nsfwFoundWords}
       />
       <ImageGeneratorContent
         session={session}

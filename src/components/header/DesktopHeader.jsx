@@ -34,11 +34,21 @@ const DesktopHeader = ({
         "hidden md:block fixed top-0 left-0 right-0 z-10 h-12",
         "bg-background/95 backdrop-blur-[2px]",
         "border-b border-border/50",
+        "transition-all duration-200 ease-in-out"
       )}>
-        <div className="flex justify-between items-center h-full px-10 max-w-full">
+        <div className={cn(
+          "flex justify-between items-center h-full px-10 max-w-full",
+          "transition-all duration-200 ease-in-out"
+        )}>
           {/* Left side - Profile, Notifications, Search */}
-          <div className="flex items-center gap-4">
-            <div className="h-8">
+          <div className={cn(
+            "flex items-center gap-4",
+            "transition-all duration-200 ease-in-out"
+          )}>
+            <div className={cn(
+              "h-8",
+              "transition-transform duration-200 ease-in-out",
+            )}>
               <ProfileMenu 
                 user={user} 
                 credits={credits} 
@@ -47,36 +57,57 @@ const DesktopHeader = ({
                 setNsfwEnabled={setNsfwEnabled}
               />
             </div>
-            <div className="h-8">
+            <div className={cn(
+              "h-8",
+              "transition-transform duration-200 ease-in-out",
+            )}>
               <NotificationBell />
             </div>
-            <SearchBar onSearch={onSearch} />
+            <div className="transition-all duration-200 ease-in-out">
+              <SearchBar onSearch={onSearch} />
+            </div>
           </div>
 
           {/* Right side - Navigation Buttons and Generating Status */}
-          <div className="flex items-center gap-3">
+          <div className={cn(
+            "flex items-center gap-3",
+            "transition-all duration-200 ease-in-out"
+          )}>
             {isMyImages && (
-              <PrivateFilterButton
-                showPrivate={showPrivate}
-                onToggle={onTogglePrivate}
-              />
+              <div className="transition-transform duration-200 ease-in-out">
+                <PrivateFilterButton
+                  showPrivate={showPrivate}
+                  onToggle={onTogglePrivate}
+                />
+              </div>
             )}
             {isInspiration && (
-              <InspirationFilterButtons
-                className="flex-1"
-              />
+              <div className="transition-transform duration-200 ease-in-out">
+                <InspirationFilterButtons
+                  className="flex-1"
+                />
+              </div>
             )}
-            <ActionButtons 
-              generatingImages={generatingImages}
-              className="gap-3"
-              buttonClassName={cn(
-                "h-8 rounded-lg px-3",
-                "bg-transparent hover:bg-muted/10",
-                "text-foreground/70 hover:text-foreground",
-                "transition-colors duration-200"
-              )}
-            />
-            {rightContent}
+            <div className="transition-transform duration-200 ease-in-out">
+              <ActionButtons 
+                generatingImages={generatingImages}
+                className={cn(
+                  "gap-3",
+                  "transition-all duration-200 ease-in-out"
+                )}
+                buttonClassName={cn(
+                  "h-8 rounded-lg px-3",
+                  "bg-transparent hover:bg-muted/50",
+                  "text-foreground/70 hover:text-foreground",
+                  "transition-all duration-200 ease-in-out"
+                )}
+              />
+            </div>
+            {rightContent && (
+              <div className="transition-transform duration-200 ease-in-out">
+                {rightContent}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -149,35 +149,40 @@ const DesktopPromptBox = ({
         )}
       >
         <div className="relative bg-card border border-border/80 rounded-2xl transition-all duration-300">
-          {isImproving && (
-            <MeshGradient 
-              className="absolute inset-0 rounded-2xl animate-faster" 
-              intensity="strong"
-              speed="fast"
-              size={1200}
-            />
-          )}
-          <div className="p-2">
+          <div className="relative transition-all duration-300">
+            <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-card to-transparent pointer-events-none z-20 rounded-t-2xl" />
+            <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-card to-transparent pointer-events-none z-20 rounded-b-2xl" />
+            
             <div className="relative">
-              <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-card/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
-              <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-card/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
+              {isImproving && (
+                <MeshGradient 
+                  className="absolute inset-0 animate-faster z-0 rounded-2xl" 
+                  intensity="strong"
+                  speed="fast"
+                  size={500}
+                />
+              )}
               <textarea
                 ref={textareaRef}
                 value={prompt}
                 onChange={handlePromptChange}
                 placeholder={PROMPT_TIPS[currentTipIndex]}
                 className={cn(
-                  "w-full min-h-[250px] resize-none bg-transparent text-base focus:outline-none",
+                  "w-full min-h-[300px] resize-none bg-transparent text-base focus:outline-none",
                   "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
                   "pt-4 pb-40 px-3",
                   "transition-colors duration-200",
                   isImproving && "opacity-80"
                 )}
-                style={{ caretColor: 'currentColor' }}
+                style={{ 
+                  caretColor: 'currentColor',
+                }}
                 disabled={isImproving}
               />
             </div>
+          </div>
 
+          <div className="p-2 pt-0">
             <div className="flex justify-between items-center">
               <div className="w-[300px]">
                 <CreditCounter credits={credits} bonusCredits={bonusCredits} />

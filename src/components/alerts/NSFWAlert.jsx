@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from "@/lib/utils";
 import { AlertCircle } from 'lucide-react';
 
-const NSFWAlert = ({ isVisible, onClose }) => {
+const NSFWAlert = ({ isVisible, onClose, foundWords = [] }) => {
   if (!isVisible) return null;
 
   return (
@@ -19,9 +19,17 @@ const NSFWAlert = ({ isVisible, onClose }) => {
       )}>
         <div className="flex gap-3 flex-1">
           <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-          <span className="text-sm font-medium text-destructive break-normal">
-            Please click the Safe button to turn on Unsafe mode to use NSFW image generation
-          </span>
+          <div className="space-y-1">
+            <span className="text-sm font-medium text-destructive break-normal">
+              Please click the Safe button to turn on Unsafe mode to use NSFW image generation
+            </span>
+            {foundWords.length > 0 && (
+              <div className="text-xs text-destructive/80">
+                <span>Found NSFW words: </span>
+                <span className="font-medium">{foundWords.join(', ')}</span>
+              </div>
+            )}
+          </div>
         </div>
         <button 
           onClick={onClose}

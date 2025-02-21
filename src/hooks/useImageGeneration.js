@@ -203,7 +203,7 @@ export const useImageGeneration = ({
     if (!nsfwEnabled) {
       const { isNSFW, foundWords } = containsNSFWContent(finalPrompt || prompt);
       if (isNSFW) {
-        onNSFWDetected?.();
+        onNSFWDetected?.(foundWords);
         return;
       }
     }
@@ -289,7 +289,8 @@ export const useImageGeneration = ({
         status: 'pending',
         isPrivate,
         model: generationStates.model,
-        quality: generationStates.quality
+        quality: generationStates.quality,
+        aspect_ratio: finalAspectRatio
       }]);
     }
 

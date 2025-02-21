@@ -65,11 +65,11 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
             onClick={handleSearchClick}
             className="w-full h-full flex items-center justify-center"
           >
-            <Search className="h-4 w-4 text-muted-foreground/50" />
+            <Search className="h-5 w-5 text-muted-foreground/90" />
           </button>
         ) : (
           <div className="flex-1 flex items-center px-2.5">
-            <Search className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />
+            <Search className="h-5 w-5 text-muted-foreground/70 flex-shrink-0" />
             <input
               type="text"
               value={searchValue}
