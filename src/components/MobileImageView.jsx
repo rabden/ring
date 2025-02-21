@@ -334,7 +334,7 @@ const MobileImageView = ({
                           onClick={handleDiscardImage}
                           className={cn(
                             "flex-1 h-9 rounded-lg text-xs",
-                            "bg-destructive/5 hover:bg-destructive/10",
+                            "bg-destructive/0 hover:bg-destructive/50",
                             "text-destructive/90 hover:text-destructive",
                             "transition-all duration-200"
                           )}
@@ -349,7 +349,7 @@ const MobileImageView = ({
                         onClick={onDownload}
                         className={cn(
                           "flex-1 h-9 rounded-lg text-xs",
-                          "bg-muted/5 hover:bg-muted/50",
+                          "bg-muted/0 hover:bg-accent/30",
                           "transition-all duration-200"
                         )}
                       >
@@ -362,7 +362,7 @@ const MobileImageView = ({
                         onClick={handleRemixClick}
                         className={cn(
                           "flex-1 h-9 rounded-lg text-xs",
-                          "bg-muted/5 hover:bg-muted/50",
+                          "bg-muted/0 hover:bg-accent/30",
                           "transition-all duration-200"
                         )}
                       >

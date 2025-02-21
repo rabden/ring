@@ -15,7 +15,8 @@ const ImagePromptSection = ({
 }) => {
   return (
     <div className={cn("flex flex-col space-y-6")}>
-      <div className="space-y-3">
+      <Separator className="bg-accent" />
+      <div className="space-y-1">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-foreground/90 uppercase tracking-wide">Prompt</h3>
           <div className="flex gap-2">
@@ -66,7 +67,7 @@ const ImagePromptSection = ({
         </div>
       </div>
 
-      <Separator className="bg-border" />
+      <Separator className="bg-accent" />
 
       {negative_prompt && (
         <>
@@ -84,7 +85,7 @@ const ImagePromptSection = ({
               />
             </div>
           </div>
-          <Separator className="bg-border" />
+          <Separator className="bg-accent" />
         </>
       )}
     </div>

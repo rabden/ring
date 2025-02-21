@@ -7,8 +7,10 @@ import { containsNSFWContent } from '@/utils/nsfwUtils';
 import { useState, useRef, useCallback } from 'react';
 
 const generateRandomSeed = () => {
-  // Generate a number within PostgreSQL integer range (-2147483648 to 2147483647)
-  return Math.floor(Math.random() * (2147483647 - (-2147483648) + 1)) + (-2147483648);
+  // Generate a positive 8-10 digit number within PostgreSQL int4 range (max 2147483647)
+  const min = 1000000;  // 8 digits minimum
+  const max = 2147483647; // Maximum value for int4
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
 export const useImageGeneration = ({

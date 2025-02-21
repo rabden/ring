@@ -126,12 +126,12 @@ const ImageCardActions = ({
 
           <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
             <DrawerContent className="focus:outline-none">
-              <DrawerHeader className="border-b border-border/5 px-4 py-4">
+              <DrawerHeader className="px-2 py-2">
                 <DrawerTitle className="text-base font-medium text-foreground/90">Image Details</DrawerTitle>
               </DrawerHeader>
-              <ScrollArea className="max-h-[80vh] overflow-y-auto px-4 py-4">
+              <ScrollArea className="max-h-[85vh] overflow-y-auto px-2 py-2">
                 <div className="space-y-6">
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1 mt-2">
                     {image.user_id === userId && (
                       <Button 
                         onClick={handleDiscard}
@@ -139,7 +139,7 @@ const ImageCardActions = ({
                         size="sm"
                         className={cn(
                           "flex-1 h-9 rounded-lg text-xs",
-                          "bg-background hover:bg-destructive/10",
+                          "bg-destructive/0 hover:bg-destructive/50",
                           "text-destructive/90 hover:text-destructive",
                           "transition-all duration-200"
                         )}
@@ -154,7 +154,7 @@ const ImageCardActions = ({
                       size="sm"
                       className={cn(
                         "flex-1 h-9 rounded-lg text-xs",
-                        "bg-muted/5 hover:bg-muted/50",
+                        "bg-muted/5 hover:bg-accent/30",
                         "transition-all duration-200"
                       )}
                     >
@@ -167,7 +167,7 @@ const ImageCardActions = ({
                       size="sm"
                       className={cn(
                         "flex-1 h-9 rounded-lg text-xs",
-                        "bg-muted/5 hover:bg-muted/50",
+                        "bg-muted/5 hover:bg-accent/30",
                         "transition-all duration-200"
                       )}
                     >
