@@ -145,7 +145,7 @@ const PromptInput = ({
               "relative z-10 rounded-2xl",
               "w-full min-h-[450px] md:min-h-[350px] resize-none bg-transparent text-base focus:outline-none",
               "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
-              "border-y border-border/5 py-6 px-3",
+              "border-y border-border/5 pt-6 pb-40 px-1",
               "transition-colors duration-200",
               isImproving && "opacity-80"
             )}

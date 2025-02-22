@@ -170,7 +170,7 @@ const DesktopPromptBox = ({
                 className={cn(
                   "w-full min-h-[300px] resize-none bg-transparent text-base focus:outline-none",
                   "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
-                  "pt-4 pb-40 px-3",
+                  "pt-6 pb-40 px-3",
                   "transition-colors duration-200",
                   isImproving && "opacity-80"
                 )}

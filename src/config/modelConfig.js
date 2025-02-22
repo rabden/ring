@@ -200,23 +200,6 @@ export const modelConfig = {
     use_negative_prompt: false,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   },
-  surreal: {
-    name: "Surreal Dream",
-    category: "General",
-    group: "Style Models",
-    apiUrl: "https://api-inference.huggingface.co/models/markury/surrealidescent",
-    qualityLimits: null,
-    isPremium: false,
-    promptSuffix: null,
-    tagline: "Create surreal Images",
-    image: "https://i.ibb.co/H7CQmNk/892a4a71-0657-4c7d-b224-bfa8c91354dd.jpg",
-    example: "tailor prompt to be surreal with adding extra surreal elements",
-    steps: 28,
-    use_guidance: false,
-    defaultguidance: 7.5,
-    use_negative_prompt: false,
-    default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
-  },
   realism: {
     name: "Realism",
     category: "General",
@@ -234,8 +217,8 @@ export const modelConfig = {
     use_negative_prompt: false,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   },
-  darkfantasy: {
-    name: "Dark Fantasy",
+    fantasy: {
+    name: "Fantasy",
     category: "General",
     group: "Style Models",
     apiUrl: "https://api-inference.huggingface.co/models/Shakker-Labs/FLUX.1-dev-LoRA-Dark-Fantasy",

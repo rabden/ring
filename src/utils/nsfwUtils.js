@@ -6,8 +6,7 @@ const NSFW_WORDS = [
   'inappropriate', 'indecent', 'vulgar', 'offensive', 'explicit', 'fuck', 'fucking',
   
   // Body-related terms
-  'topless', 'bottomless', 'nipple', 'nipples', 'cleavage', 'bust', 'voluptuous', 'thicc',
-  'waist', 'hip', 'hips', 'thighs', 'legs', 'buttocks', 'breasts',
+  'topless', 'bottomless', 'nipple', 'nipples', 'cleavage', 'bust', 'voluptuous', 'thicc', 'buttocks', 'breasts',
   
   // Suggestive terms
   'seductive', 'sensual', 'provocative', 'intimate',
