@@ -36,7 +36,7 @@ const ActionButtons = ({ generatingImages }) => {
       >
         My Images
       </Button>
-      <GeneratingImagesDropdown generatingImages={generatingImages} />
+      {!isInspiration && <GeneratingImagesDropdown generatingImages={generatingImages} />}
     </div>
   )
 }
