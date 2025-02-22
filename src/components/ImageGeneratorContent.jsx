@@ -118,7 +118,7 @@ const ImageGeneratorContent = ({
     }
   }, [location.pathname, location.hash]);
   return <>
-      <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground image-generator-content">
+      <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground image-generator-content overflow-x-hidden">
         <div className={cn("flex-grow p-2 md:p-6 overflow-y-auto transition-[padding] duration-300 ease-in-out", !isGenerateTab ? 'block' : 'hidden md:block', isSidebarVisible ? 'md:pr-[350px]' : 'md:pr-6', "pb-20 md:pb-6")}>
           {session && <>
               <DesktopHeader user={session.user} credits={credits} bonusCredits={bonusCredits} generatingImages={generatingImages} activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
@@ -145,14 +145,14 @@ const ImageGeneratorContent = ({
         </div>
 
         {isSidebarMounted && !searchQuery && <div className={cn(
-          "w-full md:w-[350px] bg-background text-card-foreground",
+          "fixed inset-y-0 w-full md:w-[350px] bg-background text-card-foreground",
           "md:fixed md:right-0 md:top-12 md:bottom-0",
           isGenerateTab ? 'block' : 'hidden md:block',
-          "md:h-[calc(100vh-3rem)] relative",
+          "md:h-[calc(100vh-3rem)]",
           "transition-transform duration-300 ease-in-out",
           "z-20",
-          "overflow-y-auto scrollbar-none", // Add scrolling without visible scrollbar
-          isSidebarVisible ? "translate-x-0" : isMobile ? "translate-x-full" : "md:translate-x-full"
+          "overflow-y-auto scrollbar-none", 
+          isSidebarVisible ? "translate-x-0" : "translate-x-full"
         )}>
             <div className="min-h-[calc(100vh-56px)] md:h-full overflow-visible px-2 md:px-6 py-4 md:py-4">
               <ImageGeneratorSettings {...imageGeneratorProps} hidePromptOnDesktop={!isMobile && !isGenerateTab} credits={credits} bonusCredits={bonusCredits} session={session} updateCredits={imageGeneratorProps.updateCredits} proMode={proMode} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} negativePrompt={imageGeneratorProps.negativePrompt} setNegativePrompt={imageGeneratorProps.setNegativePrompt} />
