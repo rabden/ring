@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, LogOut, Pencil, Repeat, Calendar, Star, CreditCard, Image, Lock, ChevronRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import LoadingScreen from '@/components/LoadingScreen';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { handleAvatarUpload } from '@/utils/profileUtils';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const SettingsCard = ({ title, children, icon: Icon, isPro, rightHeader, topLeftText }) => (
   <motion.div
@@ -182,6 +183,7 @@ const UserProfile = () => {
   const { data: isPro } = useProUser(session?.user?.id);
   const { data: isProRequest } = useProRequest(session?.user?.id);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showDonateDialog, setShowDonateDialog] = useState(false);
 
   React.useEffect(() => {
     if (session?.user) {
@@ -336,22 +338,61 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Dialog open={showDonateDialog} onOpenChange={setShowDonateDialog}>
+        <DialogContent className="flex flex-col w-[95%] sm:w-[85%] sm:max-w-[525px] h-[90vh] sm:h-auto sm:max-h-[80vh] p-0 gap-0">
+          <DialogHeader className="p-4 sm:p-6 pb-0">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-center px-0 sm:px-4">
+              🆘 Urgent: Your Support Needed! 💝
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="flex-1 px-4 sm:px-6">
+            <DialogDescription className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 text-base sm:text-lg">
+              <p className="leading-relaxed">
+                Dear Amazing User, 
+              </p>
+              <p className="leading-relaxed">
+                I'm reaching out because I'm in a critical situation. My resources are rapidly depleting, and I'm struggling to keep this project alive. The server costs are mounting, and I'm finding it increasingly difficult to maintain and improve this platform that we all love. 
+              </p>
+              <p className="leading-relaxed">
+                Without immediate support, I might have to scale back or even pause development. Your contribution, no matter how small, could be the lifeline this project needs right now. 🙏
+              </p>
+            </DialogDescription>
+          </ScrollArea>
+          <div className="border-t border-border/50 mt-4 p-4 sm:p-6 pt-4">
+            <Button 
+              className="w-full bg-primary hover:bg-primary/90 text-base sm:text-lg py-4 sm:py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={() => window.open('https://skrill.me/rq/Rabiul/5/USD?key=QvI6sdXr-vbmRBTunrjv4PJLv7_', '_blank')}
+            >
+              Support $5 💖
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="container max-w-5xl mx-auto py-6 px-1 space-y-4"
       >
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center justify-between gap-4 mb-6">
           <Link 
             to="/" 
             className="group flex items-center gap-2 hover:gap-3 transition-all duration-300"
           >
             <ArrowLeft className="h-5 w-5 text-primary transition-colors" />
-            <span className="text-2xl font-medium bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+            <span className="text-2xl font-medium">
               Settings
             </span>
           </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-primary/5 hover:bg-primary/10 text-primary border-primary/30"
+            onClick={() => setShowDonateDialog(true)}
+          >
+            Important! 🆘
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
