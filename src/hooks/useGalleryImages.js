@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect, useState } from 'react';
+import { startOfMonth, startOfWeek } from 'date-fns';
 
 const NSFW_MODELS = ['nsfwMaster', 'animeNsfw', 'animeNsfwfast', 'deepthroat'];
 
@@ -14,6 +15,7 @@ export const useGalleryImages = ({
   modelConfigs = {},
   showFollowing = false,
   showTop = false,
+  showLatest = false,
   following = []
 }) => {
   const queryClient = useQueryClient();
@@ -106,8 +108,8 @@ export const useGalleryImages = ({
         baseQuery = baseQuery.not('model', 'in', '(' + NSFW_MODELS.join(',') + ')');
       }
 
-      // Handle following and top filters
-      if (showFollowing && !showTop && following?.length > 0) {
+      // Handle following filter
+      if (showFollowing && following?.length > 0) {
         baseQuery = baseQuery.in('user_id', following);
       }
       // If following is selected but following list is empty, return empty result
@@ -134,19 +136,28 @@ export const useGalleryImages = ({
       // Apply pagination
       const start = pageParam.page * itemsPerPage;
       
-      // Order by likes and then by date to ensure consistent ordering
-      let query = baseQuery;
+      // Handle Top view with period filtering
       if (showTop) {
-        // For Top view: Sort by likes first, then by date
-        query = query
+        // Apply period filters
+        if (activeFilters.period === 'month') {
+          const startOfThisMonth = startOfMonth(new Date()).toISOString();
+          baseQuery = baseQuery.gte('created_at', startOfThisMonth);
+        } else if (activeFilters.period === 'week') {
+          const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString(); // Week starts on Monday
+          baseQuery = baseQuery.gte('created_at', startOfThisWeek);
+        }
+        // For 'all', no date filter is needed
+        
+        // Order by likes for Top view
+        baseQuery = baseQuery
           .order('like_count', { ascending: false, nullsLast: true })
           .order('created_at', { ascending: false });
       } else {
         // For other views: Sort by date only
-        query = query.order('created_at', { ascending: false });
+        baseQuery = baseQuery.order('created_at', { ascending: false });
       }
       
-      const { data: result, error, count } = await query
+      const { data: result, error, count } = await baseQuery
         .range(start, start + itemsPerPage - 1);
       
       if (error) throw error;

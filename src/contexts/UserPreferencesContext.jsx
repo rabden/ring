@@ -3,20 +3,31 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const UserPreferencesContext = createContext();
 
 export const UserPreferencesProvider = ({ children }) => {
-  // Initialize state from localStorage or default to false
+  // Initialize states from localStorage
   const [nsfwEnabled, setNsfwEnabled] = useState(() => {
     const saved = localStorage.getItem('nsfwEnabled');
     return saved ? JSON.parse(saved) : false;
   });
 
-  // Update localStorage when nsfwEnabled changes
+  const [aspectRatio, setAspectRatio] = useState(() => {
+    const saved = localStorage.getItem('aspectRatio');
+    return saved || "1:1";
+  });
+
+  // Update localStorage when states change
   useEffect(() => {
     localStorage.setItem('nsfwEnabled', JSON.stringify(nsfwEnabled));
   }, [nsfwEnabled]);
 
+  useEffect(() => {
+    localStorage.setItem('aspectRatio', aspectRatio);
+  }, [aspectRatio]);
+
   const value = {
     nsfwEnabled,
     setNsfwEnabled,
+    aspectRatio,
+    setAspectRatio,
   };
 
   return (

@@ -89,7 +89,7 @@ const ModelGridCard = ({ modelKey, config, isActive, onClick, disabled, proMode 
 );
 
 const GroupSelector = ({ groups, activeGroup, onGroupChange }) => (
-  <div className="flex gap-1 px-2 py-1 mb-1 overflow-x-auto  scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
+  <div className="flex gap-1 px-2 py-1 mb-1 overflow-x-auto scrollbar-none">
     <Button
       size="sm"
       variant={activeGroup === "all" ? "default" : "outline"}
@@ -382,7 +382,7 @@ const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) =
           onOpenChange={setIsDrawerOpen}
         >
           <DrawerContent className="focus:outline-none h-[90vh]">
-            <DrawerHeader className="border-b border-border/90">
+            <DrawerHeader>
               <DrawerTitle className="text-base font-medium text-foreground/90">Select Model</DrawerTitle>
             </DrawerHeader>
             <div>

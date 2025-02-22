@@ -7,9 +7,9 @@ import { containsNSFWContent } from '@/utils/nsfwUtils';
 import { useState, useRef, useCallback } from 'react';
 
 const generateRandomSeed = () => {
-  // Generate a positive 8-10 digit number within PostgreSQL int4 range (max 2147483647)
-  const min = 1000000;  // 8 digits minimum
-  const max = 2147483647; // Maximum value for int4
+  // Generate a positive 5-9 digit number within PostgreSQL int4 range (max 2147483647)
+  const min = 10000;    // 5 digits minimum
+  const max = 999999999; // 9 digits maximum
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
@@ -54,7 +54,7 @@ export const useImageGeneration = ({
         actualSeed,
         isPrivate,
         negativePrompt,
-        modelConfig
+        modelConfig: queuedModelConfig
       } = currentGeneration;
 
       // Update UI to show processing status
@@ -94,14 +94,22 @@ export const useImageGeneration = ({
             seed: actualSeed,
             width: finalWidth,
             height: finalHeight,
-            ...(modelConfig.steps && { num_inference_steps: parseInt(modelConfig.steps) }),
-            ...(modelConfig.use_guidance && { guidance_scale: modelConfig.defaultguidance }),
-            ...(modelConfig.use_negative_prompt && negativePrompt && { 
+            ...(queuedModelConfig.steps && { num_inference_steps: parseInt(queuedModelConfig.steps) }),
+            ...(queuedModelConfig.use_guidance && { guidance_scale: queuedModelConfig.defaultguidance }),
+            ...(queuedModelConfig.use_negative_prompt && negativePrompt && { 
               negative_prompt: negativePrompt 
             })
           };
 
-          const response = await fetch(modelConfig?.apiUrl, {
+          // Log actual API call for debugging
+          console.log('Processing queued generation:', {
+            queuedModel: model,
+            currentModel: modelConfigs[model]?.name,
+            queuedApiUrl: queuedModelConfig.apiUrl,
+            currentApiUrl: modelConfigs[model]?.apiUrl
+          });
+
+          const response = await fetch(queuedModelConfig.apiUrl, {
             headers: {
               Authorization: `Bearer ${apiKeyData.api_key}`,
               "Content-Type": "application/json",
@@ -112,6 +120,13 @@ export const useImageGeneration = ({
               inputs: modifiedPrompt,
               parameters
             }),
+          });
+
+          // Log response for debugging
+          console.log('API response received:', {
+            status: response.status,
+            model: model,
+            apiUrl: queuedModelConfig.apiUrl
           });
 
           const imageBlob = await handleApiResponse(response, generationId, () => makeRequest(response.status === 429));
@@ -171,7 +186,11 @@ export const useImageGeneration = ({
           toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
 
         } catch (error) {
-          console.error('Error generating image:', error);
+          console.error('API call error:', {
+            error,
+            model: model,
+            apiUrl: queuedModelConfig.apiUrl
+          });
           toast.error('Failed to generate image');
           setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
         }
@@ -201,6 +220,21 @@ export const useImageGeneration = ({
       return;
     }
 
+    // Lock the model config at generation time
+    const lockedModelConfig = { ...modelConfigs[model] };
+    if (!lockedModelConfig || !lockedModelConfig.apiUrl) {
+      console.error('Invalid model configuration:', { model, config: lockedModelConfig });
+      toast.error('Invalid model configuration');
+      return;
+    }
+
+    // Log generation attempt for debugging
+    console.log('Generation attempt:', {
+      model,
+      apiUrl: lockedModelConfig.apiUrl,
+      modelName: lockedModelConfig.name
+    });
+
     // Check for NSFW content if NSFW mode is disabled
     if (!nsfwEnabled) {
       const { isNSFW, foundWords } = containsNSFWContent(finalPrompt || prompt);
@@ -219,7 +253,7 @@ export const useImageGeneration = ({
       width,
       height,
       negativePrompt,
-      modelConfig: modelConfigs[model], // Store the specific config for this generation
+      modelConfig: lockedModelConfig, // Use locked config
       maxDimension: qualityOptions[quality]
     };
 

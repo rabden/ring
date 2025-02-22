@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
 import ImageGallery from './ImageGallery';
 import BottomNavbar from './BottomNavbar';
@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFollows } from '@/hooks/useFollows';
+
 const ImageGeneratorContent = ({
   session,
   credits,
@@ -30,7 +31,6 @@ const ImageGeneratorContent = ({
   onRemoveFilter,
   onSearch,
   isHeaderVisible,
-  handleImageClick,
   handleDownload,
   handleDiscard,
   handleRemix,
@@ -44,6 +44,7 @@ const ImageGeneratorContent = ({
   proMode
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = window.innerWidth < 768;
   const isInspiration = location.pathname === '/inspiration';
   const isGenerateTab = location.hash === '#imagegenerate';
@@ -117,6 +118,11 @@ const ImageGeneratorContent = ({
       onSearch('');
     }
   }, [location.pathname, location.hash]);
+
+  const handleImageClick = (image) => {
+    navigate(`/image/${image.id}`);
+  };
+
   return <>
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground image-generator-content overflow-x-hidden">
         <div className={cn("flex-grow p-2 md:p-6 overflow-y-auto transition-[padding] duration-300 ease-in-out", !isGenerateTab ? 'block' : 'hidden md:block', isSidebarVisible ? 'md:pr-[350px]' : 'md:pr-6', "pb-20 md:pb-6")}>
@@ -139,7 +145,24 @@ const ImageGeneratorContent = ({
               />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
-                <ImageGallery userId={session?.user?.id} onImageClick={handleImageClick} onDownload={handleDownload} onDiscard={handleDiscard} onRemix={handleRemix} onViewDetails={handleViewDetails} generatingImages={generatingImages} nsfwEnabled={nsfwEnabled} modelConfigs={imageGeneratorProps.modelConfigs} activeFilters={activeFilters} searchQuery={searchQuery} showPrivate={showPrivate} showFollowing={showFollowing} showTop={showTop} following={following} className="px-1" />
+                <ImageGallery 
+                  userId={session?.user?.id} 
+                  onImageClick={handleImageClick}
+                  onDownload={handleDownload}
+                  onDiscard={handleDiscard}
+                  onRemix={handleRemix}
+                  onViewDetails={handleViewDetails}
+                  generatingImages={generatingImages}
+                  nsfwEnabled={nsfwEnabled}
+                  modelConfigs={imageGeneratorProps.modelConfigs}
+                  activeFilters={activeFilters}
+                  searchQuery={searchQuery}
+                  showPrivate={showPrivate}
+                  showFollowing={showFollowing}
+                  showTop={showTop}
+                  following={following}
+                  className="px-1"
+                />
               </div>
             </>}
         </div>

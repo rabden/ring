@@ -29,8 +29,8 @@ const Inspiration = () => {
   const { nsfwEnabled, setNsfwEnabled } = useUserPreferences();
   const { generatingImages } = useGeneratingImages();
   const [showFollowing, setShowFollowing] = useState(false);
-  const [showTop, setShowTop] = useState(true);
-  const [showLatest, setShowLatest] = useState(false);
+  const [showTop, setShowTop] = useState(false);
+  const [showLatest, setShowLatest] = useState(true);
   const { credits, bonusCredits } = useUserCredits(session?.user?.id);
   const { following } = useFollows(session?.user?.id);
   const isHeaderVisible = useScrollDirection();
@@ -50,9 +50,18 @@ const Inspiration = () => {
         setShowLatest(false);
         break;
       case 'top':
+      case 'top-month':
+      case 'top-week':
+      case 'top-all':
         setShowFollowing(false);
         setShowTop(true);
         setShowLatest(false);
+        // Set period filter
+        setActiveFilters(prev => ({
+          ...prev,
+          period: hash === 'top-all' ? 'all' : 
+                 hash === 'top-month' ? 'month' : 'week'
+        }));
         break;
       case 'latest':
         setShowFollowing(false);
@@ -61,12 +70,12 @@ const Inspiration = () => {
         break;
       default:
         setActiveTab('images');
-        // If no hash, default to top
+        // If no hash, default to latest
         if (!hash) {
           setShowFollowing(false);
-          setShowTop(true);
-          setShowLatest(false);
-          navigate('/inspiration#top', { replace: true });
+          setShowTop(false);
+          setShowLatest(true);
+          navigate('/inspiration#latest', { replace: true });
         }
     }
   }, [location.hash]);

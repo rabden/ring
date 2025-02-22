@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Lock, ChevronUp, ChevronDown, RefreshCcw, ChevronsUp, ChevronsDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(false);
@@ -348,11 +349,11 @@ const DimensionChooser = ({
   qualityLimits = null
 }) => {
   const [showButtons, setShowButtons] = useState(false);
-  const premiumRatios = ['16:10', '10:16', '4:3', '3:4', '2:1', '1:2', '3:1', '1:3'];
+  const premiumRatios = ['16:10', '10:16', '4:3', '3:4', '2:1', '1:2'];
+  const { aspectRatio: savedAspectRatio, setAspectRatio: setSavedAspectRatio } = useUserPreferences();
   
   // Reorder ratios from most extreme portrait to most extreme landscape
   const ratios = [
-    "1:3",     // Most extreme portrait 
     "9:21",    
     "1:2",  
     "9:16",
@@ -367,15 +368,29 @@ const DimensionChooser = ({
     "16:10",  
     "16:9", 
     "2:1",
-    "21:9",
-    "3:1"      // Most extreme landscape
+    "21:9"
   ].filter(ratio => proMode || !premiumRatios.includes(ratio));
+
+  // Use saved aspect ratio on mount
+  useEffect(() => {
+    if (savedAspectRatio && savedAspectRatio !== aspectRatio) {
+      setAspectRatio(savedAspectRatio);
+    }
+  }, []);
 
   useEffect(() => {
     if (!proMode && premiumRatios.includes(aspectRatio)) {
       setAspectRatio("1:1");
+      setSavedAspectRatio("1:1");
     }
   }, [aspectRatio, proMode, setAspectRatio]);
+
+  // Save aspect ratio when it changes
+  useEffect(() => {
+    if (aspectRatio !== savedAspectRatio) {
+      setSavedAspectRatio(aspectRatio);
+    }
+  }, [aspectRatio]);
 
   // Force HD quality when quality is limited
   useEffect(() => {
@@ -445,7 +460,10 @@ const DimensionChooser = ({
         onToggleView={() => setShowButtons(prev => !prev)}
         showButtons={showButtons}
         ratios={ratios}
-        onRatioChange={setAspectRatio}
+        onRatioChange={(newRatio) => {
+          setAspectRatio(newRatio);
+          setSavedAspectRatio(newRatio);
+        }}
         proMode={proMode}
         premiumRatios={premiumRatios}
       />
