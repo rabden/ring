@@ -33,19 +33,18 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
     const stream = await client.chatCompletionStream({
       model: "meta-llama/Llama-3.2-3B-Instruct",
       messages: [
-        {
-          role: "system",
-          content: `Act as an expert AI image prompt engineer for high-quality image generation. Enhance the provided prompt by preserving its core idea and artistic vision. If it's too brief, enrich it with details; remove any extraneous noise that might make image-generator AI confused. Keep the final prompt between 20 to 80 words, the smaller prompt the better it is also strongly follow these Guidelines: ${modelExample}. Don't write anything else except the prompt.`
-        },
-        {
-          role: "user",
-          content: originalPrompt
-        }
+      {
+        role: "system",
+        content: `You are an expert AI image prompt engineer. Your task is to enhance the given prompt for high-quality image generation. Preserve the core idea and artistic vision, enrich brief prompts with details, and remove any extraneous noise. Keep the final prompt concise, between 20 to 80 words, and follow these guidelines: ${modelExample}. Output only the improved prompt.`
+      },
+      {
+        role: "user",
+        content: originalPrompt
+      }
       ],
       temperature: 0.5,
       max_tokens: 64000,
       top_p: 0.7
-
     });
 
     for await (const chunk of stream) {
