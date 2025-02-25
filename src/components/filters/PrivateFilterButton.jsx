@@ -12,7 +12,7 @@ const PrivateFilterButton = ({ showPrivate, onToggle }) => {
         onToggle(!showPrivate);
       }}
       className={cn(
-        "h-7 px-3 flex items-center gap-1.5 rounded-lg",
+        "h-7 px-3 flex items-center gap-1.5 rounded-full",
         showPrivate 
           ? "bg-primary/90 hover:bg-primary/80 text-primary-foreground shadow-sm" 
           : "bg-muted/5 hover:bg-muted/10",

@@ -16,7 +16,7 @@ const ActionButtons = ({ generatingImages }) => {
         variant={isInspiration ? 'default' : 'ghost'}
         onClick={() => navigate('/inspiration')}
         className={cn(
-          "h-8 text-xs px-4 rounded-xl bg-background/50 hover:bg-background/70",
+          "h-8 text-xs px-4 rounded-full bg-background/50",
           isInspiration && "bg-primary hover:bg-primary/80 text-primary-foreground",
           "transition-all duration-200"
         )}
@@ -28,7 +28,7 @@ const ActionButtons = ({ generatingImages }) => {
         variant={isMyImages ? 'default' : 'ghost'}
         onClick={() => navigate('/#myimages')}
         className={cn(
-          "h-8 text-xs px-4 rounded-xl bg-background/50 hover:bg-background/70",
+          "h-8 text-xs px-4 rounded-full bg-background/50 hover:bg-background/70",
           isMyImages && "bg-primary hover:bg-primary/80 text-primary-foreground",
           "transition-all duration-200"
         )}

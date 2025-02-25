@@ -68,7 +68,7 @@ const DesktopHeader = ({
       <div className={cn(
         "hidden md:block fixed top-0 left-0 right-0 z-10 h-12",
         "bg-background/95 backdrop-blur-[2px]",
-        "border-b border-border/50",
+        "border-b border-border/90",
         "transition-all duration-200 ease-in-out"
       )}>
         <div className={cn(

@@ -52,7 +52,7 @@ const InspirationFilterButtons = ({ className }) => {
         size="sm"
         onClick={handleFollowingClick}
         className={cn(
-          "h-7 text-xs px-3 rounded-lg",
+          "h-7 text-xs px-3 rounded-full",
           currentHash === 'following'
             ? "bg-primary/90 hover:bg-primary/80 text-primary-foreground shadow-sm" 
             : "bg-muted/5 hover:bg-muted/10",
@@ -67,7 +67,7 @@ const InspirationFilterButtons = ({ className }) => {
           size="sm"
           onClick={handleTopClick}
           className={cn(
-            "h-7 text-xs px-3 rounded-lg",
+            "h-7 text-xs px-3 rounded-full",
             isTopActive
               ? "bg-primary/90 hover:bg-primary/80 text-primary-foreground shadow-sm" 
               : "bg-muted/5 hover:bg-muted/10",
@@ -85,17 +85,17 @@ const InspirationFilterButtons = ({ className }) => {
                 size="sm"
                 className={cn(
                   "h-7 px-1.5",
-                  "bg-primary/90 hover:bg-primary/80 text-primary-foreground shadow-sm",
+                  "bg-primary/90 rounded-full hover:bg-primary/80 text-primary-foreground shadow-sm",
                   "transition-all duration-200",
-                  "rounded-l-none border-l border-l-primary/20"
+                  "rounded-l-none"
                 )}
               >
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32">
+            <DropdownMenuContent align="end" className="w-32 m-4">
               <DropdownMenuItem
-                className={cn("text-xs", topPeriod === 'week' && "bg-muted/50")}
+                className={cn("text-xs", topPeriod === 'week' && "bg-accent/50")}
                 onClick={() => {
                   setTopPeriod('week');
                   navigate('/inspiration#top-week');
@@ -104,7 +104,7 @@ const InspirationFilterButtons = ({ className }) => {
                 This Week
               </DropdownMenuItem>
               <DropdownMenuItem
-                className={cn("text-xs", topPeriod === 'month' && "bg-muted/50")}
+                className={cn("text-xs", topPeriod === 'month' && "bg-accent/50")}
                 onClick={() => {
                   setTopPeriod('month');
                   navigate('/inspiration#top-month');
@@ -113,7 +113,7 @@ const InspirationFilterButtons = ({ className }) => {
                 This Month
               </DropdownMenuItem>
               <DropdownMenuItem
-                className={cn("text-xs", topPeriod === 'all' && "bg-muted/50")}
+                className={cn("text-xs", topPeriod === 'all' && "bg-accent/50")}
                 onClick={() => {
                   setTopPeriod('all');
                   navigate('/inspiration#top-all');
@@ -130,7 +130,7 @@ const InspirationFilterButtons = ({ className }) => {
         size="sm"
         onClick={handleLatestClick}
         className={cn(
-          "h-7 text-xs px-3 rounded-lg",
+          "h-7 text-xs px-3 rounded-full",
           (currentHash === 'latest' || !currentHash)
             ? "bg-primary/90 hover:bg-primary/80 text-primary-foreground shadow-sm" 
             : "bg-muted/5 hover:bg-muted/10",
