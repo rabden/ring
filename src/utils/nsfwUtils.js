@@ -3,20 +3,20 @@ const NSFW_WORDS = [
   // Basic NSFW terms
   'nude', 'naked', 'nsfw', 'porn', 'pornographic', 'explicit',
   'xxx', 'sex', 'sexual', 'erotic', 'nudity', 'hentai', 'obscene',
-  'inappropriate', 'indecent', 'vulgar', 'offensive', 'explicit', 'fuck', 'fucking',
+  'inappropriate', 'indecent', 'vulgar', 'offensive', 'explicit', 'fuck', 'fucking', 'sexy',
   
   // Body-related terms
-  'topless', 'bottomless', 'nipple', 'nipples', 'cleavage', 'bust', 'voluptuous', 'thicc', 'buttocks', 'breasts',
+  'topless', 'bottomless', 'nipple', 'nipples', 'cleavage', 'bust', 'voluptuous', 'thicc', 'buttocks', 'breasts', 'porno', 'hard-core', 'hardcore', 'seductive', 'errotice', 'intimacy', 'nothing on showing off her entire body',
   
   // Suggestive terms
   'seductive', 'sensual', 'provocative', 'intimate',
   'risque', 'lewd', 'kinky', 'fetish', 'bdsm', 'bondage',
   'arousing', 'aroused', 'teasing', 'flirtatious', 'naughty',
-  'lustful', 'mating', 'mating season', 'mating ritual', 'mating behavior',
+  'lustful', 'mating', 'mating season', 'mating ritual', 'mating behavior', 'uncensored', 'nothing on showing off her entire body',
   
   // Inappropriate content
   'inappropriate', 'uncensored', 'unclothed', 'undressed', 'undressing',
-  'strip', 'stripping', 'striptease', 'burlesque',
+  'strip', 'stripping', 'striptease', 'burlesque', 'brunett',
   
   // Anatomical references
   'breast', 'boob', 'nipple', 'butt', 'ass', 'crotch', 'groin',
@@ -32,7 +32,7 @@ const NSFW_WORDS = [
   // Clothing states
   'undressed', 'unclothed', 'disrobed', 'disrobing', 'underdressed',
   'scantily', 'barely dressed', 'half dressed', 'partially dressed',
-  'partially undressed', 'clothes off', 'taking off', 'removing clothes',
+  'partially undressed', 'clothes off', 'taking off', 'removing clothes', 'no cloths', 'no clothes', 'no cloth', 'undressing',
   'strip', 'stripping', 'undressing', 'undress', 'sheer',
   'lingerie', 'underwear', 'bra', 'panties', 'thong', 'bikini', 'negligee', 'intimate apparel', 'undergarments',
   

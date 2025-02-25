@@ -156,7 +156,7 @@ const FullScreenImageView = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={cn(
         "max-w-[100vw] max-h-[100vh] w-[100vw] h-[100vh] p-0",
-        "bg-background backdrop-blur-[2px]",
+        "bg-card/10 backdrop-blur-[2px]",
         "data-[state=open]:duration-0 [&>button]:hidden",
         "rounded-none border-none"
       )}>
@@ -172,7 +172,7 @@ const FullScreenImageView = ({
             onClick={onClose}
             className={cn(
               "group flex items-center gap-2 hover:gap-3",
-              "transition-all duration-300 bg-card/80 hover:bg-background border border-border/0 hover:border-border",
+              "transition-all duration-300 bg-accent/0 hover:bg-accent",
             )}
           >
             <ArrowLeft className="h-5 w-6 text-foreground" />
@@ -208,19 +208,19 @@ const FullScreenImageView = ({
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={cn(
               "absolute top-1/2 -translate-y-1/2 z-10",
-              "h-8 w-8 rounded-full",
-              "bg-card/95 backdrop-blur-[2px]",
-              "border border-border/80",
-              "hover:bg-card/90",
-              "transition-all duration-300",
-              isSidebarOpen ? "right-[384px]" : "right-2",
+              "h-10 w-5 rounded-xl",
+              "bg-background backdrop-blur-[2px]",
+              "border-2 border-accent-40",
+              "hover:bg-accent hover:border-card",
+              "transition-all duration-100",
+              isSidebarOpen ? "right-[370px]" : "right-2",
               !isSidebarOpen && !showSidebarButton && "opacity-0 pointer-events-none"
             )}
           >
             {isSidebarOpen ? (
-              <ChevronsRight className="h-4 w-4" />
+              <ChevronsRight className="h-5 w-5" />
             ) : (
-              <ChevronsLeft className="h-4 w-4" />
+              <ChevronsLeft className="h-5 w-5" />
             )}
           </Button>
 
@@ -232,7 +232,7 @@ const FullScreenImageView = ({
           >
             <div className={cn(
               "h-[calc(100vh-24px)] rounded-lg mr-3 mt-3",
-              "border border-border bg-card/30",
+              "border border-border-20 bg-card/30",
               "backdrop-blur-[2px]",
               "shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
             )}>

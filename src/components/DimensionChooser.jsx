@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Lock, ChevronUp, ChevronDown, RefreshCcw, ChevronsUp, ChevronsDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const useMediaQuery = (query) => {
@@ -63,30 +64,39 @@ const DimensionVisualizer = ({
         <div className="relative w-full h-full flex items-center justify-center">
           <div className="relative">
             {/* Quality Badge */}
-            <span 
-              role={isQualityLocked ? undefined : "button"}
-              tabIndex={isQualityLocked ? undefined : 0}
-              onClick={isQualityLocked ? undefined : onQualityToggle}
-              onKeyDown={isQualityLocked ? undefined : (e) => e.key === 'Enter' && onQualityToggle()}
-              className={cn(
-                "absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-10",
-                !isQualityLocked && "cursor-pointer"
-              )}
-            >
-              <span 
-                className={cn(
-                  "inline-flex items-center rounded-full text-xs font-semibold",
-                  "border-transparent bg-primary text-primary-foreground",
-                  !isQualityLocked && "hover:bg-primary/90",
-                  "flex items-center gap-1 px-5 py-0.5"
-                )}
-              >
-                {quality}
-                {!isQualityLocked && (
-                  quality === "HD" ? <ChevronsUp className="h-3 w-3" /> : <ChevronsDown className="h-3 w-3" />
-                )}
-              </span>
-            </span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span 
+                    role={isQualityLocked ? undefined : "button"}
+                    tabIndex={isQualityLocked ? undefined : 0}
+                    onClick={isQualityLocked ? undefined : onQualityToggle}
+                    onKeyDown={isQualityLocked ? undefined : (e) => e.key === 'Enter' && onQualityToggle()}
+                    className={cn(
+                      "absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-10",
+                      !isQualityLocked && "cursor-pointer"
+                    )}
+                  >
+                    <span 
+                      className={cn(
+                        "inline-flex items-center rounded-full text-xs font-semibold",
+                        "border-transparent bg-primary text-primary-foreground",
+                        !isQualityLocked && "hover:bg-primary/90",
+                        "flex items-center gap-1 px-5 py-0.5"
+                      )}
+                    >
+                      {quality}
+                      {!isQualityLocked && (
+                        quality === "HD" ? <ChevronsUp className="h-3 w-3" /> : <ChevronsDown className="h-3 w-3" />
+                      )}
+                    </span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isQualityLocked ? "Quality is locked to HD" : "Click to toggle quality"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
             <div 
               className={cn(
@@ -130,21 +140,30 @@ const DimensionVisualizer = ({
               </div>
 
               {/* Aspect ratio text */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className={cn(
-                  "flex items-center gap-2 group cursor-pointer",
-                  "text-base font-medium hover:text-primary transition-colors"
-                )} onClick={onToggleView}>
-                  <span className="flex items-center gap-1.5">
-                    {ratio.split(':')[0]}
-                    <RefreshCcw className="h-3.5 w-3.5 group-hover:rotate-180 transition-transform duration-300" />
-                    {ratio.split(':')[1]}
-                  </span>
-                  {isPremium && (
-                    <Lock className="h-3 w-3 text-primary opacity-80 group-hover:opacity-100 transition-opacity duration-200" />
-                  )}
-                </div>
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="absolute -inset-3 flex items-center justify-center">
+                      <div className={cn(
+                        "flex items-center gap-2 group cursor-pointer",
+                        "text-base font-medium hover:text-primary transition-colors"
+                      )} onClick={onToggleView}>
+                        <span className="flex items-center gap-1.5">
+                          {ratio.split(':')[0]}
+                          <RefreshCcw className="h-3.5 w-3.5 group-hover:rotate-180 transition-transform duration-300" />
+                          {ratio.split(':')[1]}
+                        </span>
+                        {isPremium && (
+                          <Lock className="h-3 w-3 text-primary opacity-80 group-hover:opacity-100 transition-opacity duration-200" />
+                        )}
+                      </div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Use slider below to change aspect ratio
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>
@@ -213,11 +232,11 @@ const CustomSlider = ({ value, onChange, min, max }) => {
   }, [value]);
 
   return (
-    <div className="relative w-full h-8 flex items-center">
+    <div className="relative w-full h-8 flex items-center fade-in slide-in-from-top-2 transition-all duration-200">
       <div className="absolute w-full h-2 bg-muted rounded-full">
         <div 
           ref={progressRef}
-          className="absolute h-full bg-foreground rounded-full transition-all duration-150"
+          className="absolute h-full bg-foreground rounded-full"
           style={{ left: '50%', right: '50%' }}
         />
       </div>
@@ -234,9 +253,10 @@ const CustomSlider = ({ value, onChange, min, max }) => {
         className={cn(
           "absolute w-full h-2",
           "appearance-none bg-transparent cursor-pointer",
+          "transition-all duration-500",
           // Thumb styles
           "[&::-webkit-slider-thumb]:appearance-none",
-          "[&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-4",
+          "[&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-5",
           "[&::-webkit-slider-thumb]:rounded-sm [&::-webkit-slider-thumb]:bg-foreground",
           "[&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-foreground",
           "[&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:transition-all",
@@ -258,7 +278,6 @@ const AspectRatioButtons = ({ ratios, currentRatio, onChange, proMode, premiumRa
   // Pair the ratios for the button layout
   const pairedRatios = [
     ["9:21", "21:9"],
-    ["1:3", "3:1"],
     ["1:2", "2:1"],
     ["10:16", "16:10"],
     ["9:16", "16:9"],
@@ -269,7 +288,7 @@ const AspectRatioButtons = ({ ratios, currentRatio, onChange, proMode, premiumRa
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-1.5 animate-in fade-in slide-in-from-top-4 duration-300">
+    <div className="grid grid-cols-4 gap-1.5 slide-in-from-top-5 duration-800">
       {pairedRatios.map((group, idx) => (
         <React.Fragment key={idx}>
           {group.map((ratio) => {
@@ -279,9 +298,9 @@ const AspectRatioButtons = ({ ratios, currentRatio, onChange, proMode, premiumRa
                 key={ratio}
                 onClick={() => !isPremium && onChange(ratio)}
                 className={cn(
-                  "relative px-2 py-1.5 text-sm rounded-md border transition-all duration-200",
-                  "hover:border-primary/50 hover:bg-primary/5",
-                  currentRatio === ratio && "border-primary bg-primary/10",
+                  "relative px-2 py-1.5 text-sm rounded-full border transition-all duration-200",
+                  "hover:bg-accent/30 border border-border/50 hover:border-border/80 text-primary/90",
+                  currentRatio === ratio && "bg-accent border border-border/0 hover:border-border text-primary hover:bg-accent/70",
                   !isPremium && "cursor-pointer",
                   isPremium && "opacity-50 cursor-not-allowed",
                   // Center 1:1 ratio
