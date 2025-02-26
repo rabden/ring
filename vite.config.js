@@ -15,8 +15,8 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      jsxRuntime: 'classic',
-      jsxImportSource: 'react',
+      jsxRuntime: 'automatic',
+      jsxImportSource: '@vitejs/plugin-react',
       include: "**/*.{jsx,tsx}",
       exclude: /node_modules/,
       babel: {
