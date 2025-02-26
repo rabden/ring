@@ -3,6 +3,7 @@ import { Lock, ChevronUp, ChevronDown, RefreshCcw, ChevronsUp, ChevronsDown } fr
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(false);
@@ -59,7 +60,7 @@ const DimensionVisualizer = ({
   
   return (
     <div className="flex flex-col items-center space-y-2">
-      <div className="relative w-full h-auto aspect-square">
+      <div className="relative w-full h-[300px] aspect-square">
         <div className="relative w-full h-full flex items-center justify-center">
           <div className="relative">
             {/* Quality Badge */}
@@ -142,7 +143,7 @@ const DimensionVisualizer = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="absolute -inset-3 flex items-center justify-center">
+                    <div className="absolute flex items-center justify-center">
                       <div className={cn(
                         "flex items-center gap-2 group cursor-pointer",
                         "text-base font-medium hover:text-primary transition-colors"
@@ -168,49 +169,32 @@ const DimensionVisualizer = ({
         </div>
       </div>
 
-      <div className="w-full">
+      <div className="w-full transition-all duration-300">
         <div className={cn(
-          "w-full",
-          "transition-all duration-300 ease-in-out",
-          showButtons 
-            ? "h-auto opacity-100 pointer-events-auto transform-none" 
-            : "h-0 opacity-0 pointer-events-none translate-y-4"
+          "transition-all duration-300 transform",
+          showButtons ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0 pointer-events-none absolute"
         )}>
-          <div className={cn(
-            "transform transition-all duration-300 ease-out",
-            showButtons ? "scale-100" : "scale-95"
-          )}>
-            <AspectRatioButtons
-              ratios={ratios}
-              currentRatio={ratio}
-              onChange={onRatioChange}
-              proMode={proMode}
-              premiumRatios={premiumRatios}
-            />
-          </div>
+          <AspectRatioButtons
+            ratios={ratios}
+            currentRatio={ratio}
+            onChange={onRatioChange}
+            proMode={proMode}
+            premiumRatios={premiumRatios}
+          />
         </div>
-
         <div className={cn(
-          "w-full",
-          "transition-all duration-300 ease-in-out",
-          !showButtons 
-            ? "h-auto opacity-100 pointer-events-auto transform-none delay-150" 
-            : "h-0 opacity-0 pointer-events-none -translate-y-4"
+          "transition-all duration-300 transform",
+          !showButtons ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0 pointer-events-none absolute"
         )}>
-          <div className={cn(
-            "transform transition-all duration-300 ease-out",
-            !showButtons ? "scale-100 delay-150" : "scale-95"
-          )}>
-            <CustomSlider
-              value={getCurrentRatioIndex(ratio, ratios)}
-              onChange={value => {
-                const newRatio = getRatioFromSliderValue(value, ratios);
-                onRatioChange(newRatio);
-              }}
-              min={-50}
-              max={50}
-            />
-          </div>
+          <CustomSlider
+            value={getCurrentRatioIndex(ratio, ratios)}
+            onChange={value => {
+              const newRatio = getRatioFromSliderValue(value, ratios);
+              onRatioChange(newRatio);
+            }}
+            min={-50}
+            max={50}
+          />
         </div>
       </div>
     </div>
@@ -248,11 +232,11 @@ const CustomSlider = ({ value, onChange, min, max }) => {
   }, [value]);
 
   return (
-    <div className="relative w-full h-8 flex items-center">
-      <div className="absolute w-full h-2 bg-muted rounded-full overflow-hidden">
+    <div className="relative w-full h-8 flex items-center fade-in slide-in-from-top-2 transition-all duration-200">
+      <div className="absolute w-full h-2 bg-muted rounded-full">
         <div 
           ref={progressRef}
-          className="absolute h-full bg-foreground rounded-full transition-all duration-300 ease-in-out"
+          className="absolute h-full bg-foreground rounded-full"
           style={{ left: '50%', right: '50%' }}
         />
       </div>
@@ -269,7 +253,7 @@ const CustomSlider = ({ value, onChange, min, max }) => {
         className={cn(
           "absolute w-full h-2",
           "appearance-none bg-transparent cursor-pointer",
-          "transition-all duration-300 ease-in-out",
+          "transition-all duration-500",
           // Thumb styles
           "[&::-webkit-slider-thumb]:appearance-none",
           "[&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-5",
@@ -277,15 +261,13 @@ const CustomSlider = ({ value, onChange, min, max }) => {
           "[&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-foreground",
           "[&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:transition-all",
           "[&::-webkit-slider-thumb]:hover:bg-foreground/90",
-          "[&::-webkit-slider-thumb]:duration-300",
           // Firefox thumb styles
           "[&::-moz-range-thumb]:appearance-none",
           "[&::-moz-range-thumb]:w-2 [&::-moz-range-thumb]:h-4",
           "[&::-moz-range-thumb]:rounded-sm [&::-moz-range-thumb]:bg-foreground",
           "[&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-foreground",
           "[&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:transition-all",
-          "[&::-moz-range-thumb]:hover:bg-foreground/90",
-          "[&::-moz-range-thumb]:duration-300"
+          "[&::-moz-range-thumb]:hover:bg-foreground/90"
         )}
       />
     </div>
@@ -306,7 +288,7 @@ const AspectRatioButtons = ({ ratios, currentRatio, onChange, proMode, premiumRa
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-1.5">
+    <div className="grid grid-cols-4 gap-1.5 slide-in-from-top-5 duration-800">
       {pairedRatios.map((group, idx) => (
         <React.Fragment key={idx}>
           {group.map((ratio) => {
@@ -316,8 +298,7 @@ const AspectRatioButtons = ({ ratios, currentRatio, onChange, proMode, premiumRa
                 key={ratio}
                 onClick={() => !isPremium && onChange(ratio)}
                 className={cn(
-                  "relative px-2 py-1.5 text-sm rounded-full border",
-                  "transition-all duration-300 ease-in-out",
+                  "relative px-2 py-1.5 text-sm rounded-full border transition-all duration-200",
                   "hover:bg-accent/30 border border-border/50 hover:border-border/80 text-primary/90",
                   currentRatio === ratio && "bg-accent border border-border/0 hover:border-border text-primary hover:bg-accent/70",
                   !isPremium && "cursor-pointer",
@@ -388,6 +369,7 @@ const DimensionChooser = ({
 }) => {
   const [showButtons, setShowButtons] = useState(false);
   const premiumRatios = ['16:10', '10:16', '4:3', '3:4', '2:1', '1:2'];
+  const { aspectRatio: savedAspectRatio, setAspectRatio: setSavedAspectRatio } = useUserPreferences();
   
   // Reorder ratios from most extreme portrait to most extreme landscape
   const ratios = [
@@ -408,11 +390,26 @@ const DimensionChooser = ({
     "21:9"
   ].filter(ratio => proMode || !premiumRatios.includes(ratio));
 
+  // Use saved aspect ratio on mount
+  useEffect(() => {
+    if (savedAspectRatio && savedAspectRatio !== aspectRatio) {
+      setAspectRatio(savedAspectRatio);
+    }
+  }, []);
+
   useEffect(() => {
     if (!proMode && premiumRatios.includes(aspectRatio)) {
       setAspectRatio("1:1");
+      setSavedAspectRatio("1:1");
     }
   }, [aspectRatio, proMode, setAspectRatio]);
+
+  // Save aspect ratio when it changes
+  useEffect(() => {
+    if (aspectRatio !== savedAspectRatio) {
+      setSavedAspectRatio(aspectRatio);
+    }
+  }, [aspectRatio]);
 
   // Force HD quality when quality is limited
   useEffect(() => {
@@ -429,6 +426,48 @@ const DimensionChooser = ({
     setQuality(quality === "HD" ? "HD+" : "HD");
   };
 
+  const handleSliderChange = (value) => {
+    const centerIndex = ratios.indexOf("1:1");
+    
+    if (Math.abs(value) < 1) {
+      setAspectRatio("1:1");
+      return;
+    }
+    
+    let index;
+    if (value < 0) {
+      // Portrait side - decrease width
+      const beforeCenterSteps = centerIndex;
+      const normalizedValue = ((value + 50) / 50) * beforeCenterSteps;
+      index = Math.round(normalizedValue);
+    } else {
+      // Landscape side - decrease height
+      const afterCenterSteps = ratios.length - 1 - centerIndex;
+      const normalizedValue = (value / 50) * afterCenterSteps;
+      index = centerIndex + Math.round(normalizedValue);
+    }
+    
+    setAspectRatio(ratios[Math.max(0, Math.min(ratios.length - 1, index))] || "1:1");
+  }
+
+  const getCurrentRatioIndex = () => {
+    const centerIndex = ratios.indexOf("1:1");
+    const currentIndex = ratios.indexOf(aspectRatio);
+    
+    if (currentIndex === centerIndex || !ratios.includes(aspectRatio)) return 0;
+    
+    if (currentIndex < centerIndex) {
+      // Portrait side - calculate position based on width reduction
+      const percentage = currentIndex / centerIndex;
+      return -50 * (1 - percentage);
+    } else {
+      // Landscape side - calculate position based on height reduction
+      const stepsAfterCenter = currentIndex - centerIndex;
+      const totalStepsAfterCenter = ratios.length - 1 - centerIndex;
+      return (stepsAfterCenter / totalStepsAfterCenter) * 50;
+    }
+  }
+
   return (
     <div className="space-y-0.5">
       <DimensionVisualizer 
@@ -440,7 +479,10 @@ const DimensionChooser = ({
         onToggleView={() => setShowButtons(prev => !prev)}
         showButtons={showButtons}
         ratios={ratios}
-        onRatioChange={setAspectRatio}
+        onRatioChange={(newRatio) => {
+          setAspectRatio(newRatio);
+          setSavedAspectRatio(newRatio);
+        }}
         proMode={proMode}
         premiumRatios={premiumRatios}
       />

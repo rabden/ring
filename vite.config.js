@@ -26,8 +26,7 @@ export default defineConfig(({ mode }) => ({
         babelrc: false,
         configFile: false
       },
-      refresh: true,
-      fastRefresh: true
+      refresh: true
     }),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
@@ -62,6 +61,5 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(mode)
-  },
-  cacheDir: '.vite'
+  }
 }));
