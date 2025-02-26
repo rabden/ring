@@ -48,17 +48,21 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
     <div className={cn(
       "relative flex items-center",
       "h-8",
-      "transition-all duration-300 ease-in-out",
+      isExpanded 
+        ? "transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]" 
+        : "transition-all duration-300 ease-out",
       isExpanded ? "md:w-[250px] w-full" : "w-8",
       className
     )}>
       <div className={cn(
         "absolute inset-0",
         "flex items-center",
-        "bg-muted/5 hover:bg-muted/10",
-        "rounded-xl",
-        "transition-all duration-200",
-        (isFocused || isExpanded) && "bg-muted/10 ring-1 ring-border",
+        "bg-accent/0",
+        "rounded-full",
+        isExpanded
+          ? "transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+          : "transition-all duration-300 ease-out",
+        (isFocused || isExpanded) && "bg-accent/80",
       )}>
         {!isExpanded ? (
           <button
@@ -80,7 +84,7 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
               placeholder="Search..."
               className={cn(
                 "flex-1 h-full bg-transparent",
-                "text-sm text-foreground placeholder:text-muted-foreground/50",
+                "text-sm text-foreground placeholder:text-muted-foreground/50", 
                 "focus:outline-none",
                 "px-2"
               )}
