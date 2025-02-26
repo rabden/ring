@@ -60,7 +60,7 @@ const DimensionVisualizer = ({
   
   return (
     <div className="flex flex-col items-center space-y-2">
-      <div className="relative w-full h-[300px] aspect-square">
+      <div className="relative w-full h-auto aspect-square">
         <div className="relative w-full h-full flex items-center justify-center">
           <div className="relative">
             {/* Quality Badge */}
@@ -143,7 +143,7 @@ const DimensionVisualizer = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="absolute flex items-center justify-center">
+                    <div className="absolute -inset-3 flex items-center justify-center">
                       <div className={cn(
                         "flex items-center gap-2 group cursor-pointer",
                         "text-base font-medium hover:text-primary transition-colors"

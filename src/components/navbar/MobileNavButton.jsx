@@ -73,13 +73,13 @@ const MobileNavButton = ({
         }
       }}
       className={cn(
-        "flex items-center justify-center w-8 h-8 transition-all duration-200 relative rounded-full",
-        isActive ? "text-primary bg-accent/90" : "text-muted-foreground/70",
-        "relative group"
+        "flex items-center justify-center w-14 h-12 transition-all duration-200 relative rounded-xl",
+        isActive ? "text-primary" : "text-muted-foreground/70",
+        "relative group hover:bg-accent/10"
       )}
     >
       <div className={cn(
-        "absolute inset-x-1 h-0.5 -top-1 right-0.2 rounded-full transition-all duration-200",
+        "absolute inset-x-3 h-0.5 -top-1 rounded-full transition-all duration-200",
         isActive ? "bg-primary/50" : "bg-transparent"
       )} />
       {children || (
