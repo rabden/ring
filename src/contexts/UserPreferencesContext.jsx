@@ -9,25 +9,14 @@ export const UserPreferencesProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : false;
   });
 
-  const [aspectRatio, setAspectRatio] = useState(() => {
-    const saved = localStorage.getItem('aspectRatio');
-    return saved || "1:1";
-  });
-
   // Update localStorage when states change
   useEffect(() => {
     localStorage.setItem('nsfwEnabled', JSON.stringify(nsfwEnabled));
   }, [nsfwEnabled]);
 
-  useEffect(() => {
-    localStorage.setItem('aspectRatio', aspectRatio);
-  }, [aspectRatio]);
-
   const value = {
     nsfwEnabled,
     setNsfwEnabled,
-    aspectRatio,
-    setAspectRatio,
   };
 
   return (

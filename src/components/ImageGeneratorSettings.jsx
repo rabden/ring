@@ -95,7 +95,7 @@ const ImageGeneratorSettings = ({
   };
 
   return (
-    <div className="space-y-6 md:space-y-4 pb-20 md:pb-4">
+    <div className="space-y-4 pb-20 md:pb-4 px-2">
       <div className={hidePromptOnDesktop ? 'md:hidden' : ''}>
         <PromptInput
           prompt={prompt}

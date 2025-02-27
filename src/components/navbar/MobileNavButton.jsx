@@ -73,15 +73,11 @@ const MobileNavButton = ({
         }
       }}
       className={cn(
-        "flex items-center justify-center w-8 h-8 transition-all duration-200 relative rounded-full",
+        "flex items-center justify-center w-8 h-8 transition-all duration-400 relative rounded-full",
         isActive ? "text-primary bg-accent/90" : "text-muted-foreground/70",
         "relative group"
       )}
     >
-      <div className={cn(
-        "absolute inset-x-1 h-0.5 -top-1 right-0.2 rounded-full transition-all duration-200",
-        isActive ? "bg-primary/50" : "bg-transparent"
-      )} />
       {children || (
         <>
           <Icon size={20} className={cn(
@@ -90,7 +86,7 @@ const MobileNavButton = ({
           )} />
           {(badge > 0 || showCheckmark) && (
             <span className={cn(
-              "absolute top-1.5 right-2.5 h-4 w-4 rounded-full bg-primary/30 text-[10px] font-medium text-primary-foreground flex items-center justify-center backdrop-blur-[1px]",
+              "absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center",
               showCheckmark && "animate-in zoom-in duration-300"
             )}>
               {showCheckmark ? (
