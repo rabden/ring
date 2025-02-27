@@ -11,8 +11,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
+    "@types/react": "^18.2.56",
+    "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.19",
     "eslint": "^8.56.0",
@@ -68,10 +68,10 @@
     "html-to-image": "^1.11.11",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.417.0",
-    "react": "^18.0.0",
+    "react": "^19.0.0",
     "react-advanced-cropper": "^0.20.0",
     "react-copy-to-clipboard": "^5.1.0",
-    "react-dom": "^18.0.0",
+    "react-dom": "^19.0.0",
     "react-hook-form": "^7.52.0",
     "react-icons": "^5.4.0",
     "react-image-crop": "^10.1.8",
