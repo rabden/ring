@@ -10,7 +10,6 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     hmr: {
       overlay: true,
-      timeout: 30000
     }
   },
   plugins: [
