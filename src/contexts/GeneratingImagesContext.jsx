@@ -1,11 +1,14 @@
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useGenerationStatus } from '@/hooks/useGenerationStatus';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/supabase';
 
 const GeneratingImagesContext = createContext();
+
+// Constants for auto-clearing
+const AUTO_CLEAR_DELAY = 5 * 60 * 1000; // 5 minutes
 
 export const GeneratingImagesProvider = ({ children }) => {
   const { session } = useSupabaseAuth();
@@ -22,6 +25,29 @@ export const GeneratingImagesProvider = ({ children }) => {
     getProcessingCount,
     getFailedCount
   } = useGenerationStatus(userId);
+
+  // Auto-clear completed and failed generations after a certain time
+  useEffect(() => {
+    if (!generationStatuses.length) return;
+    
+    const completedOrFailedStatuses = generationStatuses.filter(
+      status => status.status === 'completed' || status.status === 'failed'
+    );
+    
+    if (completedOrFailedStatuses.length === 0) return;
+    
+    // Set up timeout for each completed/failed generation
+    const timeouts = completedOrFailedStatuses.map(status => {
+      return setTimeout(() => {
+        removeGenerationStatus(status.id);
+      }, AUTO_CLEAR_DELAY);
+    });
+    
+    // Cleanup timeouts
+    return () => {
+      timeouts.forEach(timeout => clearTimeout(timeout));
+    };
+  }, [generationStatuses, removeGenerationStatus]);
 
   // Map generation statuses to the previous format for backward compatibility
   const generatingImages = generationStatuses.map(status => ({
