@@ -15,17 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { 
-      prompt, 
-      model, 
-      parameters, 
-      userId, 
-      isPrivate, 
-      quality, 
-      aspectRatio, 
-      modelName,
-      generationId 
-    } = await req.json()
+    const { prompt, model, parameters, userId, isPrivate, quality, aspectRatio, modelName } = await req.json()
     
     console.log('Received request with model:', model, 'and prompt:', prompt)
     
@@ -38,14 +28,6 @@ serve(async (req) => {
     }
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
-    // Update status to processing
-    if (generationId) {
-      await supabase
-        .from('image_generation_status')
-        .update({ status: 'processing' })
-        .eq('id', generationId);
-    }
     
     // Get a random API key from the database with locking mechanism
     // Lock is created by temporarily marking the key as inactive
@@ -61,18 +43,6 @@ serve(async (req) => {
     
     if (keyError || !keyData || keyData.length === 0) {
       console.error('Error fetching API key:', keyError);
-      
-      // Update status to failed if there's a generationId
-      if (generationId) {
-        await supabase
-          .from('image_generation_status')
-          .update({ 
-            status: 'failed',
-            error_message: 'Failed to get a valid API key'
-          })
-          .eq('id', generationId);
-      }
-      
       throw new Error('Failed to get a valid API key');
     }
     
@@ -127,18 +97,6 @@ serve(async (req) => {
           
         if (uploadError) {
           console.error('Storage upload error:', uploadError);
-          
-          // Update status to failed if there's a generationId
-          if (generationId) {
-            await supabase
-              .from('image_generation_status')
-              .update({ 
-                status: 'failed',
-                error_message: 'Storage upload error: ' + uploadError.message
-              })
-              .eq('id', generationId);
-          }
-          
           throw uploadError;
         }
         
@@ -164,30 +122,7 @@ serve(async (req) => {
           
         if (insertError) {
           console.error('Database insert error:', insertError);
-          
-          // Update status to failed if there's a generationId
-          if (generationId) {
-            await supabase
-              .from('image_generation_status')
-              .update({ 
-                status: 'failed',
-                error_message: 'Database insert error: ' + insertError.message
-              })
-              .eq('id', generationId);
-          }
-          
           throw insertError;
-        }
-        
-        // Update the generation status
-        if (generationId) {
-          await supabase
-            .from('image_generation_status')
-            .update({ 
-              status: 'completed',
-              image_id: insertData.id
-            })
-            .eq('id', generationId);
         }
         
         console.log('Image saved to database with ID:', insertData.id);
@@ -207,19 +142,6 @@ serve(async (req) => {
           } 
         }
       )
-    } catch (error) {
-      // Update status to failed if there's a generationId
-      if (generationId) {
-        await supabase
-          .from('image_generation_status')
-          .update({ 
-            status: 'failed',
-            error_message: error.message || 'Unknown error during image generation'
-          })
-          .eq('id', generationId);
-      }
-      
-      throw error;
     } finally {
       // Always update the last_used_at timestamp
       const updateResult = await supabase

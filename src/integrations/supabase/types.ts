@@ -33,65 +33,6 @@ export type Database = {
         }
         Relationships: []
       }
-      image_generation_status: {
-        Row: {
-          aspect_ratio: string | null
-          created_at: string | null
-          error_message: string | null
-          id: string
-          image_id: string | null
-          is_private: boolean | null
-          model: string
-          model_name: string | null
-          parameters: Json
-          prompt: string
-          quality: string | null
-          status: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          aspect_ratio?: string | null
-          created_at?: string | null
-          error_message?: string | null
-          id?: string
-          image_id?: string | null
-          is_private?: boolean | null
-          model: string
-          model_name?: string | null
-          parameters: Json
-          prompt: string
-          quality?: string | null
-          status?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          aspect_ratio?: string | null
-          created_at?: string | null
-          error_message?: string | null
-          id?: string
-          image_id?: string | null
-          is_private?: boolean | null
-          model?: string
-          model_name?: string | null
-          parameters?: Json
-          prompt?: string
-          quality?: string | null
-          status?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "image_generation_status_image_id_fkey"
-            columns: ["image_id"]
-            isOneToOne: false
-            referencedRelation: "user_images"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notifications: {
         Row: {
           created_at: string | null
