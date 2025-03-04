@@ -78,10 +78,6 @@ const MobileNavButton = ({
         "relative group hover:bg-accent/10"
       )}
     >
-      <div className={cn(
-        "absolute inset-x-3 h-0.5 -top-1 rounded-full transition-all duration-200",
-        isActive ? "bg-primary/50" : "bg-transparent"
-      )} />
       {children || (
         <>
           <Icon size={20} className={cn(
