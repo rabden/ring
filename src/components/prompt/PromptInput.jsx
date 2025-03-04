@@ -196,7 +196,7 @@ const PromptInput = ({
         </Button>
         <Button
           size="sm"
-          className="h-8 rounded-xl bg-primary/90 hover:bg-primary/80 transition-all duration-200"
+          className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
           onClick={handleSubmit}
           disabled={!prompt?.length || !hasEnoughCredits || !userId || isImproving}
         >
