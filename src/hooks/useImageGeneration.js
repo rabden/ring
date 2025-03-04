@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -6,7 +5,6 @@ import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
 import { containsNSFWContent } from '@/utils/nsfwUtils';
 import { useState, useRef, useCallback } from 'react';
-import { HfInference } from "@huggingface/inference";
 
 const generateRandomSeed = () => {
   // Generate a positive 5-9 digit number within PostgreSQL int4 range (max 2147483647)
@@ -64,34 +62,11 @@ export const useImageGeneration = ({
         img.id === generationId ? { ...img, status: 'processing' } : img
       ));
 
-      const makeRequest = async (needNewKey = false) => {
+      const makeRequest = async (retryCount = 0) => {
         try {
           initRetryCount(generationId);
 
-          const { data: apiKeyData, error: apiKeyError } = await supabase
-            .from('huggingface_api_keys')
-            .select('api_key')
-            .eq('is_active', true)
-            .order('last_used_at', { ascending: true })
-            .limit(1)
-            .single();
-          
-          if (apiKeyError) {
-            setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
-            toast.error('Failed to get API key');
-            throw new Error(`Failed to get API key: ${apiKeyError.message}`);
-          }
-          if (!apiKeyData) {
-            setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
-            toast.error('No active API key available');
-            throw new Error('No active API key available');
-          }
-
-          await supabase
-            .from('huggingface_api_keys')
-            .update({ last_used_at: new Date().toISOString() })
-            .eq('api_key', apiKeyData.api_key);
-
+          // Prepare parameters for the model
           const parameters = {
             seed: actualSeed,
             width: finalWidth,
@@ -103,32 +78,46 @@ export const useImageGeneration = ({
             })
           };
 
-          // Log actual API call for debugging
-          console.log('Processing queued generation:', {
-            model: model,
-            modelName: modelConfigs[model]?.name,
-            huggingfaceModelId: queuedModelConfig.huggingfaceId || model
-          });
-
-          // Create HfInference client with API key
-          const client = new HfInference(apiKeyData.api_key);
-          
-          console.log('Making HfInference API call:', {
+          // Log request for debugging
+          console.log('Making edge function call:', {
             model: queuedModelConfig.huggingfaceId || model,
-            inputs: modifiedPrompt,
+            prompt: modifiedPrompt,
             parameters
           });
 
-          // Use the HfInference client to generate the image
-          const imageBlob = await client.textToImage({
-            model: queuedModelConfig.huggingfaceId || model,
-            inputs: modifiedPrompt,
-            parameters,
-            provider: "hf-inference",
+          // Call our Edge Function instead of HuggingFace directly
+          const { data: response, error } = await supabase.functions.invoke('generate-image', {
+            body: {
+              model: queuedModelConfig.huggingfaceId || model,
+              prompt: modifiedPrompt,
+              parameters
+            }
           });
 
+          if (error) {
+            throw new Error(`Edge function error: ${error.message}`);
+          }
+
+          if (!response || !response.image) {
+            throw new Error('Invalid response from edge function');
+          }
+
+          // Convert base64 to blob
+          const base64Response = response.image;
+          const byteString = atob(base64Response.split(',')[1]);
+          const mimeType = base64Response.split(',')[0].split(':')[1].split(';')[0];
+          
+          const arrayBuffer = new ArrayBuffer(byteString.length);
+          const uintArray = new Uint8Array(arrayBuffer);
+          
+          for (let i = 0; i < byteString.length; i++) {
+            uintArray[i] = byteString.charCodeAt(i);
+          }
+          
+          const imageBlob = new Blob([arrayBuffer], { type: mimeType });
+
           // Log response for debugging
-          console.log('API response received:', {
+          console.log('Edge function response received:', {
             model: model,
             success: !!imageBlob,
             blobSize: imageBlob?.size
@@ -191,9 +180,14 @@ export const useImageGeneration = ({
           });
           
           // Handle rate limiting and other errors
-          if (error.message && (error.message.includes('429') || error.message.includes('rate limit'))) {
-            toast.error('Rate limit exceeded. Trying again...');
-            setTimeout(() => makeRequest(true), 2000);
+          if (error.message && retryCount < 3 && (
+              error.message.includes('429') || 
+              error.message.includes('rate limit') || 
+              error.message.includes('504') || 
+              error.message.includes('timeout')
+          )) {
+            toast.error(`Retry ${retryCount + 1}/3: Generation failed, trying again...`);
+            setTimeout(() => makeRequest(retryCount + 1), 2000 * (retryCount + 1));
             return;
           }
           
