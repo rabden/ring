@@ -105,10 +105,9 @@ export const useImageGeneration = ({
 
           // Log actual API call for debugging
           console.log('Processing queued generation:', {
-            queuedModel: model,
-            currentModel: modelConfigs[model]?.name,
-            queuedApiUrl: queuedModelConfig.apiUrl,
-            currentApiUrl: modelConfigs[model]?.apiUrl
+            model: model,
+            modelName: modelConfigs[model]?.name,
+            huggingfaceModelId: queuedModelConfig.huggingfaceId || model
           });
 
           // Create HfInference client with API key
@@ -229,7 +228,7 @@ export const useImageGeneration = ({
 
     // Lock the model config at generation time
     const lockedModelConfig = { ...modelConfigs[model] };
-    if (!lockedModelConfig || !lockedModelConfig.apiUrl) {
+    if (!lockedModelConfig || !lockedModelConfig.huggingfaceId) {
       console.error('Invalid model configuration:', { model, config: lockedModelConfig });
       toast.error('Invalid model configuration');
       return;
@@ -238,7 +237,7 @@ export const useImageGeneration = ({
     // Log generation attempt for debugging
     console.log('Generation attempt:', {
       model,
-      apiUrl: lockedModelConfig.apiUrl,
+      huggingfaceId: lockedModelConfig.huggingfaceId,
       modelName: lockedModelConfig.name
     });
 
