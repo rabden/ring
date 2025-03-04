@@ -137,7 +137,6 @@ const BottomNavbar = ({
             )}
           </div>
         </div>
-        <div className="h-safe-area-bottom bg-background/95 backdrop-blur-[2px]" />
       </div>
 
       <GeneratingImagesDrawer 
