@@ -3,6 +3,7 @@ import React, { createContext, useContext } from 'react';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useGenerationStatus } from '@/hooks/useGenerationStatus';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/supabase';
 
 const GeneratingImagesContext = createContext();
 
