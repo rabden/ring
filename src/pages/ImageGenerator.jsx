@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -121,6 +122,8 @@ const ImageGenerator = () => {
   });
 
   const handleGenerateImage = async () => {
+    console.log('handleGenerateImage called', {prompt, session, isImproving});
+    
     if (!prompt.trim()) {
       toast.error('Please enter a prompt');
       return;
@@ -144,10 +147,11 @@ const ImageGenerator = () => {
         setPrompt(improved);
       }
 
+      console.log('Calling generateImage with:', {isPrivate, finalPrompt});
       await generateImage(isPrivate, finalPrompt);
     } catch (error) {
       toast.error('Failed to generate image');
-      console.error(error);
+      console.error('Generation error:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -263,7 +267,10 @@ const ImageGenerator = () => {
           setIsPrivate,
           nsfwEnabled,
           setNsfwEnabled,
-          modelConfigs
+          modelConfigs,
+          negativePrompt,
+          setNegativePrompt,
+          updateCredits
         }}
       />
     </>

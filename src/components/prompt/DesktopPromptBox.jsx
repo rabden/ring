@@ -121,13 +121,28 @@ const DesktopPromptBox = ({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e?.preventDefault?.();
+    
     if (!prompt?.trim()) {
       toast.error('Please enter a prompt');
       return;
     }
+    
+    if (typeof onSubmit !== 'function') {
+      console.error('onSubmit is not a function', onSubmit);
+      toast.error('Generation functionality is not properly configured');
+      return;
+    }
+    
     setIsPlayingAnimation(true);
-    await onSubmit();
+    try {
+      await onSubmit();
+    } catch (error) {
+      console.error('Error during image generation:', error);
+      toast.error('Failed to generate image');
+      setIsPlayingAnimation(false);
+    }
   };
 
   return (
