@@ -86,10 +86,11 @@ export const useImageGeneration = ({
           parameters
         });
 
-        // Call our Edge Function with updated parameters
+        // Call our Edge Function with updated parameters and include modelName
         const { data: response, error } = await supabase.functions.invoke('generate-image', {
           body: {
             model: queuedModelConfig.huggingfaceId || model,
+            modelName: queuedModelConfig.name || model, // Pass the display name
             prompt: modifiedPrompt,
             parameters,
             userId: session.user.id,          // Pass userId for storage

@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, model, parameters, userId, isPrivate, quality, aspectRatio } = await req.json()
+    const { prompt, model, parameters, userId, isPrivate, quality, aspectRatio, modelName } = await req.json()
     
     console.log('Received request with model:', model, 'and prompt:', prompt)
     
@@ -100,7 +100,7 @@ serve(async (req) => {
           throw uploadError;
         }
         
-        // Insert record
+        // Insert record - use modelName instead of model (huggingfaceId)
         const { data: insertData, error: insertError } = await supabase
           .from('user_images')
           .insert([{
@@ -110,7 +110,7 @@ serve(async (req) => {
             seed: parameters.seed,
             width: parameters.width,
             height: parameters.height,
-            model,
+            model: modelName || model, // Use the provided modelName or fallback to model id
             quality,
             aspect_ratio: aspectRatio || `${parameters.width}:${parameters.height}`,
             is_private: isPrivate,
