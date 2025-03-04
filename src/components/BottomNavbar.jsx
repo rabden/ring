@@ -1,3 +1,4 @@
+
 import React, { memo, useState, useEffect } from 'react';
 import { Image, Plus, Sparkles, User } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -62,6 +63,14 @@ const BottomNavbar = ({
   }, [generatingImages, prevLength]);
 
   const handleNavigation = (route, tab) => {
+    // If already on the same tab and it's the + tab, open the drawer
+    if (activeTab === tab && tab === 'input' && location.hash === '#imagegenerate') {
+      if (generatingImages.length > 0) {
+        setDrawerOpen(true);
+      }
+      return;
+    }
+
     setActiveTab(tab);
     // If navigating to inspiration without a hash, default to #latest
     if (route === '/inspiration' && !location.hash) {
