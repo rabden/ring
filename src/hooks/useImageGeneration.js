@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
 import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
-import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
 import { containsNSFWContent } from '@/utils/nsfwUtils';
 import { useState, useRef, useCallback } from 'react';
 
@@ -26,24 +25,17 @@ export const useImageGeneration = ({
   useAspectRatio,
   aspectRatio,
   updateCredits,
-  setGeneratingImages,
   modelConfigs,
   imageCount = 1,
   negativePrompt,
   nsfwEnabled = false,
-  onNSFWDetected
+  onNSFWDetected,
+  createGenerationStatus
 }) => {
-  // Queue to store pending generations
-  const generationQueue = useRef([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Process the queue one item at a time
-  const processQueue = useCallback(async () => {
-    if (isProcessing || generationQueue.current.length === 0) return;
-
-    setIsProcessing(true);
-    const currentGeneration = generationQueue.current[0];
-
+  // Process a single generation
+  const processGeneration = useCallback(async (generationData) => {
     try {
       const {
         generationId,
@@ -56,95 +48,73 @@ export const useImageGeneration = ({
         actualSeed,
         isPrivate,
         negativePrompt,
-        modelConfig: queuedModelConfig
-      } = currentGeneration;
+        modelConfig
+      } = generationData;
 
-      // Update UI to show processing status
-      setGeneratingImages(prev => prev.map(img => 
-        img.id === generationId ? { ...img, status: 'processing' } : img
-      ));
+      // Prepare parameters for the model
+      const parameters = {
+        seed: actualSeed,
+        width: finalWidth,
+        height: finalHeight,
+        ...(modelConfig.steps && { num_inference_steps: parseInt(modelConfig.steps) }),
+        ...(modelConfig.use_guidance && { guidance_scale: modelConfig.defaultguidance }),
+        ...(modelConfig.use_negative_prompt && negativePrompt && { 
+          negative_prompt: negativePrompt 
+        })
+      };
 
-      try {
-        initRetryCount(generationId);
+      // Log request for debugging
+      console.log('Making edge function call:', {
+        model: modelConfig.huggingfaceId || model,
+        prompt: modifiedPrompt,
+        parameters,
+        generationId
+      });
 
-        // Prepare parameters for the model
-        const parameters = {
-          seed: actualSeed,
-          width: finalWidth,
-          height: finalHeight,
-          ...(queuedModelConfig.steps && { num_inference_steps: parseInt(queuedModelConfig.steps) }),
-          ...(queuedModelConfig.use_guidance && { guidance_scale: queuedModelConfig.defaultguidance }),
-          ...(queuedModelConfig.use_negative_prompt && negativePrompt && { 
-            negative_prompt: negativePrompt 
-          })
-        };
-
-        // Log request for debugging
-        console.log('Making edge function call:', {
-          model: queuedModelConfig.huggingfaceId || model,
+      // Call our Edge Function with updated parameters and include modelName and generationId
+      const { data: response, error } = await supabase.functions.invoke('generate-image', {
+        body: {
+          model: modelConfig.huggingfaceId || model,
+          modelName: modelConfig.name || model, // Pass the display name
           prompt: modifiedPrompt,
-          parameters
-        });
-
-        // Call our Edge Function with updated parameters and include modelName
-        const { data: response, error } = await supabase.functions.invoke('generate-image', {
-          body: {
-            model: queuedModelConfig.huggingfaceId || model,
-            modelName: queuedModelConfig.name || model, // Pass the display name
-            prompt: modifiedPrompt,
-            parameters,
-            userId: session.user.id,          // Pass userId for storage
-            isPrivate: isPrivate,             // Pass privacy setting
-            quality: quality,                 // Pass quality setting
-            aspectRatio: finalAspectRatio     // Pass aspect ratio
-          }
-        });
-
-        if (error) {
-          throw new Error(`Edge function error: ${error.message}`);
+          parameters,
+          userId: session.user.id,          // Pass userId for storage
+          isPrivate,                        // Pass privacy setting
+          quality,                          // Pass quality setting
+          aspectRatio: finalAspectRatio,    // Pass aspect ratio
+          generationId                      // Pass the generation ID
         }
+      });
 
-        if (!response || !response.image) {
-          throw new Error('Invalid response from edge function');
-        }
-
-        // The image is already stored, we just update the UI
-        console.log('Edge function response received:', {
-          success: response.success,
-          hasImage: !!response.image,
-          filePath: response.filePath
-        });
-
-        // Update UI to show completion
-        setGeneratingImages(prev => prev.map(img => 
-          img.id === generationId ? { ...img, status: 'completed' } : img
-        ));
-
-        toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
-
-      } catch (error) {
-        console.error('API call error:', {
-          error,
-          model: model,
-          modelConfig: queuedModelConfig
-        });
-        
-        toast.error('Failed to generate image');
-        setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
+      if (error) {
+        throw new Error(`Edge function error: ${error.message}`);
       }
+
+      if (!response || !response.image) {
+        throw new Error('Invalid response from edge function');
+      }
+
+      // The image is already stored, we just log the success
+      console.log('Edge function response received:', {
+        success: response.success,
+        hasImage: !!response.image,
+        filePath: response.filePath
+      });
+
+      toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
+
     } catch (error) {
-      console.error('Error in generation:', error);
-    } finally {
-      // Remove the processed item from queue
-      generationQueue.current.shift();
-      setIsProcessing(false);
+      console.error('API call error:', {
+        error,
+        model: model,
+        modelConfig
+      });
       
-      // Process next item if any
-      if (generationQueue.current.length > 0) {
-        processQueue();
-      }
+      toast.error('Failed to generate image');
+    } finally {
+      setIsProcessing(false);
     }
-  }, [isProcessing, session, setGeneratingImages]);
+  }, [session]);
 
   const generateImage = async (isPrivate = false, finalPrompt = null) => {
     if (!session || !prompt || !modelConfigs) {
@@ -225,48 +195,62 @@ export const useImageGeneration = ({
       generationStates.maxDimension
     );
 
-    // Add all requested images to the queue with captured states
+    // Create generation statuses for all requested images
     for (let i = 0; i < imageCount; i++) {
       const actualSeed = randomizeSeed ? generateRandomSeed() : (seed + i);
-      const generationId = Date.now().toString() + i;
-      
       const modifiedPrompt = await getModifiedPrompt(finalPrompt || prompt, generationStates.model, modelConfigs);
 
-      // Store complete generation parameters
-      const queueItem = {
-        generationId,
-        model: generationStates.model,
-        quality: generationStates.quality,
-        finalWidth,
-        finalHeight,
-        finalAspectRatio,
-        modifiedPrompt,
-        actualSeed,
-        isPrivate,
-        negativePrompt: generationStates.negativePrompt,
-        modelConfig: generationStates.modelConfig
-      };
+      try {
+        // Store complete generation parameters
+        const parameters = {
+          seed: actualSeed,
+          width: finalWidth,
+          height: finalHeight,
+          ...(generationStates.modelConfig.steps && { 
+            num_inference_steps: parseInt(generationStates.modelConfig.steps) 
+          }),
+          ...(generationStates.modelConfig.use_guidance && { 
+            guidance_scale: generationStates.modelConfig.defaultguidance 
+          }),
+          ...(generationStates.modelConfig.use_negative_prompt && negativePrompt && { 
+            negative_prompt: negativePrompt 
+          })
+        };
 
-      generationQueue.current.push(queueItem);
+        // Create a generation status record
+        const generationRecord = await createGenerationStatus({
+          user_id: session.user.id,
+          model: generationStates.model,
+          model_name: generationStates.modelConfig.name,
+          prompt: modifiedPrompt,
+          parameters,
+          status: 'pending',
+          aspect_ratio: finalAspectRatio,
+          quality: generationStates.quality,
+          is_private: isPrivate
+        });
 
-      // Update UI state
-      setGeneratingImages(prev => [...prev, {
-        id: generationId,
-        prompt: modifiedPrompt,
-        seed: actualSeed,
-        width: finalWidth,
-        height: finalHeight,
-        status: 'pending',
-        isPrivate,
-        model: generationStates.model,
-        quality: generationStates.quality,
-        aspect_ratio: finalAspectRatio
-      }]);
-    }
-
-    // Start processing if not already processing
-    if (!isProcessing) {
-      processQueue();
+        // Start processing the first image immediately
+        if (i === 0) {
+          setIsProcessing(true);
+          processGeneration({
+            generationId: generationRecord.id,
+            model: generationStates.model,
+            quality: generationStates.quality,
+            finalWidth,
+            finalHeight,
+            finalAspectRatio,
+            modifiedPrompt,
+            actualSeed,
+            isPrivate,
+            negativePrompt: generationStates.negativePrompt,
+            modelConfig: generationStates.modelConfig
+          });
+        }
+      } catch (error) {
+        console.error('Error creating generation status:', error);
+        toast.error('Failed to start image generation');
+      }
     }
   };
 

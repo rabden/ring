@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -40,6 +41,11 @@ const ImageGenerator = () => {
   const { data: isPro } = useProUser(session?.user?.id);
   const { data: modelConfigs } = useModelConfigs();
   const queryClient = useQueryClient();
+  
+  const { 
+    generatingImages,
+    createGenerationStatus 
+  } = useGeneratingImages();
 
   const {
     prompt, setPrompt, seed, setSeed, randomizeSeed, setRandomizeSeed,
@@ -54,7 +60,6 @@ const ImageGenerator = () => {
   } = useImageGeneratorState();
 
   const { nsfwEnabled, setNsfwEnabled, setIsRemixMode } = useUserPreferences();
-  const { generatingImages, setGeneratingImages } = useGeneratingImages();
   const [showPrivate, setShowPrivate] = useState(false);
   const [negativePrompt, setNegativePrompt] = useState("");
 
@@ -110,7 +115,7 @@ const ImageGenerator = () => {
     };
   }, []);
 
-  const { generateImage, nsfwDetected } = useImageGeneration({
+  const { generateImage, isProcessing } = useImageGeneration({
     session,
     prompt,
     seed,
@@ -122,7 +127,6 @@ const ImageGenerator = () => {
     useAspectRatio,
     aspectRatio,
     updateCredits,
-    setGeneratingImages,
     modelConfigs,
     imageCount,
     negativePrompt,
@@ -130,7 +134,8 @@ const ImageGenerator = () => {
     onNSFWDetected: (foundWords) => {
       setNsfwFoundWords(foundWords);
       setShowNSFWAlert(true);
-    }
+    },
+    createGenerationStatus
   });
 
   const handleGenerateImage = async () => {
@@ -228,7 +233,6 @@ const ImageGenerator = () => {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         generatingImages={generatingImages}
-        setGeneratingImages={setGeneratingImages}
         nsfwEnabled={nsfwEnabled}
         setNsfwEnabled={setNsfwEnabled}
         showPrivate={showPrivate}

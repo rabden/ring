@@ -1,121 +1,106 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export const useLikes = (userId) => {
-  const queryClient = useQueryClient();
+  const [userLikes, setUserLikes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Set up real-time subscription
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setUserLikes([]);
+      setIsLoading(false);
+      return;
+    }
 
-    // Subscribe to changes in user_image_likes table
-    const subscription = supabase
-      .channel('likes_channel')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'user_image_likes',
-        filter: `user_id=eq.${userId}`,
-      }, () => {
-        // Invalidate and refetch when changes occur
-        queryClient.invalidateQueries(['likes', userId]);
-      })
+    const fetchLikes = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_image_likes')
+          .select('image_id')
+          .eq('created_by', userId);
+
+        if (error) throw error;
+        setUserLikes(data.map(like => like.image_id));
+      } catch (error) {
+        console.error('Error fetching likes:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLikes();
+
+    // Set up realtime subscription for likes
+    const channel = supabase
+      .channel('likes-changes')
+      .on('postgres_changes', 
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_image_likes',
+          filter: `created_by=eq.${userId}`,
+        }, 
+        (payload) => {
+          // Add new like
+          setUserLikes(prev => [...prev, payload.new.image_id]);
+        }
+      )
+      .on('postgres_changes', 
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'user_image_likes',
+          filter: `created_by=eq.${userId}`,
+        }, 
+        (payload) => {
+          // Remove like
+          setUserLikes(prev => prev.filter(id => id !== payload.old.image_id));
+        }
+      )
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
-  }, [userId, queryClient]);
+  }, [userId]);
 
-  const { data: userLikes } = useQuery({
-    queryKey: ['likes', userId],
-    queryFn: async () => {
-      if (!userId) return [];
-      const { data, error } = await supabase
-        .from('user_image_likes')
-        .select('image_id')
-        .eq('user_id', userId);
-      
-      if (error) throw error;
-      return data.map(like => like.image_id);
-    },
-    enabled: !!userId
-  });
+  const toggleLike = async (imageId) => {
+    if (!userId) {
+      toast.error('Please sign in to like images');
+      return;
+    }
 
-  const toggleLike = useMutation({
-    mutationFn: async (imageId) => {
-      const isLiked = userLikes?.includes(imageId);
-      
+    try {
+      const isLiked = userLikes.includes(imageId);
+
       if (isLiked) {
-        const { error } = await supabase
+        // Unlike the image
+        await supabase
           .from('user_image_likes')
           .delete()
-          .eq('user_id', userId)
-          .eq('image_id', imageId);
-        if (error) throw error;
-      } else {
-        // First check if the like already exists
-        const { data: existingLike } = await supabase
-          .from('user_image_likes')
-          .select('id')
-          .eq('user_id', userId)
           .eq('image_id', imageId)
-          .maybeSingle();
-
-        // Only proceed with insert if like doesn't exist
-        if (!existingLike) {
-          // Get the image details
-          const { data: imageData, error: imageError } = await supabase
-            .from('user_images')
-            .select('*')
-            .eq('id', imageId)
-            .single();
-          
-          if (imageError) throw imageError;
-
-          // Get current user's profile
-          const { data: userProfile } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('id', userId)
-            .single();
-
-          // Insert the like
-          const { error } = await supabase
-            .from('user_image_likes')
-            .insert([{ 
-              user_id: userId, 
-              image_id: imageId,
-              created_by: imageData.user_id 
-            }]);
-          if (error && error.code !== '23505') throw error; // Ignore duplicate key errors
-
-          // Create notification for the image owner
-          if (!error) {
-            const { error: notificationError } = await supabase
-              .from('notifications')
-              .insert([{
-                user_id: imageData.user_id,
-                title: 'New Like',
-                message: `${userProfile?.display_name || 'Someone'} liked your image`,
-                image_url: supabase.storage.from('user-images').getPublicUrl(imageData.storage_path).data.publicUrl,
-                link: `/profile/${userId}`,
-                link_names: 'View Profile'
-              }]);
-            
-            if (notificationError) throw notificationError;
-          }
-        }
+          .eq('created_by', userId);
+      } else {
+        // Like the image
+        await supabase
+          .from('user_image_likes')
+          .insert({
+            image_id: imageId,
+            user_id: userId,
+            created_by: userId
+          });
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['likes', userId]);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      toast.error('Failed to update like');
     }
-  });
+  };
 
   return {
-    userLikes: userLikes || [],
-    toggleLike: toggleLike.mutate
+    userLikes,
+    isLoading,
+    toggleLike
   };
 };

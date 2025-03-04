@@ -1,4 +1,5 @@
-import React, { useRef, useCallback } from 'react';
+
+import React, { useRef, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Masonry from 'react-masonry-css';
 import SkeletonImageCard from './SkeletonImageCard';
@@ -8,6 +9,7 @@ import NoResults from './NoResults';
 import { useGalleryImages } from '@/hooks/useGalleryImages';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, parseISO, subWeeks, isAfter } from 'date-fns';
+import { useInView } from 'react-intersection-observer';
 
 const getBreakpointColumns = () => ({
   default: 4,
@@ -107,22 +109,57 @@ const ImageGallery = ({
     following
   });
 
-  const observer = useRef();
-  const lastImageRef = useCallback(node => {
-    if (isLoading || isFetchingNextPage) return;
-    
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasNextPage) {
-        fetchNextPage();
-      }
-    }, {
-      rootMargin: '1000px'
-    });
-    
-    if (node) observer.current.observe(node);
-  }, [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]);
+  // Use Intersection Observer for infinite scrolling
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0,
+    rootMargin: '1000px'
+  });
+
+  // Fetch more items when the load more element is visible
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Set up realtime subscription for new images, updates and likes
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel('image-gallery-changes')
+      .on('postgres_changes', 
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_images',
+          filter: activeView === 'myImages' ? `user_id=eq.${userId}` : undefined
+        }, 
+        () => {
+          // Instead of manually adding the image, just invalidate the query cache
+          // This will trigger a refetch of the latest data
+          queryClient.invalidateQueries(['userImages']);
+          queryClient.invalidateQueries(['inspireImages']);
+        }
+      )
+      .on('postgres_changes', 
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_images',
+        }, 
+        () => {
+          // Invalidate the query cache for any image updates
+          queryClient.invalidateQueries(['userImages']);
+          queryClient.invalidateQueries(['inspireImages']);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, activeView]);
 
   const handleMobileMoreClick = (image) => {
     if (isMobile) {
@@ -177,7 +214,7 @@ const ImageGallery = ({
               {groupImages.map((image, index) => (
                 <div
                   key={image.id}
-                  ref={groupIndex === nonEmptyGroups.length - 1 && index === groupImages.length - 1 ? lastImageRef : null}
+                  ref={groupIndex === nonEmptyGroups.length - 1 && index === groupImages.length - 1 ? loadMoreRef : null}
                 >
                   <ImageCard
                     image={image}
@@ -219,7 +256,7 @@ const ImageGallery = ({
         {images.map((image, index) => (
           <div
             key={image.id}
-            ref={index === images.length - 1 ? lastImageRef : null}
+            ref={index === images.length - 1 ? loadMoreRef : null}
           >
             <ImageCard
               image={image}

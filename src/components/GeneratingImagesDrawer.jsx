@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react'
 import { Loader, Check, Clock, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,14 @@ import { useGeneratingImages } from '@/contexts/GeneratingImagesContext'
 
 const GeneratingImagesDrawer = ({ open, onOpenChange }) => {
   const { data: modelConfigs } = useModelConfigs();
-  const { generatingImages, cancelGeneration } = useGeneratingImages();
+  const { 
+    generatingImages, 
+    cancelGeneration, 
+    getCompletedCount,
+    getPendingCount,
+    getProcessingCount
+  } = useGeneratingImages();
+  
   const [selectedImageId, setSelectedImageId] = useState(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
@@ -32,13 +40,12 @@ const GeneratingImagesDrawer = ({ open, onOpenChange }) => {
 
   if (generatingImages.length === 0) return null;
 
-  const processingCount = generatingImages.filter(img => img.status === 'processing').length;
-  const pendingCount = generatingImages.filter(img => img.status === 'pending').length;
-  const completedCount = generatingImages.filter(img => img.status === 'completed').length;
-  const isAllCompleted = generatingImages.length > 0 && generatingImages.every(img => img.status === 'completed');
+  const processingCount = getProcessingCount();
+  const pendingCount = getPendingCount();
+  const completedCount = getCompletedCount();
 
   const sortedImages = [...generatingImages].sort((a, b) => {
-    const order = { processing: 0, pending: 1, completed: 2 };
+    const order = { processing: 0, pending: 1, completed: 2, failed: 3 };
     return order[a.status] - order[b.status];
   });
 
@@ -113,7 +120,8 @@ const GeneratingImagesDrawer = ({ open, onOpenChange }) => {
                       </div>
                       <span className="text-sm font-medium text-primary/90">
                         {img.status === 'processing' ? 'Generating...' : 
-                         img.status === 'pending' ? 'Queued' : 'Complete'}
+                         img.status === 'pending' ? 'Queued' : 
+                         img.status === 'failed' ? 'Failed' : 'Complete'}
                       </span>
                     </div>
                     {(img.status === 'processing' || img.status === 'pending') && (
@@ -132,6 +140,11 @@ const GeneratingImagesDrawer = ({ open, onOpenChange }) => {
                   {img.prompt && (
                     <span className="text-xs text-muted-foreground/60 truncate w-full group-hover:text-muted-foreground/70 transition-colors duration-200">
                       {img.prompt.length > 50 ? `${img.prompt.substring(0, 50)}...` : img.prompt}
+                    </span>
+                  )}
+                  {img.error && (
+                    <span className="text-xs text-destructive truncate w-full">
+                      Error: {img.error}
                     </span>
                   )}
                   <div className="flex items-center gap-2 w-full">

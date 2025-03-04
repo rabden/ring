@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react'
 import { Loader, Check, Clock, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,7 +13,14 @@ import { useGeneratingImages } from '@/contexts/GeneratingImagesContext'
 
 const GeneratingImagesDropdown = () => {
   const { data: modelConfigs } = useModelConfigs();
-  const { generatingImages, cancelGeneration } = useGeneratingImages();
+  const { 
+    generatingImages, 
+    cancelGeneration, 
+    getCompletedCount,
+    getPendingCount,
+    getProcessingCount
+  } = useGeneratingImages();
+  
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -42,13 +50,13 @@ const GeneratingImagesDropdown = () => {
 
   if (!showDropdown) return null;
 
-  const processingCount = generatingImages.filter(img => img.status === 'processing').length;
-  const pendingCount = generatingImages.filter(img => img.status === 'pending').length;
-  const completedCount = generatingImages.filter(img => img.status === 'completed').length;
+  const processingCount = getProcessingCount();
+  const pendingCount = getPendingCount();
+  const completedCount = getCompletedCount();
   const isAllCompleted = generatingImages.length > 0 && generatingImages.every(img => img.status === 'completed');
 
   const sortedImages = [...generatingImages].sort((a, b) => {
-    const order = { processing: 0, pending: 1, completed: 2 };
+    const order = { processing: 0, pending: 1, completed: 2, failed: 3 };
     return order[a.status] - order[b.status];
   });
 
