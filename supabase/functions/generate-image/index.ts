@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { HfInference } from "https://esm.sh/@huggingface/inference@2.3.2"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,12 +19,39 @@ serve(async (req) => {
     
     console.log('Received request with model:', model, 'and prompt:', prompt)
     
-    // Get API key from environment variable
-    const apiKey = Deno.env.get('HUGGINGFACE_API_KEY')
-    if (!apiKey) {
-      throw new Error('Missing HUGGINGFACE_API_KEY environment variable')
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase environment variables');
     }
-
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Get a random API key from the database
+    const { data: keyData, error: keyError } = await supabase
+      .from('huggingface_api_keys')
+      .select('api_key')
+      .eq('is_active', true)
+      .order('last_used_at', { ascending: true })
+      .limit(1);
+    
+    if (keyError || !keyData || keyData.length === 0) {
+      console.error('Error fetching API key:', keyError);
+      throw new Error('Failed to get a valid API key');
+    }
+    
+    const apiKey = keyData[0].api_key;
+    
+    // Update the last used time for this key
+    await supabase
+      .from('huggingface_api_keys')
+      .update({ last_used_at: new Date().toISOString() })
+      .eq('api_key', apiKey);
+    
+    console.log('Using API key from database');
+    
     // Initialize the HF client with API key
     const hf = new HfInference(apiKey)
     
