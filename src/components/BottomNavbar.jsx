@@ -81,13 +81,13 @@ const BottomNavbar = ({
     <>
       <div className={cn(
         "fixed bottom-0 left-0 right-0 z-50",
-        "bg-background/95 backdrop-blur-[2px]",
+        "bg-background",
         "border-t border-border/80",
         "md:hidden",
         "transition-all duration-300",
         "overflow-x-hidden w-screen"
       )}>
-        <div className="flex items-center justify-around px-2 max-w-md mx-auto h-12 relative">
+        <div className="flex items-center justify-around max-w-md mx-auto h-12 relative">
           <MobileNavButton
             icon={Image}
             isActive={location.pathname === '/' && (!location.hash || location.hash === '#myimages')}

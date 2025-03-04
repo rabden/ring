@@ -73,16 +73,16 @@ const MobileNavButton = ({
         }
       }}
       className={cn(
-        "flex items-center justify-center w-14 h-12 transition-all duration-200 relative rounded-xl",
+        "flex items-center justify-center w-10 h-10 transition-all duration-200 relative rounded-full",
         isActive ? "text-primary" : "text-muted-foreground/70",
-        "relative group hover:bg-accent/10"
+        "relative group"
       )}
     >
       {children || (
         <>
           <Icon size={20} className={cn(
             "transition-all duration-200",
-            isActive ? "scale-100" : "scale-90 opacity-70 group-hover:scale-100 group-hover:opacity-100"
+            isActive ? "scale-100" : "scale-90 opacity-70 group-hover:opacity-100"
           )} />
           {(badge > 0 || showCheckmark) && (
             <span className={cn(
