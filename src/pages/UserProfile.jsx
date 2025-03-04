@@ -183,7 +183,6 @@ const UserProfile = () => {
   const { data: isPro } = useProUser(session?.user?.id);
   const { data: isProRequest } = useProRequest(session?.user?.id);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [showDonateDialog, setShowDonateDialog] = useState(false);
 
   React.useEffect(() => {
     if (session?.user) {
@@ -338,37 +337,6 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Dialog open={showDonateDialog} onOpenChange={setShowDonateDialog}>
-        <DialogContent className="flex flex-col w-[95%] sm:w-[85%] sm:max-w-[525px] h-[90vh] sm:h-auto sm:max-h-[80vh] p-0 gap-0">
-          <DialogHeader className="p-4 sm:p-6 pb-0">
-            <DialogTitle className="text-xl sm:text-2xl font-bold text-center px-0 sm:px-4">
-              🆘 Urgent: Your Support Needed! 💝
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="flex-1 px-4 sm:px-6">
-            <DialogDescription className="space-y-4 sm:space-y-6 pt-4 sm:pt-6 text-base sm:text-lg">
-              <p className="leading-relaxed">
-                Dear Amazing User, 
-              </p>
-              <p className="leading-relaxed">
-                I'm reaching out because I'm in a critical situation. My resources are rapidly depleting, and I'm struggling to keep this project alive. The server costs are mounting, and I'm finding it increasingly difficult to maintain and improve this platform that we all love. 
-              </p>
-              <p className="leading-relaxed">
-                Without immediate support, I might have to scale back or even pause development. Your contribution, no matter how small, could be the lifeline this project needs right now. 🙏
-              </p>
-            </DialogDescription>
-          </ScrollArea>
-          <div className="border-t border-border/50 mt-4 p-4 sm:p-6 pt-4">
-            <Button 
-              className="w-full bg-primary hover:bg-primary/90 text-base sm:text-lg py-4 sm:py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => window.open('https://skrill.me/rq/Rabiul/5/USD?key=QvI6sdXr-vbmRBTunrjv4PJLv7_', '_blank')}
-            >
-              Support $5 💖
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -385,14 +353,6 @@ const UserProfile = () => {
               Settings
             </span>
           </Link>
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-primary/5 hover:bg-primary/10 text-primary border-primary/30"
-            onClick={() => setShowDonateDialog(true)}
-          >
-            Important! 🆘
-          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
