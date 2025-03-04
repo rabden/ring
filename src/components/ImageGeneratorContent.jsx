@@ -189,7 +189,17 @@ const ImageGeneratorContent = ({
       <BottomNavbar activeTab={activeTab} setActiveTab={setActiveTab} session={session} credits={credits} bonusCredits={bonusCredits} generatingImages={generatingImages} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} />
       
       <ImageDetailsDialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen} image={selectedImage} />
-      <FullScreenImageView image={selectedImage} isOpen={fullScreenViewOpen} onClose={() => setFullScreenViewOpen(false)} onDownload={handleDownload} onDiscard={handleDiscard} onRemix={handleRemix} isOwner={selectedImage?.user_id === session?.user?.id} />
+      {selectedImage && (
+        <FullScreenImageView 
+          image={selectedImage} 
+          isOpen={fullScreenViewOpen} 
+          onClose={() => setFullScreenViewOpen(false)} 
+          onDownload={handleDownload} 
+          onDiscard={handleDiscard} 
+          onRemix={handleRemix} 
+          isOwner={selectedImage?.user_id === session?.user?.id} 
+        />
+      )}
     </>;
 };
 
