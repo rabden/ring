@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -50,6 +51,7 @@ export const useImageGeneration = ({
         quality,
         finalWidth,
         finalHeight,
+        finalAspectRatio,
         modifiedPrompt,
         actualSeed,
         isPrivate,
@@ -62,142 +64,73 @@ export const useImageGeneration = ({
         img.id === generationId ? { ...img, status: 'processing' } : img
       ));
 
-      const makeRequest = async (retryCount = 0) => {
-        try {
-          initRetryCount(generationId);
+      try {
+        initRetryCount(generationId);
 
-          // Prepare parameters for the model
-          const parameters = {
-            seed: actualSeed,
-            width: finalWidth,
-            height: finalHeight,
-            ...(queuedModelConfig.steps && { num_inference_steps: parseInt(queuedModelConfig.steps) }),
-            ...(queuedModelConfig.use_guidance && { guidance_scale: queuedModelConfig.defaultguidance }),
-            ...(queuedModelConfig.use_negative_prompt && negativePrompt && { 
-              negative_prompt: negativePrompt 
-            })
-          };
+        // Prepare parameters for the model
+        const parameters = {
+          seed: actualSeed,
+          width: finalWidth,
+          height: finalHeight,
+          ...(queuedModelConfig.steps && { num_inference_steps: parseInt(queuedModelConfig.steps) }),
+          ...(queuedModelConfig.use_guidance && { guidance_scale: queuedModelConfig.defaultguidance }),
+          ...(queuedModelConfig.use_negative_prompt && negativePrompt && { 
+            negative_prompt: negativePrompt 
+          })
+        };
 
-          // Log request for debugging
-          console.log('Making edge function call:', {
+        // Log request for debugging
+        console.log('Making edge function call:', {
+          model: queuedModelConfig.huggingfaceId || model,
+          prompt: modifiedPrompt,
+          parameters
+        });
+
+        // Call our Edge Function with updated parameters
+        const { data: response, error } = await supabase.functions.invoke('generate-image', {
+          body: {
             model: queuedModelConfig.huggingfaceId || model,
             prompt: modifiedPrompt,
-            parameters
-          });
-
-          // Call our Edge Function instead of HuggingFace directly
-          const { data: response, error } = await supabase.functions.invoke('generate-image', {
-            body: {
-              model: queuedModelConfig.huggingfaceId || model,
-              prompt: modifiedPrompt,
-              parameters
-            }
-          });
-
-          if (error) {
-            throw new Error(`Edge function error: ${error.message}`);
+            parameters,
+            userId: session.user.id,          // Pass userId for storage
+            isPrivate: isPrivate,             // Pass privacy setting
+            quality: quality,                 // Pass quality setting
+            aspectRatio: finalAspectRatio     // Pass aspect ratio
           }
+        });
 
-          if (!response || !response.image) {
-            throw new Error('Invalid response from edge function');
-          }
-
-          // Convert base64 to blob
-          const base64Response = response.image;
-          const byteString = atob(base64Response.split(',')[1]);
-          const mimeType = base64Response.split(',')[0].split(':')[1].split(';')[0];
-          
-          const arrayBuffer = new ArrayBuffer(byteString.length);
-          const uintArray = new Uint8Array(arrayBuffer);
-          
-          for (let i = 0; i < byteString.length; i++) {
-            uintArray[i] = byteString.charCodeAt(i);
-          }
-          
-          const imageBlob = new Blob([arrayBuffer], { type: mimeType });
-
-          // Log response for debugging
-          console.log('Edge function response received:', {
-            model: model,
-            success: !!imageBlob,
-            blobSize: imageBlob?.size
-          });
-
-          if (!imageBlob || imageBlob.size === 0) {
-            setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
-            toast.error('Generated image is invalid');
-            throw new Error('Generated image is empty or invalid');
-          }
-
-          const timestamp = Date.now();
-          const filePath = `${session.user.id}/${timestamp}.png`;
-          
-          const { error: uploadError } = await supabase.storage
-            .from('user-images')
-            .upload(filePath, imageBlob);
-            
-          if (uploadError) {
-            throw uploadError;
-          }
-
-          // Insert new image record with like_count initialized to 0
-          const { data: insertData, error: insertError } = await supabase
-            .from('user_images')
-            .insert([{
-              user_id: session.user.id,
-              storage_path: filePath,
-              prompt: modifiedPrompt,
-              seed: actualSeed,
-              width: finalWidth,
-              height: finalHeight,
-              model,
-              quality,
-              aspect_ratio: currentGeneration.finalAspectRatio,
-              is_private: isPrivate,
-              negative_prompt: negativePrompt,
-              like_count: 0
-            }])
-            .select()
-            .single();
-
-          if (insertError) {
-            console.error('Error inserting image record:', insertError);
-            throw insertError;
-          }
-
-          // Update UI to show completion
-          setGeneratingImages(prev => prev.map(img => 
-            img.id === generationId ? { ...img, status: 'completed' } : img
-          ));
-
-          toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
-
-        } catch (error) {
-          console.error('API call error:', {
-            error,
-            model: model,
-            modelConfig: queuedModelConfig
-          });
-          
-          // Handle rate limiting and other errors
-          if (error.message && retryCount < 3 && (
-              error.message.includes('429') || 
-              error.message.includes('rate limit') || 
-              error.message.includes('504') || 
-              error.message.includes('timeout')
-          )) {
-            toast.error(`Retry ${retryCount + 1}/3: Generation failed, trying again...`);
-            setTimeout(() => makeRequest(retryCount + 1), 2000 * (retryCount + 1));
-            return;
-          }
-          
-          toast.error('Failed to generate image');
-          setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
+        if (error) {
+          throw new Error(`Edge function error: ${error.message}`);
         }
-      };
 
-      await makeRequest();
+        if (!response || !response.image) {
+          throw new Error('Invalid response from edge function');
+        }
 
+        // The image is already stored, we just update the UI
+        console.log('Edge function response received:', {
+          success: response.success,
+          hasImage: !!response.image,
+          filePath: response.filePath
+        });
+
+        // Update UI to show completion
+        setGeneratingImages(prev => prev.map(img => 
+          img.id === generationId ? { ...img, status: 'completed' } : img
+        ));
+
+        toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
+
+      } catch (error) {
+        console.error('API call error:', {
+          error,
+          model: model,
+          modelConfig: queuedModelConfig
+        });
+        
+        toast.error('Failed to generate image');
+        setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
+      }
     } catch (error) {
       console.error('Error in generation:', error);
     } finally {
