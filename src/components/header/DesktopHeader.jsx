@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import ProfileMenu from '../ProfileMenu';
@@ -66,7 +67,7 @@ const DesktopHeader = ({
       </Dialog>
 
       <div className={cn(
-        "hidden md:block fixed top-0 left-0 right-0 z-10 h-12",
+        "hidden md:block fixed top-0 left-0 right-0 z-50 h-12",
         "bg-background/95 backdrop-blur-[2px]",
         "border-b border-border/90",
         "transition-all duration-200 ease-in-out"
