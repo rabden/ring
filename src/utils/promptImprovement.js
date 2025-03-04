@@ -32,7 +32,7 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
     let improvedPrompt = "";
     
     const stream = await client.chatCompletionStream({
-      model: "meta-llama/Llama-3.2-3B-Instruct",
+      model: "meta-llama/Llama-3.2-1B-Instruct",
       messages: [
       {
         role: "system",
