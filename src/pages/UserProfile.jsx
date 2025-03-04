@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useQuery } from '@tanstack/react-query';
@@ -342,14 +343,14 @@ const UserProfile = () => {
         animate={{ opacity: 1 }}
         className="container max-w-5xl mx-auto py-6 px-1 space-y-4"
       >
-        {/* Header */}
+        {/* Header - Updated with gradient text */}
         <div className="flex items-center justify-between gap-4 mb-6">
           <Link 
             to="/" 
             className="group flex items-center gap-2 hover:gap-3 transition-all duration-300"
           >
             <ArrowLeft className="h-5 w-5 text-primary transition-colors" />
-            <span className="text-2xl font-medium">
+            <span className="text-2xl font-medium bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
               Settings
             </span>
           </Link>
