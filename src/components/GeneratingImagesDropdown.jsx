@@ -8,6 +8,8 @@ import CancelGenerationDialog from './alerts/CancelGenerationDialog';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 import GenerationStatusButton from './generations/GenerationStatusButton';
 import GenerationStatusItem from './generations/GenerationStatusItem';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 const GeneratingImagesDropdown = () => {
   const { data: modelConfigs } = useModelConfigs();
@@ -55,10 +57,20 @@ const GeneratingImagesDropdown = () => {
   const failedCount = getFailedCount();
   const isAllCompleted = generatingImages.length > 0 && generatingImages.every(img => img.status === 'completed');
 
+  // Sort images by status and then by creation date (newest first)
   const sortedImages = [...generatingImages].sort((a, b) => {
     const order = { processing: 0, pending: 1, completed: 2, failed: 3 };
-    return order[a.status] - order[b.status];
+    // First sort by status priority
+    const statusDiff = order[a.status] - order[b.status];
+    if (statusDiff !== 0) return statusDiff;
+    
+    // Then sort by creation date (newest first) if status is the same
+    const dateA = new Date(a.created_at || 0).getTime();
+    const dateB = new Date(b.created_at || 0).getTime();
+    return dateB - dateA;
   });
+
+  const hasActiveGenerations = processingCount > 0 || pendingCount > 0;
 
   return (
     <>
@@ -76,6 +88,15 @@ const GeneratingImagesDropdown = () => {
           align="end" 
           className="p-2 border-border/80 bg-card m-4 min-w-[350px]"
         >
+          <div className="p-2 flex items-center justify-between">
+            <div className="text-sm font-medium">Image Generations</div>
+            {hasActiveGenerations && (
+              <Badge variant="outline" className="bg-primary/5">
+                {processingCount > 0 ? 'Processing' : 'Queued'}
+              </Badge>
+            )}
+          </div>
+          <Separator className="my-1" />
           <ScrollArea className="max-h-[600px] scrollbar-none">
             {sortedImages.map((img) => (
               <DropdownMenuItem 

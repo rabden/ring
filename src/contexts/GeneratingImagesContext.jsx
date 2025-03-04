@@ -2,6 +2,7 @@
 import React, { createContext, useContext } from 'react';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useGenerationStatus } from '@/hooks/useGenerationStatus';
+import { toast } from 'sonner';
 
 const GeneratingImagesContext = createContext();
 
@@ -35,19 +36,58 @@ export const GeneratingImagesProvider = ({ children }) => {
     model: status.model,
     quality: status.quality,
     aspect_ratio: status.aspect_ratio,
-    error: status.error_message
+    error: status.error_message,
+    created_at: status.created_at,
+    updated_at: status.updated_at,
+    image_id: status.image_id
   }));
+
+  // Cancel all pending and processing generations
+  const cancelAllGenerations = async () => {
+    const pendingAndProcessing = generationStatuses.filter(
+      status => status.status === 'pending' || status.status === 'processing'
+    );
+    
+    if (pendingAndProcessing.length === 0) return;
+    
+    try {
+      await Promise.all(pendingAndProcessing.map(status => cancelGeneration(status.id)));
+      toast.success(`Cancelled ${pendingAndProcessing.length} generations`);
+    } catch (error) {
+      console.error('Error cancelling generations:', error);
+      toast.error('Failed to cancel some generations');
+    }
+  };
+
+  // Get the most recent generation (useful for tracking current progress)
+  const getMostRecentGeneration = () => {
+    if (generatingImages.length === 0) return null;
+    
+    return generatingImages.sort((a, b) => {
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
+      return dateB - dateA;
+    })[0];
+  };
+
+  // Check if any generations are active (pending or processing)
+  const hasActiveGenerations = () => {
+    return getProcessingCount() > 0 || getPendingCount() > 0;
+  };
 
   const value = {
     generatingImages,
     isLoadingGenerations: isLoading,
     cancelGeneration,
+    cancelAllGenerations,
     createGenerationStatus,
     removeGenerationStatus,
     getCompletedCount,
     getPendingCount,
     getProcessingCount,
-    getFailedCount
+    getFailedCount,
+    getMostRecentGeneration,
+    hasActiveGenerations
   };
 
   return (
