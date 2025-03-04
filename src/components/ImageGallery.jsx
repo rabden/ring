@@ -1,4 +1,3 @@
-
 import React, { useRef, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Masonry from 'react-masonry-css';
@@ -10,6 +9,8 @@ import { useGalleryImages } from '@/hooks/useGalleryImages';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, parseISO, subWeeks, isAfter } from 'date-fns';
 import { useInView } from 'react-intersection-observer';
+import { supabase } from '@/integrations/supabase/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 
 const getBreakpointColumns = () => ({
   default: 4,
@@ -90,6 +91,7 @@ const ImageGallery = ({
   const breakpointColumnsObj = getBreakpointColumns();
   const location = useLocation();
   const activeView = location.pathname === '/inspiration' ? 'inspiration' : 'myImages';
+  const queryClient = useQueryClient();
   
   const { 
     images,
@@ -159,7 +161,7 @@ const ImageGallery = ({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, activeView]);
+  }, [userId, activeView, queryClient]);
 
   const handleMobileMoreClick = (image) => {
     if (isMobile) {
