@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react'
-import { Loader, Check, Clock, X } from "lucide-react"
+import { Loader, Check, Clock, X, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -18,7 +18,8 @@ const GeneratingImagesDrawer = ({ open, onOpenChange }) => {
     cancelGeneration, 
     getCompletedCount,
     getPendingCount,
-    getProcessingCount
+    getProcessingCount,
+    getFailedCount
   } = useGeneratingImages();
   
   const [selectedImageId, setSelectedImageId] = useState(null);
@@ -43,6 +44,7 @@ const GeneratingImagesDrawer = ({ open, onOpenChange }) => {
   const processingCount = getProcessingCount();
   const pendingCount = getPendingCount();
   const completedCount = getCompletedCount();
+  const failedCount = getFailedCount();
 
   const sortedImages = [...generatingImages].sort((a, b) => {
     const order = { processing: 0, pending: 1, completed: 2, failed: 3 };
@@ -75,6 +77,13 @@ const GeneratingImagesDrawer = ({ open, onOpenChange }) => {
                     <Check className="h-4 w-4 text-primary/90" />
                   </div>
                   <span>Generated {completedCount} image{completedCount > 1 ? 's' : ''}</span>
+                </div>
+              ) : failedCount > 0 ? (
+                <div className="flex items-center gap-3">
+                  <div className="p-1 rounded-lg">
+                    <AlertCircle className="h-4 w-4 text-destructive/90" />
+                  </div>
+                  <span>Failed {failedCount} image{failedCount > 1 ? 's' : ''}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -114,6 +123,8 @@ const GeneratingImagesDrawer = ({ open, onOpenChange }) => {
                           <Loader className="w-3.5 h-3.5 animate-spin text-primary/90" />
                         ) : img.status === 'pending' ? (
                           <Clock className="w-3.5 h-3.5 text-muted-foreground/70" />
+                        ) : img.status === 'failed' ? (
+                          <AlertCircle className="w-3.5 h-3.5 text-destructive/90" />
                         ) : (
                           <Check className="w-3.5 h-3.5 text-primary/90" />
                         )}

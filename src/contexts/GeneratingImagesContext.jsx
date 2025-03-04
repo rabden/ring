@@ -17,7 +17,8 @@ export const GeneratingImagesProvider = ({ children }) => {
     removeGenerationStatus,
     getCompletedCount,
     getPendingCount,
-    getProcessingCount
+    getProcessingCount,
+    getFailedCount
   } = useGenerationStatus(userId);
 
   // Map generation statuses to the previous format for backward compatibility
@@ -45,7 +46,8 @@ export const GeneratingImagesProvider = ({ children }) => {
     removeGenerationStatus,
     getCompletedCount,
     getPendingCount,
-    getProcessingCount
+    getProcessingCount,
+    getFailedCount
   };
 
   return (

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react'
-import { Loader, Check, Clock, X } from "lucide-react"
+import { Loader, Check, Clock, X, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
@@ -18,7 +18,8 @@ const GeneratingImagesDropdown = () => {
     cancelGeneration, 
     getCompletedCount,
     getPendingCount,
-    getProcessingCount
+    getProcessingCount,
+    getFailedCount
   } = useGeneratingImages();
   
   const [showDropdown, setShowDropdown] = useState(false);
@@ -53,6 +54,7 @@ const GeneratingImagesDropdown = () => {
   const processingCount = getProcessingCount();
   const pendingCount = getPendingCount();
   const completedCount = getCompletedCount();
+  const failedCount = getFailedCount();
   const isAllCompleted = generatingImages.length > 0 && generatingImages.every(img => img.status === 'completed');
 
   const sortedImages = [...generatingImages].sort((a, b) => {
@@ -80,14 +82,27 @@ const GeneratingImagesDropdown = () => {
               )}>
                 <Check className="w-4 h-4 text-primary/90" />
               </div>
-            ) : (
+            ) : processingCount > 0 ? (
               <div className="p-1 rounded-lg mr-2">
                 <Loader className="w-4 h-4 animate-spin text-primary/90" />
+              </div>
+            ) : pendingCount > 0 ? (
+              <div className="p-1 rounded-lg mr-2">
+                <Clock className="w-4 h-4 text-muted-foreground/70" />
+              </div>
+            ) : failedCount > 0 ? (
+              <div className="p-1 rounded-lg mr-2">
+                <AlertCircle className="w-4 h-4 text-destructive/90" />
+              </div>
+            ) : (
+              <div className="p-1 rounded-lg mr-2">
+                <Check className="w-4 h-4 text-primary/90" />
               </div>
             )}
             <span className="text-sm">
               {processingCount > 0 ? 'Generating' : 
                pendingCount > 0 ? `Queued-${pendingCount}` : 
+               failedCount > 0 ? `Failed-${failedCount}` :
                completedCount > 0 ? `Generated-${completedCount}` : 'Complete'}
             </span>
           </Button>
@@ -125,13 +140,16 @@ const GeneratingImagesDropdown = () => {
                         <Loader className="w-3.5 h-3.5 animate-spin text-primary/90" />
                       ) : img.status === 'pending' ? (
                         <Clock className="w-3.5 h-3.5 text-muted-foreground/70" />
+                      ) : img.status === 'failed' ? (
+                        <AlertCircle className="w-3.5 h-3.5 text-destructive/90" />
                       ) : (
                         <Check className="w-3.5 h-3.5 text-primary/90" />
                       )}
                     </div>
                     <span className="text-sm font-medium text-primary/90">
                       {img.status === 'processing' ? 'Generating...' : 
-                       img.status === 'pending' ? 'Queued' : 'Complete'}
+                       img.status === 'pending' ? 'Queued' : 
+                       img.status === 'failed' ? 'Failed' : 'Complete'}
                     </span>
                   </div>
                   {(img.status === 'processing' || img.status === 'pending') && (
@@ -150,6 +168,11 @@ const GeneratingImagesDropdown = () => {
                 {img.prompt && (
                   <span className="text-xs text-muted-foreground/60 truncate w-full group-hover:text-muted-foreground/70 transition-colors duration-200">
                     {img.prompt.length > 50 ? `${img.prompt.substring(0, 50)}...` : img.prompt}
+                  </span>
+                )}
+                {img.error && (
+                  <span className="text-xs text-destructive truncate w-full">
+                    Error: {img.error}
                   </span>
                 )}
                 <div className="flex items-center gap-2 w-full">
