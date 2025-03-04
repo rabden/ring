@@ -1,3 +1,4 @@
+
 import { HfInference } from "@huggingface/inference";
 import { supabase } from '@/integrations/supabase/supabase';
 
