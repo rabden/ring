@@ -15,13 +15,10 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      jsxRuntime: 'automatic',
-      jsxImportSource: '@vitejs/plugin-react',
-      include: "**/*.{jsx,tsx}",
-      exclude: /node_modules/,
+      jsxRuntime: 'classic', // Changed from 'automatic' to 'classic'
       babel: {
         plugins: [
-          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+          ['@babel/plugin-transform-react-jsx', { runtime: 'classic' }] // Changed from 'automatic' to 'classic'
         ],
         babelrc: false,
         configFile: false
