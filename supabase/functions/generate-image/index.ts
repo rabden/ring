@@ -69,23 +69,37 @@ serve(async (req) => {
       
       // Make the API call to generate the image with proper error handling
       console.log('Starting image generation with model:', model);
-      const result = await Promise.race([
-        hf.textToImage({
-          inputs: prompt,
-          model: model,
-          parameters: parameters,
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Image generation timed out after 500 seconds')), 500000)
-        )
-      ]);
+      
+      // Wrap the API call in a timeout
+      const imageGenerationPromise = hf.textToImage({
+        inputs: prompt,
+        model: model,
+        parameters: parameters,
+      });
+      
+      // Set a timeout of 450 seconds (75% of our 600s max to leave time for storage)
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Image generation timed out after 450 seconds')), 450000)
+      );
+      
+      // Race between the generation and the timeout
+      const result = await Promise.race([imageGenerationPromise, timeoutPromise]);
       
       console.log('Generated image successfully');
       
+      if (!result) {
+        throw new Error('Image generation returned empty result');
+      }
+      
       // Convert the blob to a base64 string for storage
-      const arrayBuffer = await result.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-      base64Image = base64;
+      try {
+        const arrayBuffer = await result.arrayBuffer();
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        base64Image = base64;
+      } catch (blobError) {
+        console.error('Error processing image blob:', blobError);
+        throw new Error('Failed to process image data: ' + blobError.message);
+      }
       
       // Create a more unique filename to prevent collisions
       const timestamp = Date.now();
@@ -96,7 +110,7 @@ serve(async (req) => {
       // If userId is provided, store the image directly in Supabase
       if (userId) {
         // Convert base64 to Blob for storage
-        const byteString = atob(base64);
+        const byteString = atob(base64Image);
         const mimeType = 'image/png';
         const ab = new ArrayBuffer(byteString.length);
         const ia = new Uint8Array(ab);

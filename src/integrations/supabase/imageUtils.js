@@ -1,3 +1,4 @@
+
 import { supabase } from './supabase';
 
 export const deleteImageFromStorage = async (storagePath) => {
