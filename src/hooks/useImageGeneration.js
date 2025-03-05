@@ -6,7 +6,6 @@ import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
 import { containsNSFWContent } from '@/utils/nsfwUtils';
 import { useState, useRef, useCallback } from 'react';
-import { HfInference } from "@huggingface/inference";
 
 const generateRandomSeed = () => {
   // Generate a positive 5-9 digit number within PostgreSQL int4 range (max 2147483647)
@@ -110,22 +109,39 @@ export const useImageGeneration = ({
             huggingfaceModelId: queuedModelConfig.huggingfaceId || model
           });
 
-          // Create HfInference client with API key
-          const client = new HfInference(apiKeyData.api_key);
+          // Get API URL from environment or default
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
+          const apiUrl = `${supabaseUrl}/functions/v1/huggingface-proxy`;
           
-          console.log('Making HfInference API call:', {
+          console.log('Making API call to proxy:', {
+            apiUrl,
             model: queuedModelConfig.huggingfaceId || model,
-            inputs: modifiedPrompt,
-            parameters
+            inputLength: modifiedPrompt.length
           });
 
-          // Use the HfInference client to generate the image
-          const imageBlob = await client.textToImage({
-            model: queuedModelConfig.huggingfaceId || model,
-            inputs: modifiedPrompt,
-            parameters,
-            provider: "hf-inference",
+          // Call our Supabase edge function as a proxy
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_API_KEY}`
+            },
+            body: JSON.stringify({
+              model: queuedModelConfig.huggingfaceId || model,
+              inputs: modifiedPrompt,
+              parameters,
+              apiKey: apiKeyData.api_key
+            })
           });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Proxy API error:', errorData);
+            throw new Error(`API error: ${errorData.error || response.statusText}`);
+          }
+
+          // Get the image data directly as a blob
+          const imageBlob = await response.blob();
 
           // Log response for debugging
           console.log('API response received:', {
