@@ -194,6 +194,7 @@ export type Database = {
           created_at: string | null
           height: number
           id: string
+          image_url: string | null
           is_hot: boolean
           is_private: boolean
           is_trending: boolean
@@ -203,6 +204,7 @@ export type Database = {
           prompt: string
           quality: string
           seed: number
+          status: string | null
           storage_path: string
           user_id: string | null
           width: number
@@ -212,6 +214,7 @@ export type Database = {
           created_at?: string | null
           height: number
           id?: string
+          image_url?: string | null
           is_hot?: boolean
           is_private?: boolean
           is_trending?: boolean
@@ -221,6 +224,7 @@ export type Database = {
           prompt: string
           quality: string
           seed: number
+          status?: string | null
           storage_path: string
           user_id?: string | null
           width: number
@@ -230,6 +234,7 @@ export type Database = {
           created_at?: string | null
           height?: number
           id?: string
+          image_url?: string | null
           is_hot?: boolean
           is_private?: boolean
           is_trending?: boolean
@@ -239,6 +244,7 @@ export type Database = {
           prompt?: string
           quality?: string
           seed?: number
+          status?: string | null
           storage_path?: string
           user_id?: string | null
           width?: number
