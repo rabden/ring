@@ -17,6 +17,7 @@ const SingleImageView = () => {
   const navigate = useNavigate();
   const { session } = useSupabaseAuth();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const { data: image, isLoading } = useQuery({
     queryKey: ['singleImage', imageId],
@@ -49,16 +50,33 @@ const SingleImageView = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen p-4 bg-background">
-        <Skeleton className="w-full h-[60vh] bg-muted/5 animate-pulse" />
+      <div className={cn(
+        "min-h-screen p-4",
+        "bg-background backdrop-blur-[2px]",
+        "transition-all duration-300"
+      )}>
+        <Skeleton className={cn(
+          "w-full h-[60vh]",
+          "bg-muted/5",
+          "animate-pulse"
+        )} />
       </div>
     );
   }
 
   if (!image) {
     return (
-      <div className="min-h-screen p-4 bg-background">
-        <div className="flex items-center justify-center h-[60vh] bg-muted/5 border border-border/80 text-sm text-muted-foreground/70">
+      <div className={cn(
+        "min-h-screen p-4",
+        "bg-background backdrop-blur-[2px]",
+        "transition-all duration-300"
+      )}>
+        <div className={cn(
+          "flex items-center justify-center",
+          "h-[60vh]",
+          "bg-muted/5 border border-border/80",
+          "text-sm text-muted-foreground/70"
+        )}>
           Image not found
         </div>
       </div>
@@ -67,29 +85,31 @@ const SingleImageView = () => {
 
   return (
     <div className="min-h-screen">
-      {/* For desktop view, we use a scrollable approach */}
+      {/* For desktop view, we use a non-fixed approach */}
       {!isMobile ? (
-        <div className="min-h-screen">
+        <div>
           {/* Main image section */}
-          <div className="py-16 bg-background/80 backdrop-blur-sm">
-            <div className="container mx-auto">
-              <FullScreenImageView
-                image={image}
-                isOpen={true}
-                onClose={() => navigate(-1)}
-                onDownload={handleDownload}
-                onDiscard={() => {}}
-                isOwner={image.user_id === session?.user?.id}
-                setStyle={() => {}}
-                setActiveTab={() => {}}
-              />
-            </div>
+          <div className="h-screen relative">
+            <FullScreenImageView
+              image={image}
+              isOpen={true}
+              onClose={() => navigate(-1)}
+              onDownload={handleDownload}
+              onDiscard={() => {}}
+              isOwner={image.user_id === session?.user?.id}
+              setStyle={() => {}}
+              setActiveTab={() => {}}
+            />
           </div>
           
           {/* More images section */}
           <div className="w-full bg-background py-12">
             <div className="container mx-auto px-4 py-8">
-              <h2 className="text-xl font-medium mb-6 bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent flex items-center">
+              <h2 className={cn(
+                "text-xl font-medium mb-6",
+                "bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent",
+                "flex items-center"
+              )}>
                 More by this creator
               </h2>
 
@@ -127,7 +147,11 @@ const SingleImageView = () => {
           {/* More images section for mobile */}
           <div className="w-full bg-background pt-4">
             <div className="container mx-auto px-4 py-4">
-              <h2 className="text-xl font-medium mb-4 bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent flex items-center">
+              <h2 className={cn(
+                "text-xl font-medium mb-4",
+                "bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent",
+                "flex items-center"
+              )}>
                 More by this creator
               </h2>
 
