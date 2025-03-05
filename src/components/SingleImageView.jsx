@@ -50,33 +50,16 @@ const SingleImageView = () => {
 
   if (isLoading) {
     return (
-      <div className={cn(
-        "min-h-screen p-4",
-        "bg-background backdrop-blur-[2px]",
-        "transition-all duration-300"
-      )}>
-        <Skeleton className={cn(
-          "w-full h-[60vh]",
-          "bg-muted/5",
-          "animate-pulse"
-        )} />
+      <div className="min-h-screen p-4 bg-background">
+        <Skeleton className="w-full h-[60vh] bg-muted/5 animate-pulse" />
       </div>
     );
   }
 
   if (!image) {
     return (
-      <div className={cn(
-        "min-h-screen p-4",
-        "bg-background backdrop-blur-[2px]",
-        "transition-all duration-300"
-      )}>
-        <div className={cn(
-          "flex items-center justify-center",
-          "h-[60vh]",
-          "bg-muted/5 border border-border/80",
-          "text-sm text-muted-foreground/70"
-        )}>
+      <div className="min-h-screen p-4 bg-background">
+        <div className="flex items-center justify-center h-[60vh] bg-muted/5 border border-border/80 text-sm text-muted-foreground/70">
           Image not found
         </div>
       </div>
@@ -84,12 +67,11 @@ const SingleImageView = () => {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* For desktop view, we use a non-fixed approach */}
+    <div className="min-h-screen bg-background">
       {!isMobile ? (
-        <div>
-          {/* Main image section */}
-          <div className="h-screen relative">
+        <div className="flex flex-col w-full">
+          {/* Main image section - using normal flow instead of fixed */}
+          <div className="w-full bg-background/95 backdrop-blur-[2px]">
             <FullScreenImageView
               image={image}
               isOpen={true}
@@ -133,16 +115,18 @@ const SingleImageView = () => {
         </div>
       ) : (
         /* For mobile view, we use a scrollable approach */
-        <div>
-          <MobileImageView
-            image={image}
-            onClose={() => navigate(-1)}
-            onDownload={handleDownload}
-            isOwner={image.user_id === session?.user?.id}
-            setActiveTab={() => {}}
-            setStyle={() => {}}
-            showFullImage={true}
-          />
+        <div className="flex flex-col w-full">
+          <div className="w-full bg-background/95 backdrop-blur-[2px]">
+            <MobileImageView
+              image={image}
+              onClose={() => navigate(-1)}
+              onDownload={handleDownload}
+              isOwner={image.user_id === session?.user?.id}
+              setActiveTab={() => {}}
+              setStyle={() => {}}
+              showFullImage={true}
+            />
+          </div>
           
           {/* More images section for mobile */}
           <div className="w-full bg-background pt-4">
