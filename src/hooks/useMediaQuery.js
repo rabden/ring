@@ -6,22 +6,16 @@ export const useMediaQuery = (query) => {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(query);
-    // Set initial value
     setMatches(mediaQuery.matches);
 
-    // Define the event handler
     const handleChange = (event) => {
       setMatches(event.matches);
     };
 
-    // Add event listener
+    // Using addEventListener instead of the deprecated addListener
     mediaQuery.addEventListener('change', handleChange);
-    
-    // Cleanup function to remove event listener
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, [query]); // Only re-run if query changes
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [query]);
 
   return matches;
 };

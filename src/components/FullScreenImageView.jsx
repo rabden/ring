@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
@@ -166,16 +167,36 @@ const FullScreenImageView = ({
     };
   }, [isOpen, onClose]);
 
+  // Handle body scroll lock
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!image || !isOpen) return null;
 
   return (
     <div className={cn(
-      "w-full bg-card/10 backdrop-blur-[2px]",
-      "flex flex-col md:flex-row",
-      "transition-opacity duration-300 min-h-[80vh]",
+      "absolute inset-0 z-50",
+      "bg-card/10 backdrop-blur-[2px]",
+      "flex flex-col",
+      "transition-opacity duration-300",
       isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
     )}>
-      <div className="absolute left-8 top-8 z-10">
+      <div className={cn(
+        "absolute left-8 top-8 z-50",
+        "transition-all duration-300 transform",
+        isSidebarOpen 
+          ? "translate-x-0 opacity-100" 
+          : "-translate-x-12 opacity-0 pointer-events-none"
+      )}>
         <Button 
           variant="ghost" 
           onClick={onClose}
@@ -189,19 +210,20 @@ const FullScreenImageView = ({
         </Button>
       </div>
       
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex h-full overflow-hidden">
         <div className={cn(
           "flex-1 relative flex items-center justify-center",
-          "p-8 md:p-16 pt-20",
+          isSidebarOpen ? "p-3" : "p-0",
           "transition-all duration-300"
         )}>
           <img
             src={supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl}
             alt={image.prompt}
             className={cn(
-              "max-w-full max-h-[70vh]",
+              "max-w-full max-h-[calc(100vh-2rem)]",
+              isSidebarOpen ? "" : "max-h-screen",
               "object-contain",
-              "transition-all duration-300 shadow-lg rounded-md"
+              "transition-all duration-300"
             )}
             onDoubleClick={handleDoubleClick}
           />
@@ -234,12 +256,12 @@ const FullScreenImageView = ({
 
         <div 
           className={cn(
-            "transition-all duration-300 ease-in-out transform",
+            "relative transition-all duration-300 ease-in-out transform",
             isSidebarOpen ? "w-[380px]" : "w-0 opacity-0"
           )}
         >
           <div className={cn(
-            "h-full rounded-lg mr-3",
+            "h-[calc(100vh-24px)] rounded-lg mr-3 mt-3",
             "border border-border-20 bg-card/30",
             "backdrop-blur-[2px]",
             "shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
