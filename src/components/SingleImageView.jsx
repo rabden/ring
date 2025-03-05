@@ -84,21 +84,12 @@ const SingleImageView = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Main image view */}
-      <div className="flex-none">
-        {isMobile ? (
-          <MobileImageView
-            image={image}
-            onClose={() => navigate(-1)}
-            onDownload={handleDownload}
-            isOwner={image.user_id === session?.user?.id}
-            setActiveTab={() => {}}
-            setStyle={() => {}}
-            showFullImage={true}
-          />
-        ) : (
-          <div className="h-screen overflow-hidden">
+    <div className="min-h-screen">
+      {/* For desktop view, we use a non-fixed approach */}
+      {!isMobile ? (
+        <div>
+          {/* Main image section */}
+          <div className="h-screen relative">
             <FullScreenImageView
               image={image}
               isOpen={true}
@@ -110,45 +101,79 @@ const SingleImageView = () => {
               setActiveTab={() => {}}
             />
           </div>
-        )}
-      </div>
+          
+          {/* More images section */}
+          <div className="w-full bg-background py-12">
+            <div className="container mx-auto px-4 py-8">
+              <h2 className={cn(
+                "text-xl font-medium mb-6",
+                "bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent",
+                "flex items-center"
+              )}>
+                More by this creator
+              </h2>
 
-      {/* More images section - visible in a separate scrollable area */}
-      <div 
-        className={cn(
-          "w-full bg-background z-10 relative",
-          isMobile ? "pt-6" : "pt-12"
-        )}
-        style={{ 
-          marginTop: isMobile ? "0" : "100vh" 
-        }}
-      >
-        <div className="container mx-auto px-4 py-8">
-          <h2 className={cn(
-            "text-xl font-medium mb-6",
-            "bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent",
-            "flex items-center"
-          )}>
-            More by this creator
-          </h2>
-
-          <div className="mt-4">
-            <ImageGallery
-              userId={session?.user?.id}
-              profileUserId={image?.user_id}
-              activeView="myImages"
-              nsfwEnabled={false}
-              showPrivate={false}
-              onImageClick={handleOtherImageClick}
-              onDiscard={() => {}}
-              onRemix={() => {}}
-              onDownload={() => {}}
-              onViewDetails={handleOtherImageClick}
-              excludeImageId={imageId}
-            />
+              <div className="mt-4">
+                <ImageGallery
+                  userId={session?.user?.id}
+                  profileUserId={image?.user_id}
+                  activeView="myImages"
+                  nsfwEnabled={false}
+                  showPrivate={false}
+                  onImageClick={handleOtherImageClick}
+                  onDiscard={() => {}}
+                  onRemix={() => {}}
+                  onDownload={() => {}}
+                  onViewDetails={handleOtherImageClick}
+                  excludeImageId={imageId}
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* For mobile view, we use a scrollable approach */
+        <div>
+          <MobileImageView
+            image={image}
+            onClose={() => navigate(-1)}
+            onDownload={handleDownload}
+            isOwner={image.user_id === session?.user?.id}
+            setActiveTab={() => {}}
+            setStyle={() => {}}
+            showFullImage={true}
+          />
+          
+          {/* More images section for mobile */}
+          <div className="w-full bg-background pt-4">
+            <div className="container mx-auto px-4 py-4">
+              <h2 className={cn(
+                "text-xl font-medium mb-4",
+                "bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent",
+                "flex items-center"
+              )}>
+                More by this creator
+              </h2>
+
+              <div className="mt-4">
+                <ImageGallery
+                  userId={session?.user?.id}
+                  profileUserId={image?.user_id}
+                  activeView="myImages"
+                  nsfwEnabled={false}
+                  showPrivate={false}
+                  onImageClick={handleOtherImageClick}
+                  onDiscard={() => {}}
+                  onRemix={() => {}}
+                  onDownload={() => {}}
+                  onViewDetails={handleOtherImageClick}
+                  excludeImageId={imageId}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

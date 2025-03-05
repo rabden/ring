@@ -12,8 +12,9 @@ export const useMediaQuery = (query) => {
       setMatches(event.matches);
     };
 
-    mediaQuery.addListener(handleChange);
-    return () => mediaQuery.removeListener(handleChange);
+    // Using addEventListener instead of the deprecated addListener
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, [query]);
 
   return matches;

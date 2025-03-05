@@ -209,7 +209,6 @@ const MobileImageView = ({
 
   return (
     <div className={cn(
-      "min-h-screen",
       "bg-background/95 backdrop-blur-[2px]",
       "transition-all duration-300"
     )}>
@@ -230,16 +229,10 @@ const MobileImageView = ({
         </Button>
       )}
 
-      <ScrollArea 
-        ref={containerRef}
-        className={cn(
-          isMobile ? "h-[100dvh]" : "h-screen",
-          isFullscreen ? "overflow-hidden" : ""
-        )}
-      >
-        <div className={cn(
-          !isFullscreen && ["space-y-6 pb-6"]
-        )}>
+      <div className={cn(
+        isFullscreen ? "overflow-hidden" : ""
+      )}>
+        <div>
           {image && (
             <div 
               className={cn(
@@ -387,7 +380,7 @@ const MobileImageView = ({
             )}
           </AnimatePresence>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 };

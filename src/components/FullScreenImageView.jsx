@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
@@ -183,13 +184,12 @@ const FullScreenImageView = ({
 
   return (
     <div className={cn(
-      "fixed inset-0 z-50",
+      "absolute inset-0 z-50",
       "bg-card/10 backdrop-blur-[2px]",
       "flex flex-col",
       "transition-opacity duration-300",
       isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-    )}
-    style={{ height: '100vh' }}> {/* Limit height to viewport */}
+    )}>
       <div className={cn(
         "absolute left-8 top-8 z-50",
         "transition-all duration-300 transform",
