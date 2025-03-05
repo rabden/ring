@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -111,7 +110,7 @@ const ImageGenerator = () => {
     };
   }, []);
 
-  const { generateImage, isProcessing } = useImageGeneration({
+  const { generateImage, nsfwDetected } = useImageGeneration({
     session,
     prompt,
     seed,
