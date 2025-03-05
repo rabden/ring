@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
@@ -189,7 +188,8 @@ const FullScreenImageView = ({
       "flex flex-col",
       "transition-opacity duration-300",
       isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-    )}>
+    )}
+    style={{ height: '100vh' }}> {/* Limit height to viewport */}
       <div className={cn(
         "absolute left-8 top-8 z-50",
         "transition-all duration-300 transform",
@@ -210,7 +210,7 @@ const FullScreenImageView = ({
         </Button>
       </div>
       
-      <div className="flex h-full">
+      <div className="flex h-full overflow-hidden">
         <div className={cn(
           "flex-1 relative flex items-center justify-center",
           isSidebarOpen ? "p-3" : "p-0",
