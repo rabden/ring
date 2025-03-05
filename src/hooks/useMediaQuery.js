@@ -6,6 +6,7 @@ export const useMediaQuery = (query) => {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(query);
+    // Set initial value
     setMatches(mediaQuery.matches);
 
     const handleChange = (event) => {
@@ -14,6 +15,8 @@ export const useMediaQuery = (query) => {
 
     // Using addEventListener instead of the deprecated addListener
     mediaQuery.addEventListener('change', handleChange);
+    
+    // Clean up event listener on component unmount
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [query]);
 

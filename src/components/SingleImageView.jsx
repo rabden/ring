@@ -87,49 +87,17 @@ const SingleImageView = () => {
     <div className="min-h-screen">
       {/* For desktop view, we use a non-fixed approach */}
       {!isMobile ? (
-        <div>
-          {/* Main image section */}
-          <div className="h-screen relative">
-            <FullScreenImageView
-              image={image}
-              isOpen={true}
-              onClose={() => navigate(-1)}
-              onDownload={handleDownload}
-              onDiscard={() => {}}
-              isOwner={image.user_id === session?.user?.id}
-              setStyle={() => {}}
-              setActiveTab={() => {}}
-            />
-          </div>
-          
-          {/* More images section */}
-          <div className="w-full bg-background py-12">
-            <div className="container mx-auto px-4 py-8">
-              <h2 className={cn(
-                "text-xl font-medium mb-6",
-                "bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent",
-                "flex items-center"
-              )}>
-                More by this creator
-              </h2>
-
-              <div className="mt-4">
-                <ImageGallery
-                  userId={session?.user?.id}
-                  profileUserId={image?.user_id}
-                  activeView="myImages"
-                  nsfwEnabled={false}
-                  showPrivate={false}
-                  onImageClick={handleOtherImageClick}
-                  onDiscard={() => {}}
-                  onRemix={() => {}}
-                  onDownload={() => {}}
-                  onViewDetails={handleOtherImageClick}
-                  excludeImageId={imageId}
-                />
-              </div>
-            </div>
-          </div>
+        <div className="h-screen relative">
+          <FullScreenImageView
+            image={image}
+            isOpen={true}
+            onClose={() => navigate(-1)}
+            onDownload={handleDownload}
+            onDiscard={() => {}}
+            isOwner={image.user_id === session?.user?.id}
+            setStyle={() => {}}
+            setActiveTab={() => {}}
+          />
         </div>
       ) : (
         /* For mobile view, we use a scrollable approach */
