@@ -50,88 +50,137 @@ serve(async (req) => {
     apiKey = keyData[0].api_key;
     
     console.log('Using API key ID:', keyId);
+
+    // Create a timestamp ID for this generation
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 10);
+    const filePath = `${userId}/${timestamp}_${randomString}.png`;
     
-    try {
-      // Initialize the HF client with API key
-      const hf = new HfInference(apiKey)
-      
-      console.log('Parameters:', parameters)
-      
-      // Make the API call to generate the image
-      const result = await hf.textToImage({
-        inputs: prompt,
-        model: model,
-        parameters: parameters,
-      })
-      
-      console.log('Generated image successfully')
-      
-      // Convert the blob to a base64 string for storage
-      const arrayBuffer = await result.arrayBuffer()
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
-      
-      // Create a more unique filename to prevent collisions
-      const timestamp = Date.now();
-      const randomString = Math.random().toString(36).substring(2, 10);
-      const fileExt = 'png';
-      const filePath = `${userId}/${timestamp}_${randomString}.${fileExt}`;
-      
-      // If userId is provided, store the image directly in Supabase
-      if (userId) {
-        // Convert base64 to Blob for storage
-        const byteString = atob(base64);
-        const mimeType = 'image/png';
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
+    // If userId is provided, create a processing record in the database
+    if (userId) {
+      // Insert a processing record
+      const { data: insertData, error: insertError } = await supabase
+        .from('user_images')
+        .insert([{
+          user_id: userId,
+          storage_path: filePath,
+          prompt: prompt,
+          seed: parameters.seed,
+          width: parameters.width,
+          height: parameters.height,
+          model: modelName || model, // Use the provided modelName or fallback to model id
+          quality,
+          aspect_ratio: aspectRatio || `${parameters.width}:${parameters.height}`,
+          is_private: isPrivate,
+          negative_prompt: parameters.negative_prompt,
+          like_count: 0,
+          status: 'processing' // Add status field to track generation
+        }])
+        .select()
+        .single();
         
-        for (let i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-        }
-        
-        const imageBlob = new Blob([ab], { type: mimeType });
-        
-        // Upload to storage
-        const { error: uploadError } = await supabase.storage
-          .from('user-images')
-          .upload(filePath, imageBlob);
-          
-        if (uploadError) {
-          console.error('Storage upload error:', uploadError);
-          throw uploadError;
-        }
-        
-        // Insert record - use modelName instead of model (huggingfaceId)
-        const { data: insertData, error: insertError } = await supabase
-          .from('user_images')
-          .insert([{
-            user_id: userId,
-            storage_path: filePath,
-            prompt: prompt,
-            seed: parameters.seed,
-            width: parameters.width,
-            height: parameters.height,
-            model: modelName || model, // Use the provided modelName or fallback to model id
-            quality,
-            aspect_ratio: aspectRatio || `${parameters.width}:${parameters.height}`,
-            is_private: isPrivate,
-            negative_prompt: parameters.negative_prompt,
-            like_count: 0
-          }])
-          .select()
-          .single();
-          
-        if (insertError) {
-          console.error('Database insert error:', insertError);
-          throw insertError;
-        }
-        
-        console.log('Image saved to database with ID:', insertData.id);
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        throw insertError;
       }
       
-      // Return the base64 image data and record info
+      const imageId = insertData.id;
+      console.log('Created processing record with ID:', imageId);
+      
+      // Start the image generation in the background
+      const backgroundTask = async () => {
+        try {
+          console.log('Starting background generation for image:', imageId);
+          
+          // Initialize the HF client with API key
+          const hf = new HfInference(apiKey);
+          
+          console.log('Parameters:', parameters);
+          
+          // Make the API call to generate the image
+          const result = await hf.textToImage({
+            inputs: prompt,
+            model: model,
+            parameters: parameters,
+          });
+          
+          console.log('Generated image successfully');
+          
+          // Convert the blob to a base64 string for storage
+          const arrayBuffer = await result.arrayBuffer();
+          const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+          
+          // Convert base64 to Blob for storage
+          const byteString = atob(base64);
+          const mimeType = 'image/png';
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          
+          for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+          }
+          
+          const imageBlob = new Blob([ab], { type: mimeType });
+          
+          // Upload to storage
+          const { error: uploadError } = await supabase.storage
+            .from('user-images')
+            .upload(filePath, imageBlob);
+            
+          if (uploadError) {
+            console.error('Storage upload error:', uploadError);
+            await supabase
+              .from('user_images')
+              .update({ status: 'failed' })
+              .eq('id', imageId);
+            return;
+          }
+          
+          // Get the public URL for the image
+          const { data: { publicUrl } } = supabase.storage
+            .from('user-images')
+            .getPublicUrl(filePath);
+          
+          // Update the record with completed status
+          await supabase
+            .from('user_images')
+            .update({ 
+              status: 'completed', 
+              image_url: publicUrl 
+            })
+            .eq('id', imageId);
+            
+          console.log('Image generation completed, updated database record:', imageId);
+        } catch (error) {
+          console.error('Background generation error:', error);
+          
+          // Update the record with failed status
+          await supabase
+            .from('user_images')
+            .update({ status: 'failed' })
+            .eq('id', imageId);
+        } finally {
+          // Always update the last_used_at timestamp
+          const updateResult = await supabase
+            .from('huggingface_api_keys')
+            .update({ last_used_at: new Date().toISOString() })
+            .eq('id', keyId);
+            
+          if (updateResult.error) {
+            console.error('Error updating key usage timestamp:', updateResult.error);
+          }
+        }
+      };
+      
+      // Run the generation task in the background using Deno's EdgeRuntime
+      // This allows the generation to continue even after the function returns
+      EdgeRuntime.waitUntil(backgroundTask());
+      
+      // Return the image ID and status immediately
       return new Response(
         JSON.stringify({ 
-          image: `data:image/png;base64,${base64}`,
+          imageId,
+          status: 'processing',
           filePath,
           success: true 
         }),
@@ -141,20 +190,12 @@ serve(async (req) => {
             'Content-Type': 'application/json' 
           } 
         }
-      )
-    } finally {
-      // Always update the last_used_at timestamp
-      const updateResult = await supabase
-        .from('huggingface_api_keys')
-        .update({ last_used_at: new Date().toISOString() })
-        .eq('id', keyId);
-        
-      if (updateResult.error) {
-        console.error('Error updating key usage timestamp:', updateResult.error);
-      }
+      );
+    } else {
+      throw new Error('User ID is required');
     }
   } catch (error) {
-    console.error('Error generating image:', error)
+    console.error('Error generating image:', error);
     
     return new Response(
       JSON.stringify({ 
@@ -168,6 +209,6 @@ serve(async (req) => {
         },
         status: 500 
       }
-    )
+    );
   }
 })

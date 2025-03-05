@@ -3,9 +3,8 @@ import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
 import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
-import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
 import { containsNSFWContent } from '@/utils/nsfwUtils';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 const generateRandomSeed = () => {
   // Generate a positive 5-9 digit number within PostgreSQL int4 range (max 2147483647)
@@ -36,6 +35,57 @@ export const useImageGeneration = ({
   // Queue to store pending generations
   const generationQueue = useRef([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const pollingIntervals = useRef({});
+
+  // Clean up polling intervals when component unmounts
+  useEffect(() => {
+    return () => {
+      Object.values(pollingIntervals.current).forEach(interval => {
+        clearInterval(interval);
+      });
+    };
+  }, []);
+
+  // Poll for image status updates
+  const startPolling = useCallback((imageId, generationId) => {
+    const intervalId = setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_images')
+          .select('status, image_url')
+          .eq('id', imageId)
+          .single();
+
+        if (error) {
+          console.error('Error polling for image status:', error);
+          return;
+        }
+
+        console.log(`Polling image ${imageId}, status: ${data?.status}`);
+
+        if (data?.status === 'completed' && data?.image_url) {
+          // Update UI to show completion
+          setGeneratingImages(prev => prev.map(img => 
+            img.id === generationId ? { ...img, status: 'completed', imageUrl: data.image_url } : img
+          ));
+
+          toast.success('Image generated successfully!');
+          clearInterval(pollingIntervals.current[imageId]);
+          delete pollingIntervals.current[imageId];
+        } else if (data?.status === 'failed') {
+          // Update UI to show failure
+          setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
+          toast.error('Failed to generate image. Please try again.');
+          clearInterval(pollingIntervals.current[imageId]);
+          delete pollingIntervals.current[imageId];
+        }
+      } catch (error) {
+        console.error('Error in polling:', error);
+      }
+    }, 10000); // Poll every 10 seconds
+
+    pollingIntervals.current[imageId] = intervalId;
+  }, [setGeneratingImages]);
 
   // Process the queue one item at a time
   const processQueue = useCallback(async () => {
@@ -65,8 +115,6 @@ export const useImageGeneration = ({
       ));
 
       try {
-        initRetryCount(generationId);
-
         // Prepare parameters for the model
         const parameters = {
           seed: actualSeed,
@@ -104,23 +152,17 @@ export const useImageGeneration = ({
           throw new Error(`Edge function error: ${error.message}`);
         }
 
-        if (!response || !response.image) {
+        if (!response || !response.success) {
           throw new Error('Invalid response from edge function');
         }
 
-        // The image is already stored, we just update the UI
-        console.log('Edge function response received:', {
-          success: response.success,
-          hasImage: !!response.image,
-          filePath: response.filePath
-        });
+        console.log('Edge function response received:', response);
 
-        // Update UI to show completion
-        setGeneratingImages(prev => prev.map(img => 
-          img.id === generationId ? { ...img, status: 'completed', imageUrl: response.image } : img
-        ));
-
-        toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
+        // Check if we received an image ID to poll for
+        if (response.imageId) {
+          // Start polling for this image's status
+          startPolling(response.imageId, generationId);
+        }
 
       } catch (error) {
         console.error('API call error:', {
@@ -144,7 +186,7 @@ export const useImageGeneration = ({
         processQueue();
       }
     }
-  }, [isProcessing, session, setGeneratingImages]);
+  }, [isProcessing, session, setGeneratingImages, startPolling]);
 
   const generateImage = async (isPrivate = false, finalPrompt = null) => {
     if (!session || !prompt || !modelConfigs) {
