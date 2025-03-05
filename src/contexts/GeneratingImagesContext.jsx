@@ -9,7 +9,7 @@ export const GeneratingImagesProvider = ({ children }) => {
 
   // Add auto-removal of completed images after 10 seconds
   useEffect(() => {
-    const completedImages = generatingImages.filter(img => img.status === 'completed' || img.status === 'failed');
+    const completedImages = generatingImages.filter(img => img.status === 'completed');
     
     if (completedImages.length > 0) {
       const timeouts = completedImages.map(img => {

@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, Trash2, RefreshCw, ArrowLeft, Copy, Share2, Check, Wand2, RotateCw, X } from "lucide-react";
+import { Download, Trash2, RefreshCw, ArrowLeft, Copy, Share2, Check, Wand2, RotateCw } from "lucide-react";
 import { useModelConfigs } from '@/hooks/useModelConfigs';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useLikes } from '@/hooks/useLikes';
@@ -36,6 +36,7 @@ const MobileImageView = ({
   const [copyIcon, setCopyIcon] = useState('copy');
   const [shareIcon, setShareIcon] = useState('share');
   const [isAnimating, setIsAnimating] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const navigate = useNavigate();
   const { handleRemix } = useImageRemix(session, onRemix, onClose, isPro);
   const queryClient = useQueryClient();
@@ -149,20 +150,21 @@ const MobileImageView = ({
 
   useEffect(() => {
     if (isFullscreen && imageRef.current) {
-      document.body.style.overflow = 'hidden';
-      
       const img = imageRef.current;
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       const isLandscape = image.width > image.height;
 
-      if (isRotated && isLandscape) {
+      if (isLandscape) {
+        // For landscape images
         const aspectRatio = image.width / image.height;
         const rotatedAspectRatio = 1 / aspectRatio;
         
+        // Calculate dimensions that will fit the screen after rotation
         let width = viewportHeight;
         let height = viewportHeight * rotatedAspectRatio;
         
+        // If the height would overflow the width, scale down
         if (height > viewportWidth) {
           const scale = viewportWidth / height;
           width *= scale;
@@ -175,12 +177,13 @@ const MobileImageView = ({
           height: `${width}px`,
         });
       } else {
+        // For portrait/square images
         const aspectRatio = image.width / image.height;
         let width = viewportWidth;
         let height = viewportWidth / aspectRatio;
         
         if (height > viewportHeight) {
-          height = viewportHeight * 0.9; // Leave some margin
+          height = viewportHeight;
           width = height * aspectRatio;
         }
 
@@ -191,14 +194,9 @@ const MobileImageView = ({
         });
       }
     } else {
-      document.body.style.overflow = '';
-      setImageStyle({});
+      setImageStyle({}); // Reset styles when not fullscreen
     }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isFullscreen, isRotated, image?.width, image?.height]);
+  }, [isFullscreen, image.width, image.height]);
 
   const detailItems = [
     { label: 'Model', value: modelConfigs?.[image.model]?.name || image.model },
@@ -211,6 +209,7 @@ const MobileImageView = ({
 
   return (
     <div className={cn(
+      "min-h-screen",
       "bg-background/95 backdrop-blur-[2px]",
       "transition-all duration-300"
     )}>
@@ -231,95 +230,78 @@ const MobileImageView = ({
         </Button>
       )}
 
-      <AnimatePresence>
-        {isFullscreen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className={cn(
-              "fixed inset-0 z-[100]",
-              "bg-black/95 backdrop-blur-sm",
-              "flex items-center justify-center"
-            )}
-            onClick={handleImageClick}
-          >
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsFullscreen(false);
-              }} 
-              className={cn(
-                "absolute top-4 right-4 z-[101]",
-                "h-8 w-8 p-0 rounded-full",
-                "bg-background/20 backdrop-blur-[2px]",
-                "hover:bg-background/30",
-                "transition-all duration-200"
-              )}
-            >
-              <X className="h-5 w-5 text-white/90" />
-            </Button>
-            
-            {isLandscape && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleRotate}
-                className={cn(
-                  "absolute top-4 left-4 z-[101]",
-                  "h-8 w-8 p-0 rounded-full",
-                  "bg-background/20 backdrop-blur-[2px]",
-                  "hover:bg-background/30",
-                  "transition-all duration-200"
-                )}
-              >
-                <RotateCw className={cn(
-                  "h-4 w-4 text-white/90",
-                  "transition-transform duration-300",
-                  isRotated && "rotate-90"
-                )} />
-              </Button>
-            )}
-            
-            <img
-              ref={imageRef}
-              src={supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl}
-              alt={image.prompt || 'Generated image'}
-              style={imageStyle}
-              className={cn(
-                "object-contain",
-                "transition-all duration-300",
-                "cursor-zoom-out"
-              )}
-            />
-          </motion.div>
+      <ScrollArea 
+        ref={containerRef}
+        className={cn(
+          isMobile ? "h-[100dvh]" : "h-screen",
+          isFullscreen ? "overflow-hidden" : ""
         )}
-      </AnimatePresence>
-
-      <div className={cn(
-        isFullscreen ? "overflow-hidden" : ""
-      )}>
-        <div>
-          {image && !isFullscreen && (
+      >
+        <div className={cn(
+          !isFullscreen && ["space-y-6 pb-6"]
+        )}>
+          {image && (
             <div 
-              className="relative"
+              className={cn(
+                "relative",
+                isFullscreen && "fixed inset-0 z-50 bg-black/95",
+                "transition-all duration-300",
+                isFullscreen && "m-0 p-0"
+              )}
               onClick={handleImageClick}
             >
-              <img
-                src={supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl}
-                alt={image.prompt || 'Generated image'}
-                className={cn(
-                  "w-full h-auto",
-                  "object-contain",
-                  "cursor-zoom-in"
-                )}
-                onDoubleClick={handleDoubleClick}
-              />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <HeartAnimation isAnimating={isAnimating} />
+              {isFullscreen && isLandscape && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRotate}
+                  className={cn(
+                    "absolute top-4 right-4 z-[70]",
+                    "h-8 w-8 p-0 rounded-lg",
+                    "bg-background/80 backdrop-blur-[2px]",
+                    "hover:bg-background/90",
+                    "transition-all duration-200"
+                  )}
+                >
+                  <RotateCw className={cn(
+                    "h-4 w-4 text-foreground/70",
+                    "transition-transform duration-300",
+                    isRotated && "rotate-90"
+                  )} />
+                </Button>
+              )}
+
+              <div className={cn(
+                "w-full h-full flex items-center justify-center",
+                isFullscreen && "min-h-screen",
+                isFullscreen && "m-0 p-0"
+              )}>
+                <img
+                  ref={imageRef}
+                  src={supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl}
+                  alt={image.prompt || 'Generated image'}
+                  className={cn(
+                    "object-contain transition-all duration-300",
+                    !isFullscreen && "w-full h-auto",
+                    isFullscreen && !isRotated && "max-h-[100vh] max-w-[100vw]",
+                    isFullscreen && isRotated && isLandscape && [
+                      "rotate-90",
+                      "max-h-[100vw]",
+                      "max-w-[100vh]",
+                    ],
+                    isFullscreen ? "cursor-zoom-out" : "cursor-zoom-in",
+                    isFullscreen && "m-0 p-0"
+                  )}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    if (!isFullscreen) {
+                      handleDoubleClick(e);
+                    }
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <HeartAnimation isAnimating={isAnimating} />
+                </div>
               </div>
             </div>
           )}
@@ -405,7 +387,7 @@ const MobileImageView = ({
             )}
           </AnimatePresence>
         </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 };

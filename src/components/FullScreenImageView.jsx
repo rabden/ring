@@ -184,7 +184,7 @@ const FullScreenImageView = ({
 
   return (
     <div className={cn(
-      "absolute inset-0 z-50",
+      "fixed inset-0 z-50",
       "bg-card/10 backdrop-blur-[2px]",
       "flex flex-col",
       "transition-opacity duration-300",
@@ -210,7 +210,7 @@ const FullScreenImageView = ({
         </Button>
       </div>
       
-      <div className="flex h-full overflow-hidden">
+      <div className="flex h-full">
         <div className={cn(
           "flex-1 relative flex items-center justify-center",
           isSidebarOpen ? "p-3" : "p-0",

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
@@ -10,14 +10,12 @@ import MobileImageView from '@/components/MobileImageView';
 import FullScreenImageView from '@/components/FullScreenImageView';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
-import ImageGallery from '@/components/ImageGallery';
 
 const SingleImageView = () => {
   const { imageId } = useParams();
   const navigate = useNavigate();
   const { session } = useSupabaseAuth();
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const [selectedImage, setSelectedImage] = useState(null);
 
   const { data: image, isLoading } = useQuery({
     queryKey: ['singleImage', imageId],
@@ -37,15 +35,6 @@ const SingleImageView = () => {
     if (!image) return;
     const imageUrl = supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl;
     await downloadImage(imageUrl, image.prompt);
-  };
-
-  // Handler for clicking on other images
-  const handleOtherImageClick = (clickedImage) => {
-    // If we're already on the clicked image's page, just return
-    if (clickedImage.id === imageId) return;
-    
-    // Navigate to the new image's page
-    navigate(`/image/${clickedImage.id}`);
   };
 
   if (isLoading) {
@@ -83,66 +72,27 @@ const SingleImageView = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen">
-      {/* For desktop view, we use a non-fixed approach */}
-      {!isMobile ? (
-        <div className="h-screen relative">
-          <FullScreenImageView
-            image={image}
-            isOpen={true}
-            onClose={() => navigate(-1)}
-            onDownload={handleDownload}
-            onDiscard={() => {}}
-            isOwner={image.user_id === session?.user?.id}
-            setStyle={() => {}}
-            setActiveTab={() => {}}
-          />
-        </div>
-      ) : (
-        /* For mobile view, we use a scrollable approach */
-        <div>
-          <MobileImageView
-            image={image}
-            onClose={() => navigate(-1)}
-            onDownload={handleDownload}
-            isOwner={image.user_id === session?.user?.id}
-            setActiveTab={() => {}}
-            setStyle={() => {}}
-            showFullImage={true}
-          />
-          
-          {/* More images section for mobile */}
-          <div className="w-full bg-background pt-4">
-            <div className="container mx-auto px-4 py-4">
-              <h2 className={cn(
-                "text-xl font-medium mb-4",
-                "bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent",
-                "flex items-center"
-              )}>
-                More by this creator
-              </h2>
-
-              <div className="mt-4">
-                <ImageGallery
-                  userId={session?.user?.id}
-                  profileUserId={image?.user_id}
-                  activeView="myImages"
-                  nsfwEnabled={false}
-                  showPrivate={false}
-                  onImageClick={handleOtherImageClick}
-                  onDiscard={() => {}}
-                  onRemix={() => {}}
-                  onDownload={() => {}}
-                  onViewDetails={handleOtherImageClick}
-                  excludeImageId={imageId}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+  return isMobile ? (
+    <MobileImageView
+      image={image}
+      onClose={() => navigate(-1)}
+      onDownload={handleDownload}
+      isOwner={image.user_id === session?.user?.id}
+      setActiveTab={() => {}}
+      setStyle={() => {}}
+      showFullImage={true}
+    />
+  ) : (
+    <FullScreenImageView
+      image={image}
+      isOpen={true}
+      onClose={() => navigate(-1)}
+      onDownload={handleDownload}
+      onDiscard={() => {}}
+      isOwner={image.user_id === session?.user?.id}
+      setStyle={() => {}}
+      setActiveTab={() => {}}
+    />
   );
 };
 

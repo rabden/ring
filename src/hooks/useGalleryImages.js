@@ -1,4 +1,3 @@
-
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect, useState } from 'react';
@@ -17,8 +16,7 @@ export const useGalleryImages = ({
   showFollowing = false,
   showTop = false,
   showLatest = false,
-  following = [],
-  excludeImageId = null
+  following = []
 }) => {
   const queryClient = useQueryClient();
   const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth <= 768 ? 50 : 200);
@@ -39,18 +37,13 @@ export const useGalleryImages = ({
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following, itemsPerPage, excludeImageId],
+    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following, itemsPerPage],
     queryFn: async ({ pageParam = { page: 0 } }) => {
       if (!userId) return { data: [], nextPage: null };
 
       let baseQuery = supabase
         .from('user_images')
         .select('*', { count: 'exact' });
-
-      // Exclude specific image if requested
-      if (excludeImageId) {
-        baseQuery = baseQuery.neq('id', excludeImageId);
-      }
 
       // Handle MyImages view
       if (activeView === 'myImages') {
