@@ -6,6 +6,7 @@ import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
 import { containsNSFWContent } from '@/utils/nsfwUtils';
 import { useState, useRef, useCallback } from 'react';
+import { HfInference } from "@huggingface/inference";
 
 const generateRandomSeed = () => {
   // Generate a positive 5-9 digit number within PostgreSQL int4 range (max 2147483647)
@@ -51,7 +52,6 @@ export const useImageGeneration = ({
         quality,
         finalWidth,
         finalHeight,
-        finalAspectRatio,
         modifiedPrompt,
         actualSeed,
         isPrivate,
@@ -64,103 +64,146 @@ export const useImageGeneration = ({
         img.id === generationId ? { ...img, status: 'processing' } : img
       ));
 
-      try {
-        initRetryCount(generationId);
+      const makeRequest = async (needNewKey = false) => {
+        try {
+          initRetryCount(generationId);
 
-        // Prepare parameters for the model
-        const parameters = {
-          seed: actualSeed,
-          width: finalWidth,
-          height: finalHeight,
-          ...(queuedModelConfig.steps && { num_inference_steps: parseInt(queuedModelConfig.steps) }),
-          ...(queuedModelConfig.use_guidance && { guidance_scale: queuedModelConfig.defaultguidance }),
-          ...(queuedModelConfig.use_negative_prompt && negativePrompt && { 
-            negative_prompt: negativePrompt 
-          })
-        };
-
-        // Log request for debugging
-        console.log('Making edge function call:', {
-          model: queuedModelConfig.huggingfaceId || model,
-          prompt: modifiedPrompt,
-          parameters
-        });
-
-        // Call our Edge Function with updated parameters and include modelName
-        const { data: response, error } = await supabase.functions.invoke('generate-image', {
-          body: {
-            model: queuedModelConfig.huggingfaceId || model,
-            modelName: queuedModelConfig.name || model, // Pass the display name
-            prompt: modifiedPrompt,
-            parameters,
-            userId: session.user.id,          // Pass userId for storage
-            isPrivate: isPrivate,             // Pass privacy setting
-            quality: quality,                 // Pass quality setting
-            aspectRatio: finalAspectRatio     // Pass aspect ratio
+          const { data: apiKeyData, error: apiKeyError } = await supabase
+            .from('huggingface_api_keys')
+            .select('api_key')
+            .eq('is_active', true)
+            .order('last_used_at', { ascending: true })
+            .limit(1)
+            .single();
+          
+          if (apiKeyError) {
+            setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
+            toast.error('Failed to get API key');
+            throw new Error(`Failed to get API key: ${apiKeyError.message}`);
           }
-        });
+          if (!apiKeyData) {
+            setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
+            toast.error('No active API key available');
+            throw new Error('No active API key available');
+          }
 
-        if (error) {
-          throw new Error(`Edge function error: ${error.message}`);
-        }
+          await supabase
+            .from('huggingface_api_keys')
+            .update({ last_used_at: new Date().toISOString() })
+            .eq('api_key', apiKeyData.api_key);
 
-        if (!response || !response.success) {
-          throw new Error(response?.error || 'Invalid response from edge function');
-        }
+          const parameters = {
+            seed: actualSeed,
+            width: finalWidth,
+            height: finalHeight,
+            ...(queuedModelConfig.steps && { num_inference_steps: parseInt(queuedModelConfig.steps) }),
+            ...(queuedModelConfig.use_guidance && { guidance_scale: queuedModelConfig.defaultguidance }),
+            ...(queuedModelConfig.use_negative_prompt && negativePrompt && { 
+              negative_prompt: negativePrompt 
+            })
+          };
 
-        console.log('Edge function response received:', {
-          success: response.success,
-          status: response.status,
-          hasImage: !!response.image,
-          imageId: response.imageId,
-          filePath: response.filePath
-        });
+          // Log actual API call for debugging
+          console.log('Processing queued generation:', {
+            model: model,
+            modelName: modelConfigs[model]?.name,
+            huggingfaceModelId: queuedModelConfig.huggingfaceId || model
+          });
 
-        // Update UI based on the status from the response
-        if (response.status === 'completed' && response.imageId) {
-          // Complete success case - image generated and saved to database
+          // Create HfInference client with API key
+          const client = new HfInference(apiKeyData.api_key);
+          
+          console.log('Making HfInference API call:', {
+            model: queuedModelConfig.huggingfaceId || model,
+            inputs: modifiedPrompt,
+            parameters
+          });
+
+          // Use the HfInference client to generate the image
+          const imageBlob = await client.textToImage({
+            model: queuedModelConfig.huggingfaceId || model,
+            inputs: modifiedPrompt,
+            parameters,
+            provider: "hf-inference",
+          });
+
+          // Log response for debugging
+          console.log('API response received:', {
+            model: model,
+            success: !!imageBlob,
+            blobSize: imageBlob?.size
+          });
+
+          if (!imageBlob || imageBlob.size === 0) {
+            setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
+            toast.error('Generated image is invalid');
+            throw new Error('Generated image is empty or invalid');
+          }
+
+          const timestamp = Date.now();
+          const filePath = `${session.user.id}/${timestamp}.png`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('user-images')
+            .upload(filePath, imageBlob);
+            
+          if (uploadError) {
+            throw uploadError;
+          }
+
+          // Insert new image record with like_count initialized to 0
+          const { data: insertData, error: insertError } = await supabase
+            .from('user_images')
+            .insert([{
+              user_id: session.user.id,
+              storage_path: filePath,
+              prompt: modifiedPrompt,
+              seed: actualSeed,
+              width: finalWidth,
+              height: finalHeight,
+              model,
+              quality,
+              aspect_ratio: currentGeneration.finalAspectRatio,
+              is_private: isPrivate,
+              negative_prompt: negativePrompt,
+              like_count: 0
+            }])
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error('Error inserting image record:', insertError);
+            throw insertError;
+          }
+
+          // Update UI to show completion
           setGeneratingImages(prev => prev.map(img => 
-            img.id === generationId ? { 
-              ...img, 
-              status: 'completed', 
-              imageUrl: response.image,
-              savedImageId: response.imageId
-            } : img
+            img.id === generationId ? { ...img, status: 'completed' } : img
           ));
+
           toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
-        } else if (response.status === 'failed') {
-          // Error case
-          throw new Error(response.error || 'Failed to generate image');
-        } else {
-          // Partial success (e.g., image generated but not saved)
-          setGeneratingImages(prev => prev.map(img => 
-            img.id === generationId ? { 
-              ...img, 
-              status: 'completed', 
-              imageUrl: response.image
-            } : img
-          ));
-          toast.success(`Image generated but may not be saved`);
-        }
 
-      } catch (error) {
-        console.error('API call error:', {
-          error,
-          model: model,
-          modelConfig: queuedModelConfig
-        });
-        
-        // Update UI to show failed status
-        setGeneratingImages(prev => prev.map(img => 
-          img.id === generationId ? { 
-            ...img, 
-            status: 'failed', 
-            error: error.message || 'Unknown error'
-          } : img
-        ));
-        
-        toast.error(`Failed to generate image: ${error.message || 'Unknown error'}`);
-      }
+        } catch (error) {
+          console.error('API call error:', {
+            error,
+            model: model,
+            modelConfig: queuedModelConfig
+          });
+          
+          // Handle rate limiting and other errors
+          if (error.message && (error.message.includes('429') || error.message.includes('rate limit'))) {
+            toast.error('Rate limit exceeded. Trying again...');
+            setTimeout(() => makeRequest(true), 2000);
+            return;
+          }
+          
+          toast.error('Failed to generate image');
+          setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
+        }
+      };
+
+      await makeRequest();
+
     } catch (error) {
       console.error('Error in generation:', error);
     } finally {
@@ -259,14 +302,7 @@ export const useImageGeneration = ({
       const actualSeed = randomizeSeed ? generateRandomSeed() : (seed + i);
       const generationId = Date.now().toString() + i;
       
-      // Ensure we get the modified prompt without risking a circular reference
-      let modifiedPrompt;
-      try {
-        modifiedPrompt = await getModifiedPrompt(finalPrompt || prompt, generationStates.model, modelConfigs);
-      } catch (error) {
-        console.error('Error modifying prompt:', error);
-        modifiedPrompt = finalPrompt || prompt; // Fallback to original prompt
-      }
+      const modifiedPrompt = await getModifiedPrompt(finalPrompt || prompt, generationStates.model, modelConfigs);
 
       // Store complete generation parameters
       const queueItem = {

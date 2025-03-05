@@ -1,28 +1,18 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/supabase';
-import { toast } from 'sonner';
 
 const GeneratingImagesContext = createContext();
 
 export const GeneratingImagesProvider = ({ children }) => {
   const [generatingImages, setGeneratingImages] = useState([]);
 
-  // Add auto-removal of completed or failed images after 10 seconds
+  // Add auto-removal of completed images after 10 seconds
   useEffect(() => {
-    const completedOrFailedImages = generatingImages.filter(img => 
-      img.status === 'completed' || img.status === 'failed'
-    );
+    const completedImages = generatingImages.filter(img => img.status === 'completed');
     
-    if (completedOrFailedImages.length > 0) {
-      const timeouts = completedOrFailedImages.map(img => {
+    if (completedImages.length > 0) {
+      const timeouts = completedImages.map(img => {
         return setTimeout(() => {
           setGeneratingImages(prev => prev.filter(i => i.id !== img.id));
-          
-          // Show toast for failed images
-          if (img.status === 'failed' && img.error) {
-            toast.error(`Generation failed: ${img.error}`);
-          }
         }, 10000); // 10 seconds
       });
 
@@ -47,15 +37,6 @@ export const GeneratingImagesProvider = ({ children }) => {
         ));
       }
     }
-
-    // Log current queue state for debugging
-    console.log('Generation queue updated:', {
-      total: generatingImages.length,
-      pending: generatingImages.filter(img => img.status === 'pending').length,
-      processing: processingCount,
-      completed: generatingImages.filter(img => img.status === 'completed').length,
-      failed: generatingImages.filter(img => img.status === 'failed').length
-    });
   }, [generatingImages]);
 
   const cancelGeneration = (imageId) => {
@@ -84,18 +65,10 @@ export const GeneratingImagesProvider = ({ children }) => {
     });
   };
 
-  // Add a method to update a specific image's status
-  const updateImageStatus = (imageId, status, data = {}) => {
-    setGeneratingImages(prev => prev.map(img => 
-      img.id === imageId ? { ...img, status, ...data } : img
-    ));
-  };
-
   const value = {
     generatingImages,
     setGeneratingImages,
-    cancelGeneration,
-    updateImageStatus
+    cancelGeneration
   };
 
   return (
