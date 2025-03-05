@@ -230,7 +230,14 @@ export const useImageGeneration = ({
       const actualSeed = randomizeSeed ? generateRandomSeed() : (seed + i);
       const generationId = Date.now().toString() + i;
       
-      const modifiedPrompt = await getModifiedPrompt(finalPrompt || prompt, generationStates.model, modelConfigs);
+      // Ensure we get the modified prompt without risking a circular reference
+      let modifiedPrompt;
+      try {
+        modifiedPrompt = await getModifiedPrompt(finalPrompt || prompt, generationStates.model, modelConfigs);
+      } catch (error) {
+        console.error('Error modifying prompt:', error);
+        modifiedPrompt = finalPrompt || prompt; // Fallback to original prompt
+      }
 
       // Store complete generation parameters
       const queueItem = {
