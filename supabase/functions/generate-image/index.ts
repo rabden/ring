@@ -18,6 +18,7 @@ serve(async (req) => {
     const { prompt, model, parameters, userId, isPrivate, quality, aspectRatio, modelName } = await req.json()
     
     console.log('Received request with model:', model, 'and prompt:', prompt)
+    console.log('Parameters:', parameters)
     
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
@@ -51,28 +52,39 @@ serve(async (req) => {
     
     console.log('Using API key ID:', keyId);
     
+    // Update last_used_at timestamp immediately to prevent this key from being selected again soon
+    await supabase
+      .from('huggingface_api_keys')
+      .update({ last_used_at: new Date().toISOString() })
+      .eq('id', keyId);
+    
     let imageId = null;
     let filePath = null;
     let base64Image = null;
+    let errorMessage = null;
 
     try {
       // Initialize the HF client with API key
       const hf = new HfInference(apiKey)
       
-      console.log('Parameters:', parameters)
+      // Make the API call to generate the image with proper error handling
+      console.log('Starting image generation with model:', model);
+      const result = await Promise.race([
+        hf.textToImage({
+          inputs: prompt,
+          model: model,
+          parameters: parameters,
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Image generation timed out after 500 seconds')), 500000)
+        )
+      ]);
       
-      // Make the API call to generate the image
-      const result = await hf.textToImage({
-        inputs: prompt,
-        model: model,
-        parameters: parameters,
-      })
-      
-      console.log('Generated image successfully')
+      console.log('Generated image successfully');
       
       // Convert the blob to a base64 string for storage
-      const arrayBuffer = await result.arrayBuffer()
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+      const arrayBuffer = await result.arrayBuffer();
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
       base64Image = base64;
       
       // Create a more unique filename to prevent collisions
@@ -115,7 +127,7 @@ serve(async (req) => {
             seed: parameters.seed,
             width: parameters.width,
             height: parameters.height,
-            model: modelName || model, // Use the provided modelName or fallback to model id
+            model: modelName || model,
             quality,
             aspect_ratio: aspectRatio || `${parameters.width}:${parameters.height}`,
             is_private: isPrivate,
@@ -133,28 +145,16 @@ serve(async (req) => {
         imageId = insertData.id;
         console.log('Image saved to database with ID:', imageId);
       }
-      
-      // Return the base64 image data, record info and success status
-      return new Response(
-        JSON.stringify({ 
-          image: `data:image/png;base64,${base64Image}`,
-          filePath,
-          imageId,
-          success: true 
-        }),
-        { 
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json' 
-          } 
-        }
-      )
     } catch (error) {
       console.error('Error in image generation or storage:', error);
+      errorMessage = error.message || 'Failed during image processing';
+      
+      // Return detailed error information
       return new Response(
         JSON.stringify({ 
-          error: error.message || 'Failed during image processing',
-          success: false
+          error: errorMessage,
+          success: false,
+          status: 'failed'
         }),
         { 
           headers: { 
@@ -163,25 +163,33 @@ serve(async (req) => {
           },
           status: 500 
         }
-      )
-    } finally {
-      // Always update the last_used_at timestamp
-      const updateResult = await supabase
-        .from('huggingface_api_keys')
-        .update({ last_used_at: new Date().toISOString() })
-        .eq('id', keyId);
-        
-      if (updateResult.error) {
-        console.error('Error updating key usage timestamp:', updateResult.error);
-      }
+      );
     }
+    
+    // Return the base64 image data, record info and success status
+    return new Response(
+      JSON.stringify({ 
+        image: base64Image ? `data:image/png;base64,${base64Image}` : null,
+        filePath,
+        imageId,
+        success: true,
+        status: imageId ? 'completed' : 'unknown'
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
+    );
   } catch (error) {
-    console.error('Error processing request:', error)
+    console.error('Error processing request:', error);
     
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Failed to process generation request',
-        success: false
+        success: false,
+        status: 'failed'
       }),
       { 
         headers: { 
@@ -190,6 +198,6 @@ serve(async (req) => {
         },
         status: 500 
       }
-    )
+    );
   }
 })

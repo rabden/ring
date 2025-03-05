@@ -1,20 +1,28 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
+import { toast } from 'sonner';
 
 const GeneratingImagesContext = createContext();
 
 export const GeneratingImagesProvider = ({ children }) => {
   const [generatingImages, setGeneratingImages] = useState([]);
 
-  // Add auto-removal of completed images after 10 seconds
+  // Add auto-removal of completed or failed images after 10 seconds
   useEffect(() => {
-    const completedImages = generatingImages.filter(img => img.status === 'completed');
+    const completedOrFailedImages = generatingImages.filter(img => 
+      img.status === 'completed' || img.status === 'failed'
+    );
     
-    if (completedImages.length > 0) {
-      const timeouts = completedImages.map(img => {
+    if (completedOrFailedImages.length > 0) {
+      const timeouts = completedOrFailedImages.map(img => {
         return setTimeout(() => {
           setGeneratingImages(prev => prev.filter(i => i.id !== img.id));
+          
+          // Show toast for failed images
+          if (img.status === 'failed' && img.error) {
+            toast.error(`Generation failed: ${img.error}`);
+          }
         }, 10000); // 10 seconds
       });
 
@@ -45,7 +53,8 @@ export const GeneratingImagesProvider = ({ children }) => {
       total: generatingImages.length,
       pending: generatingImages.filter(img => img.status === 'pending').length,
       processing: processingCount,
-      completed: generatingImages.filter(img => img.status === 'completed').length
+      completed: generatingImages.filter(img => img.status === 'completed').length,
+      failed: generatingImages.filter(img => img.status === 'failed').length
     });
   }, [generatingImages]);
 

@@ -110,22 +110,38 @@ export const useImageGeneration = ({
 
         console.log('Edge function response received:', {
           success: response.success,
+          status: response.status,
           hasImage: !!response.image,
           imageId: response.imageId,
           filePath: response.filePath
         });
 
-        // Update UI to show completion
-        setGeneratingImages(prev => prev.map(img => 
-          img.id === generationId ? { 
-            ...img, 
-            status: 'completed', 
-            imageUrl: response.image,
-            savedImageId: response.imageId  // Store the database ID
-          } : img
-        ));
-
-        toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
+        // Update UI based on the status from the response
+        if (response.status === 'completed' && response.imageId) {
+          // Complete success case - image generated and saved to database
+          setGeneratingImages(prev => prev.map(img => 
+            img.id === generationId ? { 
+              ...img, 
+              status: 'completed', 
+              imageUrl: response.image,
+              savedImageId: response.imageId
+            } : img
+          ));
+          toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
+        } else if (response.status === 'failed') {
+          // Error case
+          throw new Error(response.error || 'Failed to generate image');
+        } else {
+          // Partial success (e.g., image generated but not saved)
+          setGeneratingImages(prev => prev.map(img => 
+            img.id === generationId ? { 
+              ...img, 
+              status: 'completed', 
+              imageUrl: response.image
+            } : img
+          ));
+          toast.success(`Image generated but may not be saved`);
+        }
 
       } catch (error) {
         console.error('API call error:', {
@@ -134,8 +150,16 @@ export const useImageGeneration = ({
           modelConfig: queuedModelConfig
         });
         
+        // Update UI to show failed status
+        setGeneratingImages(prev => prev.map(img => 
+          img.id === generationId ? { 
+            ...img, 
+            status: 'failed', 
+            error: error.message || 'Unknown error'
+          } : img
+        ));
+        
         toast.error(`Failed to generate image: ${error.message || 'Unknown error'}`);
-        setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
       }
     } catch (error) {
       console.error('Error in generation:', error);
