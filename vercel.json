@@ -1,0 +1,22 @@
+
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/image-generator-worker.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/image-generator-worker",
+      "dest": "/api/image-generator-worker.js"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/image-generator-worker",
+      "schedule": "* * * * *"
+    }
+  ]
+}

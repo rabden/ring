@@ -1,11 +1,88 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
+import { useSupabaseAuth } from '@/integrations/supabase/auth';
 
 const GeneratingImagesContext = createContext();
 
 export const GeneratingImagesProvider = ({ children }) => {
   const [generatingImages, setGeneratingImages] = useState([]);
+  const { session } = useSupabaseAuth();
+  
+  // Load active generations on initial load
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    
+    const loadActiveGenerations = async () => {
+      // Get active queue items
+      const { data: queueItems, error } = await supabase
+        .from('image_generation_queue')
+        .select(`
+          id,
+          prompt,
+          model,
+          seed,
+          width,
+          height,
+          quality,
+          aspect_ratio,
+          negative_prompt,
+          status,
+          created_at,
+          is_private,
+          error_message
+        `)
+        .eq('user_id', session.user.id)
+        .in('status', ['pending', 'processing'])
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error('Error fetching queue:', error);
+        return;
+      }
+      
+      // Get any completed results for these items
+      const queueIds = queueItems.map(item => item.id);
+      if (queueIds.length === 0) return;
+      
+      const { data: results, error: resultsError } = await supabase
+        .from('image_generation_results')
+        .select('*')
+        .in('queue_id', queueIds);
+        
+      if (resultsError) {
+        console.error('Error fetching results:', resultsError);
+      }
+      
+      // Map results to queue items
+      const resultsByQueueId = (results || []).reduce((acc, result) => {
+        acc[result.queue_id] = result;
+        return acc;
+      }, {});
+      
+      // Create UI state
+      const activeGenerations = queueItems.map(item => ({
+        id: Date.now().toString() + Math.random().toString().substr(2, 5),
+        queueId: item.id,
+        prompt: item.prompt,
+        seed: item.seed,
+        width: item.width,
+        height: item.height,
+        status: item.status,
+        error: item.error_message,
+        isPrivate: item.is_private,
+        model: item.model,
+        quality: item.quality,
+        aspect_ratio: item.aspect_ratio,
+        imageUrl: resultsByQueueId[item.id]?.image_url,
+        user_image_id: resultsByQueueId[item.id]?.user_image_id
+      }));
+      
+      setGeneratingImages(activeGenerations);
+    };
+    
+    loadActiveGenerations();
+  }, [session?.user?.id]);
 
   // Add auto-removal of completed images after 10 seconds
   useEffect(() => {
@@ -25,46 +102,26 @@ export const GeneratingImagesProvider = ({ children }) => {
     }
   }, [generatingImages]);
 
-  // Monitor and manage the generation queue
-  useEffect(() => {
-    const processingCount = generatingImages.filter(img => img.status === 'processing').length;
+  const cancelGeneration = async (imageId) => {
+    // Find the corresponding image entry
+    const imageToCancel = generatingImages.find(img => img.id === imageId);
+    if (!imageToCancel?.queueId) return;
     
-    // If there's no image processing and we have pending images
-    if (processingCount === 0) {
-      const pendingImages = generatingImages.filter(img => img.status === 'pending');
-      if (pendingImages.length > 0) {
-        // Update the first pending image to processing
-        setGeneratingImages(prev => prev.map(img => 
-          img.id === pendingImages[0].id ? { ...img, status: 'processing' } : img
-        ));
-      }
+    // Update the queue entry status
+    const { error } = await supabase
+      .from('image_generation_queue')
+      .update({ status: 'cancelled' })
+      .eq('id', imageToCancel.queueId)
+      .eq('user_id', session?.user?.id);
+      
+    if (error) {
+      console.error('Error cancelling generation:', error);
+      toast.error('Failed to cancel generation');
+      return;
     }
-  }, [generatingImages]);
-
-  const cancelGeneration = (imageId) => {
-    setGeneratingImages(prev => {
-      // Get the image being cancelled
-      const cancelledImage = prev.find(img => img.id === imageId);
-      
-      // If the cancelled image was processing, we need to update the queue
-      const wasProcessing = cancelledImage?.status === 'processing';
-      
-      // Remove the cancelled image
-      const updatedImages = prev.filter(img => img.id !== imageId);
-      
-      // If the cancelled image was processing and we have pending images,
-      // update the first pending image to processing
-      if (wasProcessing) {
-        const firstPending = updatedImages.find(img => img.status === 'pending');
-        if (firstPending) {
-          return updatedImages.map(img =>
-            img.id === firstPending.id ? { ...img, status: 'processing' } : img
-          );
-        }
-      }
-      
-      return updatedImages;
-    });
+    
+    // Update local state
+    setGeneratingImages(prev => prev.filter(img => img.id !== imageId));
   };
 
   const value = {
@@ -86,4 +143,4 @@ export const useGeneratingImages = () => {
     throw new Error('useGeneratingImages must be used within a GeneratingImagesProvider');
   }
   return context;
-}; 
+};

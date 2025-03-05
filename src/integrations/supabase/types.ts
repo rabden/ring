@@ -33,6 +33,105 @@ export type Database = {
         }
         Relationships: []
       }
+      image_generation_queue: {
+        Row: {
+          aspect_ratio: string
+          created_at: string | null
+          error_message: string | null
+          height: number
+          id: string
+          is_private: boolean
+          model: string
+          negative_prompt: string | null
+          priority: number | null
+          prompt: string
+          quality: string
+          retries: number | null
+          seed: number
+          status: string
+          updated_at: string | null
+          user_id: string
+          width: number
+        }
+        Insert: {
+          aspect_ratio: string
+          created_at?: string | null
+          error_message?: string | null
+          height: number
+          id?: string
+          is_private?: boolean
+          model: string
+          negative_prompt?: string | null
+          priority?: number | null
+          prompt: string
+          quality: string
+          retries?: number | null
+          seed: number
+          status?: string
+          updated_at?: string | null
+          user_id: string
+          width: number
+        }
+        Update: {
+          aspect_ratio?: string
+          created_at?: string | null
+          error_message?: string | null
+          height?: number
+          id?: string
+          is_private?: boolean
+          model?: string
+          negative_prompt?: string | null
+          priority?: number | null
+          prompt?: string
+          quality?: string
+          retries?: number | null
+          seed?: number
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+          width?: number
+        }
+        Relationships: []
+      }
+      image_generation_results: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string | null
+          queue_id: string
+          user_image_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          queue_id: string
+          user_image_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          queue_id?: string
+          user_image_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "image_generation_results_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "image_generation_queue"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "image_generation_results_user_image_id_fkey"
+            columns: ["user_image_id"]
+            isOneToOne: false
+            referencedRelation: "user_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -194,7 +293,6 @@ export type Database = {
           created_at: string | null
           height: number
           id: string
-          image_url: string | null
           is_hot: boolean
           is_private: boolean
           is_trending: boolean
@@ -204,7 +302,6 @@ export type Database = {
           prompt: string
           quality: string
           seed: number
-          status: string | null
           storage_path: string
           user_id: string | null
           width: number
@@ -214,7 +311,6 @@ export type Database = {
           created_at?: string | null
           height: number
           id?: string
-          image_url?: string | null
           is_hot?: boolean
           is_private?: boolean
           is_trending?: boolean
@@ -224,7 +320,6 @@ export type Database = {
           prompt: string
           quality: string
           seed: number
-          status?: string | null
           storage_path: string
           user_id?: string | null
           width: number
@@ -234,7 +329,6 @@ export type Database = {
           created_at?: string | null
           height?: number
           id?: string
-          image_url?: string | null
           is_hot?: boolean
           is_private?: boolean
           is_trending?: boolean
@@ -244,7 +338,6 @@ export type Database = {
           prompt?: string
           quality?: string
           seed?: number
-          status?: string | null
           storage_path?: string
           user_id?: string | null
           width?: number
