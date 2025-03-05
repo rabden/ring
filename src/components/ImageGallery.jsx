@@ -8,6 +8,8 @@ import NoResults from './NoResults';
 import { useGalleryImages } from '@/hooks/useGalleryImages';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, parseISO, subWeeks, isAfter } from 'date-fns';
+import { supabase } from '@/integrations/supabase/supabase';
+import { useQueryClient } from '@tanstack/react-query';
 
 const getBreakpointColumns = () => ({
   default: 4,
@@ -81,13 +83,15 @@ const ImageGallery = ({
   showFollowing,
   showTop,
   showLatest,
-  following
+  following,
+  excludeImageId // New prop to exclude specific image
 }) => {
   const { userLikes, toggleLike } = useLikes(userId);
   const isMobile = window.innerWidth <= 768;
   const breakpointColumnsObj = getBreakpointColumns();
   const location = useLocation();
   const activeView = location.pathname === '/inspiration' ? 'inspiration' : 'myImages';
+  const queryClient = useQueryClient();
   
   const { 
     images,
@@ -104,8 +108,14 @@ const ImageGallery = ({
     searchQuery,
     showFollowing,
     showTop,
-    following
+    following,
+    excludeImageId
   });
+
+  // Filter out excluded image if excludeImageId is provided
+  const filteredImages = excludeImageId 
+    ? images.filter(img => img.id !== excludeImageId)
+    : images;
 
   const observer = useRef();
   const lastImageRef = useCallback(node => {
@@ -130,7 +140,7 @@ const ImageGallery = ({
     }
   };
 
-  if (isLoading && !images.length) {
+  if (isLoading && !filteredImages.length) {
     return (
       <div className={cn("w-full h-full md:px-0 md:pt-0 pt-12", className)}>
         <Masonry
@@ -146,13 +156,13 @@ const ImageGallery = ({
     );
   }
 
-  if (!images || images.length === 0) {
+  if (!filteredImages || filteredImages.length === 0) {
     return <NoResults />;
   }
 
   // Use date grouping for My Images view
   if (activeView === 'myImages' && !profileUserId) {
-    const groupedImages = groupImagesByDate(images);
+    const groupedImages = groupImagesByDate(filteredImages);
     const nonEmptyGroups = Object.entries(groupedImages)
       .filter(([_, images]) => images.length > 0);
 
@@ -216,10 +226,10 @@ const ImageGallery = ({
         className="flex w-auto md:px-2 -mx-0.5 md:-mx-2"
         columnClassName="bg-clip-padding px-0.5 md:px-2 [&>*]:mb-1 md:[&>*]:mb-4"
       >
-        {images.map((image, index) => (
+        {filteredImages.map((image, index) => (
           <div
             key={image.id}
-            ref={index === images.length - 1 ? lastImageRef : null}
+            ref={index === filteredImages.length - 1 ? lastImageRef : null}
           >
             <ImageCard
               image={image}
