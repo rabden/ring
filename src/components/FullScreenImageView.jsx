@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
@@ -240,9 +239,7 @@ const FullScreenImageView = ({
           )}
         >
           <div className={cn(
-            "h-full rounde
-
-d-lg mr-3",
+            "h-full rounded-lg mr-3",
             "border border-border-20 bg-card/30",
             "backdrop-blur-[2px]",
             "shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
