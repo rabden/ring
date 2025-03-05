@@ -117,7 +117,7 @@ export const useImageGeneration = ({
 
         // Update UI to show completion
         setGeneratingImages(prev => prev.map(img => 
-          img.id === generationId ? { ...img, status: 'completed' } : img
+          img.id === generationId ? { ...img, status: 'completed', imageUrl: response.image } : img
         ));
 
         toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
