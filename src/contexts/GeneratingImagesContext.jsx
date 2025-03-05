@@ -39,6 +39,14 @@ export const GeneratingImagesProvider = ({ children }) => {
         ));
       }
     }
+
+    // Log current queue state for debugging
+    console.log('Generation queue updated:', {
+      total: generatingImages.length,
+      pending: generatingImages.filter(img => img.status === 'pending').length,
+      processing: processingCount,
+      completed: generatingImages.filter(img => img.status === 'completed').length
+    });
   }, [generatingImages]);
 
   const cancelGeneration = (imageId) => {
@@ -67,10 +75,18 @@ export const GeneratingImagesProvider = ({ children }) => {
     });
   };
 
+  // Add a method to update a specific image's status
+  const updateImageStatus = (imageId, status, data = {}) => {
+    setGeneratingImages(prev => prev.map(img => 
+      img.id === imageId ? { ...img, status, ...data } : img
+    ));
+  };
+
   const value = {
     generatingImages,
     setGeneratingImages,
-    cancelGeneration
+    cancelGeneration,
+    updateImageStatus
   };
 
   return (

@@ -104,20 +104,25 @@ export const useImageGeneration = ({
           throw new Error(`Edge function error: ${error.message}`);
         }
 
-        if (!response || !response.image) {
-          throw new Error('Invalid response from edge function');
+        if (!response || !response.success) {
+          throw new Error(response?.error || 'Invalid response from edge function');
         }
 
-        // The image is already stored, we just update the UI
         console.log('Edge function response received:', {
           success: response.success,
           hasImage: !!response.image,
+          imageId: response.imageId,
           filePath: response.filePath
         });
 
         // Update UI to show completion
         setGeneratingImages(prev => prev.map(img => 
-          img.id === generationId ? { ...img, status: 'completed', imageUrl: response.image } : img
+          img.id === generationId ? { 
+            ...img, 
+            status: 'completed', 
+            imageUrl: response.image,
+            savedImageId: response.imageId  // Store the database ID
+          } : img
         ));
 
         toast.success(`Image generated successfully! (${isPrivate ? 'Private' : 'Public'})`);
@@ -129,7 +134,7 @@ export const useImageGeneration = ({
           modelConfig: queuedModelConfig
         });
         
-        toast.error('Failed to generate image');
+        toast.error(`Failed to generate image: ${error.message || 'Unknown error'}`);
         setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
       }
     } catch (error) {

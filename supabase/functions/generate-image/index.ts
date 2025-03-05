@@ -51,6 +51,10 @@ serve(async (req) => {
     
     console.log('Using API key ID:', keyId);
     
+    let imageId = null;
+    let filePath = null;
+    let base64Image = null;
+
     try {
       // Initialize the HF client with API key
       const hf = new HfInference(apiKey)
@@ -69,12 +73,13 @@ serve(async (req) => {
       // Convert the blob to a base64 string for storage
       const arrayBuffer = await result.arrayBuffer()
       const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+      base64Image = base64;
       
       // Create a more unique filename to prevent collisions
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 10);
       const fileExt = 'png';
-      const filePath = `${userId}/${timestamp}_${randomString}.${fileExt}`;
+      filePath = `${userId}/${timestamp}_${randomString}.${fileExt}`;
       
       // If userId is provided, store the image directly in Supabase
       if (userId) {
@@ -125,14 +130,16 @@ serve(async (req) => {
           throw insertError;
         }
         
-        console.log('Image saved to database with ID:', insertData.id);
+        imageId = insertData.id;
+        console.log('Image saved to database with ID:', imageId);
       }
       
-      // Return the base64 image data and record info
+      // Return the base64 image data, record info and success status
       return new Response(
         JSON.stringify({ 
-          image: `data:image/png;base64,${base64}`,
+          image: `data:image/png;base64,${base64Image}`,
           filePath,
+          imageId,
           success: true 
         }),
         { 
@@ -140,6 +147,21 @@ serve(async (req) => {
             ...corsHeaders, 
             'Content-Type': 'application/json' 
           } 
+        }
+      )
+    } catch (error) {
+      console.error('Error in image generation or storage:', error);
+      return new Response(
+        JSON.stringify({ 
+          error: error.message || 'Failed during image processing',
+          success: false
+        }),
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          },
+          status: 500 
         }
       )
     } finally {
@@ -154,11 +176,11 @@ serve(async (req) => {
       }
     }
   } catch (error) {
-    console.error('Error generating image:', error)
+    console.error('Error processing request:', error)
     
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to generate image',
+        error: error.message || 'Failed to process generation request',
         success: false
       }),
       { 
