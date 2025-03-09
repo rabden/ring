@@ -55,10 +55,10 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
       <div className={cn(
         "absolute inset-0",
         "flex items-center",
-        "bg-secondary/0 hover:bg-secondary/5",
-        "rounded-full",
+        "bg-muted/5 hover:bg-muted/10",
+        "rounded-xl",
         "transition-all duration-200",
-        (isFocused || isExpanded) && "bg-secondary/50",
+        (isFocused || isExpanded) && "bg-muted/10 ring-1 ring-border",
       )}>
         {!isExpanded ? (
           <button

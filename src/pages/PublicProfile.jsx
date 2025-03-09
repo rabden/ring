@@ -238,17 +238,19 @@ const PublicProfile = () => {
         </div>
       </motion.div>
 
-      {selectedImage && (
-        <FullScreenImageView
-          image={selectedImage}
-          isOpen={!!selectedImage}
-          onClose={() => setSelectedImage(null)}
-          onDownload={() => {}}
-          onDiscard={() => {}}
-          onRemix={() => {}}
-          isOwner={currentUserId === selectedImage.user_id}
-        />
-      )}
+      <AnimatePresence>
+        {selectedImage && (
+          <FullScreenImageView
+            image={selectedImage}
+            isOpen={!!selectedImage}
+            onClose={() => setSelectedImage(null)}
+            onDownload={() => {}}
+            onDiscard={() => {}}
+            onRemix={() => {}}
+            isOwner={currentUserId === selectedImage.user_id}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

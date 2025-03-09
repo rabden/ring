@@ -207,18 +207,16 @@ const Inspiration = () => {
         onOpenChange={setDetailsDialogOpen}
         image={selectedImage}
       />
-      {selectedImage && (
-        <FullScreenImageView
-          image={selectedImage}
-          isOpen={fullScreenViewOpen}
-          onClose={() => setFullScreenViewOpen(false)}
-          onDownload={handleDownload}
-          onRemix={handleRemix}
-          isOwner={selectedImage?.user_id === session?.user?.id}
-        />
-      )}
+      <FullScreenImageView
+        image={selectedImage}
+        isOpen={fullScreenViewOpen}
+        onClose={() => setFullScreenViewOpen(false)}
+        onDownload={handleDownload}
+        onRemix={handleRemix}
+        isOwner={selectedImage?.user_id === session?.user?.id}
+      />
     </div>
   );
 };
 
-export default Inspiration;
+export default Inspiration; 

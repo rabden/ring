@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react'
 import { Lock, ChevronUp, ChevronDown, RefreshCcw, ChevronsUp, ChevronsDown } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -370,7 +369,7 @@ const DimensionChooser = ({
 }) => {
   const [showButtons, setShowButtons] = useState(false);
   const premiumRatios = ['16:10', '10:16', '4:3', '3:4', '2:1', '1:2'];
-  const { aspectRatio: savedAspectRatio, setAspectRatio: setSavedAspectRatio, isRemixMode } = useUserPreferences();
+  const { aspectRatio: savedAspectRatio, setAspectRatio: setSavedAspectRatio } = useUserPreferences();
   
   // Reorder ratios from most extreme portrait to most extreme landscape
   const ratios = [
@@ -391,9 +390,9 @@ const DimensionChooser = ({
     "21:9"
   ].filter(ratio => proMode || !premiumRatios.includes(ratio));
 
-  // Only use saved aspect ratio on mount if not in remix mode
+  // Use saved aspect ratio on mount
   useEffect(() => {
-    if (!isRemixMode && savedAspectRatio && savedAspectRatio !== aspectRatio) {
+    if (savedAspectRatio && savedAspectRatio !== aspectRatio) {
       setAspectRatio(savedAspectRatio);
     }
   }, []);
@@ -401,18 +400,16 @@ const DimensionChooser = ({
   useEffect(() => {
     if (!proMode && premiumRatios.includes(aspectRatio)) {
       setAspectRatio("1:1");
-      if (!isRemixMode) {
-        setSavedAspectRatio("1:1");
-      }
+      setSavedAspectRatio("1:1");
     }
   }, [aspectRatio, proMode, setAspectRatio]);
 
-  // Save aspect ratio when it changes (but not in remix mode)
+  // Save aspect ratio when it changes
   useEffect(() => {
-    if (!isRemixMode && aspectRatio !== savedAspectRatio) {
+    if (aspectRatio !== savedAspectRatio) {
       setSavedAspectRatio(aspectRatio);
     }
-  }, [aspectRatio, isRemixMode]);
+  }, [aspectRatio]);
 
   // Force HD quality when quality is limited
   useEffect(() => {
@@ -484,9 +481,7 @@ const DimensionChooser = ({
         ratios={ratios}
         onRatioChange={(newRatio) => {
           setAspectRatio(newRatio);
-          if (!isRemixMode) {
-            setSavedAspectRatio(newRatio);
-          }
+          setSavedAspectRatio(newRatio);
         }}
         proMode={proMode}
         premiumRatios={premiumRatios}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { X, ArrowRight, ChevronRight, Sparkles, Loader } from "lucide-react";
@@ -89,9 +88,7 @@ const PromptInput = ({
     }
   };
 
-  const handleSubmit = async (e) => {
-    e?.preventDefault?.();
-    
+  const handleSubmit = async () => {
     if (!prompt?.trim()) {
       toast.error('Please enter a prompt');
       return;
@@ -109,13 +106,7 @@ const PromptInput = ({
 
     try {
       setIsPlayingAnimation(true);
-      if (typeof onSubmit === 'function') {
-        await onSubmit();
-      } else {
-        console.error('onSubmit is not a function', onSubmit);
-        toast.error('Generation functionality is not properly configured');
-        setIsPlayingAnimation(false);
-      }
+      await onSubmit();
     } catch (error) {
       console.error('Error generating:', error);
       toast.error('Failed to generate image');
@@ -196,7 +187,7 @@ const PromptInput = ({
         </Button>
         <Button
           size="sm"
-          className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
+          className="h-8 rounded-xl bg-primary/90 hover:bg-primary/80 transition-all duration-200"
           onClick={handleSubmit}
           disabled={!prompt?.length || !hasEnoughCredits || !userId || isImproving}
         >

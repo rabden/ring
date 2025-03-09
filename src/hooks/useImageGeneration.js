@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -104,51 +103,38 @@ export const useImageGeneration = ({
 
           // Log actual API call for debugging
           console.log('Processing queued generation:', {
-            model: model,
-            modelName: modelConfigs[model]?.name,
-            huggingfaceModelId: queuedModelConfig.huggingfaceId || model
+            queuedModel: model,
+            currentModel: modelConfigs[model]?.name,
+            queuedApiUrl: queuedModelConfig.apiUrl,
+            currentApiUrl: modelConfigs[model]?.apiUrl
           });
 
-          // Get API URL from environment or default
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
-          const apiUrl = `${supabaseUrl}/functions/v1/huggingface-proxy`;
-          
-          console.log('Making API call to proxy:', {
-            apiUrl,
-            model: queuedModelConfig.huggingfaceId || model,
-            inputLength: modifiedPrompt.length
-          });
-
-          // Call our Supabase edge function as a proxy
-          const response = await fetch(apiUrl, {
-            method: 'POST',
+          const response = await fetch(queuedModelConfig.apiUrl, {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_API_KEY}`
+              Authorization: `Bearer ${apiKeyData.api_key}`,
+              "Content-Type": "application/json",
+              "x-wait-for-model": "true"
             },
+            method: "POST",
             body: JSON.stringify({
-              model: queuedModelConfig.huggingfaceId || model,
               inputs: modifiedPrompt,
-              parameters,
-              apiKey: apiKeyData.api_key
-            })
+              parameters
+            }),
           });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Proxy API error:', errorData);
-            throw new Error(`API error: ${errorData.error || response.statusText}`);
-          }
-
-          // Get the image data directly as a blob
-          const imageBlob = await response.blob();
 
           // Log response for debugging
           console.log('API response received:', {
+            status: response.status,
             model: model,
-            success: !!imageBlob,
-            blobSize: imageBlob?.size
+            apiUrl: queuedModelConfig.apiUrl
           });
+
+          const imageBlob = await handleApiResponse(response, generationId, () => makeRequest(response.status === 429));
+          if (!imageBlob) {
+            setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
+            toast.error('Failed to generate image');
+            return;
+          }
 
           if (!imageBlob || imageBlob.size === 0) {
             setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
@@ -203,16 +189,8 @@ export const useImageGeneration = ({
           console.error('API call error:', {
             error,
             model: model,
-            modelConfig: queuedModelConfig
+            apiUrl: queuedModelConfig.apiUrl
           });
-          
-          // Handle rate limiting and other errors
-          if (error.message && (error.message.includes('429') || error.message.includes('rate limit'))) {
-            toast.error('Rate limit exceeded. Trying again...');
-            setTimeout(() => makeRequest(true), 2000);
-            return;
-          }
-          
           toast.error('Failed to generate image');
           setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
         }
@@ -244,7 +222,7 @@ export const useImageGeneration = ({
 
     // Lock the model config at generation time
     const lockedModelConfig = { ...modelConfigs[model] };
-    if (!lockedModelConfig || !lockedModelConfig.huggingfaceId) {
+    if (!lockedModelConfig || !lockedModelConfig.apiUrl) {
       console.error('Invalid model configuration:', { model, config: lockedModelConfig });
       toast.error('Invalid model configuration');
       return;
@@ -253,7 +231,7 @@ export const useImageGeneration = ({
     // Log generation attempt for debugging
     console.log('Generation attempt:', {
       model,
-      huggingfaceId: lockedModelConfig.huggingfaceId,
+      apiUrl: lockedModelConfig.apiUrl,
       modelName: lockedModelConfig.name
     });
 

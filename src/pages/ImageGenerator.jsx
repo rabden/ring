@@ -53,7 +53,7 @@ const ImageGenerator = () => {
     imageCount, setImageCount
   } = useImageGeneratorState();
 
-  const { nsfwEnabled, setNsfwEnabled, setIsRemixMode } = useUserPreferences();
+  const { nsfwEnabled, setNsfwEnabled } = useUserPreferences();
   const { generatingImages, setGeneratingImages } = useGeneratingImages();
   const [showPrivate, setShowPrivate] = useState(false);
   const [negativePrompt, setNegativePrompt] = useState("");
@@ -77,9 +77,6 @@ const ImageGenerator = () => {
   // Apply remix settings when remixImage is loaded
   useEffect(() => {
     if (remixImage) {
-      // Set remix mode flag
-      setIsRemixMode(true);
-      
       setPrompt(remixImage.prompt);
       setSeed(remixImage.seed);
       setRandomizeSeed(false);
@@ -91,24 +88,14 @@ const ImageGenerator = () => {
         setAspectRatio(remixImage.aspect_ratio);
         setUseAspectRatio(true);
       }
-      
       // Switch to input tab when remixing
       setActiveTab('input');
-      
       // Clear the remix parameter from URL without page reload
       const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.delete('remix');
       window.history.replaceState({}, '', `${window.location.pathname}${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`);
     }
   }, [remixImage]);
-  
-  // Reset remix mode when image is generated
-  useEffect(() => {
-    return () => {
-      // Reset remix mode when component unmounts
-      setIsRemixMode(false);
-    };
-  }, []);
 
   const { generateImage, nsfwDetected } = useImageGeneration({
     session,
@@ -134,8 +121,6 @@ const ImageGenerator = () => {
   });
 
   const handleGenerateImage = async () => {
-    console.log('handleGenerateImage called', {prompt, session, isImproving});
-    
     if (!prompt.trim()) {
       toast.error('Please enter a prompt');
       return;
@@ -159,11 +144,10 @@ const ImageGenerator = () => {
         setPrompt(improved);
       }
 
-      console.log('Calling generateImage with:', {isPrivate, finalPrompt});
       await generateImage(isPrivate, finalPrompt);
     } catch (error) {
       toast.error('Failed to generate image');
-      console.error('Generation error:', error);
+      console.error(error);
     } finally {
       setIsGenerating(false);
     }
@@ -279,10 +263,7 @@ const ImageGenerator = () => {
           setIsPrivate,
           nsfwEnabled,
           setNsfwEnabled,
-          modelConfigs,
-          negativePrompt,
-          setNegativePrompt,
-          updateCredits
+          modelConfigs
         }}
       />
     </>

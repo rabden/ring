@@ -1,4 +1,3 @@
-
 import React, { memo, useState, useEffect } from 'react';
 import { Image, Plus, Sparkles, User } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -63,14 +62,6 @@ const BottomNavbar = ({
   }, [generatingImages, prevLength]);
 
   const handleNavigation = (route, tab) => {
-    // If already on the same tab and it's the + tab, open the drawer
-    if (activeTab === tab && tab === 'input' && location.hash === '#imagegenerate') {
-      if (generatingImages.length > 0) {
-        setDrawerOpen(true);
-      }
-      return;
-    }
-
     setActiveTab(tab);
     // If navigating to inspiration without a hash, default to #latest
     if (route === '/inspiration' && !location.hash) {
@@ -90,13 +81,13 @@ const BottomNavbar = ({
     <>
       <div className={cn(
         "fixed bottom-0 left-0 right-0 z-50",
-        "bg-background",
+        "bg-background/95 backdrop-blur-[2px]",
         "border-t border-border/80",
         "md:hidden",
         "transition-all duration-300",
         "overflow-x-hidden w-screen"
       )}>
-        <div className="flex items-center justify-around max-w-md mx-auto h-12 relative">
+        <div className="flex items-center justify-around px-2 max-w-md mx-auto h-12 relative">
           <MobileNavButton
             icon={Image}
             isActive={location.pathname === '/' && (!location.hash || location.hash === '#myimages')}
@@ -146,6 +137,7 @@ const BottomNavbar = ({
             )}
           </div>
         </div>
+        <div className="h-safe-area-bottom bg-background/95 backdrop-blur-[2px]" />
       </div>
 
       <GeneratingImagesDrawer 
