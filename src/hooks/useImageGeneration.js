@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -5,6 +6,7 @@ import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
 import { containsNSFWContent } from '@/utils/nsfwUtils';
 import { useState, useRef, useCallback } from 'react';
+import { HfInference } from "@huggingface/inference";
 
 const generateRandomSeed = () => {
   // Generate a positive 5-9 digit number within PostgreSQL int4 range (max 2147483647)
@@ -103,38 +105,34 @@ export const useImageGeneration = ({
 
           // Log actual API call for debugging
           console.log('Processing queued generation:', {
-            queuedModel: model,
-            currentModel: modelConfigs[model]?.name,
-            queuedApiUrl: queuedModelConfig.apiUrl,
-            currentApiUrl: modelConfigs[model]?.apiUrl
+            model: model,
+            modelName: modelConfigs[model]?.name,
+            huggingfaceModelId: queuedModelConfig.huggingfaceId || model
           });
 
-          const response = await fetch(queuedModelConfig.apiUrl, {
-            headers: {
-              Authorization: `Bearer ${apiKeyData.api_key}`,
-              "Content-Type": "application/json",
-              "x-wait-for-model": "true"
-            },
-            method: "POST",
-            body: JSON.stringify({
-              inputs: modifiedPrompt,
-              parameters
-            }),
+          // Create HfInference client with API key
+          const client = new HfInference(apiKeyData.api_key);
+          
+          console.log('Making HfInference API call:', {
+            model: queuedModelConfig.huggingfaceId || model,
+            inputs: modifiedPrompt,
+            parameters
+          });
+
+          // Use the HfInference client to generate the image
+          const imageBlob = await client.textToImage({
+            model: queuedModelConfig.huggingfaceId || model,
+            inputs: modifiedPrompt,
+            parameters,
+            provider: "hf-inference",
           });
 
           // Log response for debugging
           console.log('API response received:', {
-            status: response.status,
             model: model,
-            apiUrl: queuedModelConfig.apiUrl
+            success: !!imageBlob,
+            blobSize: imageBlob?.size
           });
-
-          const imageBlob = await handleApiResponse(response, generationId, () => makeRequest(response.status === 429));
-          if (!imageBlob) {
-            setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
-            toast.error('Failed to generate image');
-            return;
-          }
 
           if (!imageBlob || imageBlob.size === 0) {
             setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
@@ -189,8 +187,16 @@ export const useImageGeneration = ({
           console.error('API call error:', {
             error,
             model: model,
-            apiUrl: queuedModelConfig.apiUrl
+            modelConfig: queuedModelConfig
           });
+          
+          // Handle rate limiting and other errors
+          if (error.message && (error.message.includes('429') || error.message.includes('rate limit'))) {
+            toast.error('Rate limit exceeded. Trying again...');
+            setTimeout(() => makeRequest(true), 2000);
+            return;
+          }
+          
           toast.error('Failed to generate image');
           setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
         }
@@ -222,7 +228,7 @@ export const useImageGeneration = ({
 
     // Lock the model config at generation time
     const lockedModelConfig = { ...modelConfigs[model] };
-    if (!lockedModelConfig || !lockedModelConfig.apiUrl) {
+    if (!lockedModelConfig || !lockedModelConfig.huggingfaceId) {
       console.error('Invalid model configuration:', { model, config: lockedModelConfig });
       toast.error('Invalid model configuration');
       return;
@@ -231,7 +237,7 @@ export const useImageGeneration = ({
     // Log generation attempt for debugging
     console.log('Generation attempt:', {
       model,
-      apiUrl: lockedModelConfig.apiUrl,
+      huggingfaceId: lockedModelConfig.huggingfaceId,
       modelName: lockedModelConfig.name
     });
 

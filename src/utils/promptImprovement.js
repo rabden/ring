@@ -1,3 +1,4 @@
+
 import { HfInference } from "@huggingface/inference";
 import { supabase } from '@/integrations/supabase/supabase';
 
@@ -31,16 +32,16 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
     let improvedPrompt = "";
     
     const stream = await client.chatCompletionStream({
-      model: "meta-llama/Llama-3.2-3B-Instruct",
+      model: "meta-llama/Llama-3.2-1B-Instruct",
       messages: [
-      {
-        role: "system",
-        content: `You are an expert AI image prompt engineer. Your task is to enhance the given prompt for high-quality image generation. Preserve the core idea and artistic vision, enrich brief prompts with details, and remove any extraneous noise. Keep the final prompt concise, between 20 to 80 words, and follow these guidelines: ${modelExample}. Output only the improved prompt.`
-      },
-      {
-        role: "user",
-        content: originalPrompt
-      }
+        {
+          role: "system",
+          content: `You are an expert AI image prompt engineer. Your task is to enhance the given prompt for high-quality image generation. Preserve the core idea and artistic vision, enrich brief prompts with details, and remove any extraneous noise. Keep the final prompt concise, between 20 to 80 words, and follow these guidelines: ${modelExample}. Output only the improved prompt.`
+        },
+        {
+          role: "user",
+          content: originalPrompt
+        }
       ],
       temperature: 0.5,
       max_tokens: 64000,
@@ -52,9 +53,14 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
         const newContent = chunk.choices[0].delta.content;
         if (newContent) {
           improvedPrompt += newContent;
-          onChunk(newContent);
+          if (onChunk) onChunk(newContent, true);
         }
       }
+    }
+
+    // If onChunk wasn't called with streaming data, call it once with the final result
+    if (improvedPrompt && (!onChunk || improvedPrompt !== originalPrompt)) {
+      if (onChunk) onChunk(improvedPrompt, false);
     }
 
     return improvedPrompt.trim();

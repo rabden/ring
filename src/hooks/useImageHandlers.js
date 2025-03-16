@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { handleImageDiscard } from '@/utils/discardUtils'
 import { useNavigate } from 'react-router-dom'
 import { qualityOptions } from '@/utils/imageConfigs'
+import { useUserPreferences } from '@/contexts/UserPreferencesContext'
 
 export const useImageHandlers = ({
   generateImage,
@@ -30,6 +31,7 @@ export const useImageHandlers = ({
   const navigate = useNavigate();
   const { data: modelConfigs } = useModelConfigs();
   const { data: isPro = false } = useProUser(session?.user?.id);
+  const { setIsRemixMode } = useUserPreferences();
 
   const handleGenerateImage = async () => {
     await generateImage()
@@ -55,6 +57,9 @@ export const useImageHandlers = ({
     if (!session) {
       return;
     }
+    
+    // Set remix mode flag
+    setIsRemixMode(true);
 
     setPrompt(image.prompt);
     setSeed(image.seed);
