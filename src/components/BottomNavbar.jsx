@@ -11,6 +11,8 @@ import MobileNavButton from './navbar/MobileNavButton';
 import NotificationBell from './notifications/NotificationBell';
 import ProfileMenu from './ProfileMenu';
 import { cn } from "@/lib/utils";
+import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const BottomNavbar = ({ 
   activeTab, 
@@ -28,6 +30,8 @@ const BottomNavbar = ({
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [isAllCompleted, setIsAllCompleted] = useState(false);
   const [prevLength, setPrevLength] = useState(generatingImages.length);
+  const { shouldOpenDrawer, resetShouldOpenDrawer } = useGeneratingImages();
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -61,6 +65,14 @@ const BottomNavbar = ({
     }
     setPrevLength(generatingImages.length);
   }, [generatingImages, prevLength]);
+
+  // Handle auto-opening drawer when generation starts on mobile
+  useEffect(() => {
+    if (isMobile && shouldOpenDrawer) {
+      setDrawerOpen(true);
+      resetShouldOpenDrawer();
+    }
+  }, [shouldOpenDrawer, isMobile, resetShouldOpenDrawer]);
 
   const handleNavigation = (route, tab) => {
     // If already on the same tab and it's the + tab, open the drawer
