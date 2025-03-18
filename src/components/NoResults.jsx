@@ -121,9 +121,9 @@ const NoResults = () => {
         <>
           <h2 className="text-xl font-semibold mb-6">Discover Top Images</h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-3xl mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-1 w-full max-w-3xl mb-6 p-1">
             {topImages.map((image) => (
-              <Link to={`/image/${image.id}`} key={image.id} className="block overflow-hidden rounded-lg transition-transform hover:scale-105">
+              <Link to={`/image/${image.id}`} key={image.id} className="block overflow-hidden rounded-lg">
                 <img 
                   src={image.image_url} 
                   alt={image.prompt} 
