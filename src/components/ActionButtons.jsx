@@ -1,3 +1,4 @@
+
 import React from 'react'
 import { Button } from "@/components/ui/button"
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -14,7 +15,7 @@ const ActionButtons = ({ generatingImages }) => {
     <div className="hidden md:flex items-center gap-2">
       <Button
         variant={isInspiration ? 'default' : 'ghost'}
-        onClick={() => navigate('/inspiration')}
+        onClick={() => navigate('/inspiration#latest')}
         className={cn(
           "h-8 text-xs px-4 rounded-full bg-background/50",
           isInspiration && "bg-primary hover:bg-primary/80 text-primary-foreground",
