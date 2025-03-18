@@ -15,9 +15,9 @@ const Index = () => {
     return <LoadingScreen />;
   }
 
-  // Redirect authenticated users to the inspiration page
+  // Redirect authenticated users to the image generator
   if (session) {
-    navigate('/inspiration#latest');
+    navigate('/image-generator');
     return null;
   }
 

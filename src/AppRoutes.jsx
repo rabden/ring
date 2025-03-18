@@ -11,7 +11,6 @@ import UserProfile from '@/pages/UserProfile';
 import Login from '@/pages/Login';
 import Inspiration from '@/pages/Inspiration';
 import Documentation from '@/pages/Documentation';
-import Index from '@/pages/Index';
 import { Button } from '@/components/ui/button';
 
 // Protected Route Component
@@ -54,8 +53,8 @@ const AuthRoute = ({ children }) => {
   }
   
   if (session && !isInitialLoad) {
-    // Changed default redirect to inspiration#latest
-    return <Navigate to="/inspiration#latest" replace />;
+    const to = location.state?.from?.pathname || '/';
+    return <Navigate to={to} replace />;
   }
   
   return children;
@@ -71,8 +70,7 @@ const AuthCallback = () => {
       try {
         const { error } = await supabase.auth.getSession();
         if (error) throw error;
-        // Changed default redirect to inspiration#latest
-        navigate('/inspiration#latest', { replace: true });
+        navigate('/', { replace: true });
       } catch (error) {
         console.error('Error handling auth callback:', error);
         setError(error.message);
@@ -155,8 +153,8 @@ const AppRoutes = () => {
         } 
       />
 
-      {/* Fallback Route - Changed to redirect to inspiration#latest */}
-      <Route path="*" element={<Navigate to="/inspiration#latest" replace />} />
+      {/* Fallback Route */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

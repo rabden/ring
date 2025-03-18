@@ -84,7 +84,7 @@ const BottomNavbar = ({
     }
 
     setActiveTab(tab);
-    // Always make sure inspiration is navigating to #latest
+    // If navigating to inspiration without a hash, default to #latest
     if (route === '/inspiration' && !location.hash) {
       navigate('/inspiration#latest');
     } else {
