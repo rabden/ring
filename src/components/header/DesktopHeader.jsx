@@ -33,9 +33,11 @@ const DesktopHeader = ({
     <div className={cn(
       "hidden md:block fixed top-0 left-0 right-0 z-50 h-12",
       "bg-background/95 backdrop-blur-[2px]",
-      "border-b border-border/90",
       "transition-all duration-200 ease-in-out"
     )}>
+      {/* Gradient overlay at the bottom of header */}
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20" />
+      
       <div className={cn(
         "flex justify-between items-center h-full px-10 max-w-full",
         "transition-all duration-200 ease-in-out"
