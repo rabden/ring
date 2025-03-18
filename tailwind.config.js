@@ -104,12 +104,12 @@ module.exports = {
           },
         },
         "fade-in": {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "fade-out": {
-          "0%": { opacity: "1" },
-          "100%": { opacity: "0" },
+          "0%": { opacity: "1", transform: "translateY(0)" },
+          "100%": { opacity: "0", transform: "translateY(10px)" },
         }
       },
       animation: {
@@ -119,8 +119,8 @@ module.exports = {
         "gradient-x": "gradient-x 10s ease infinite",
         "gradient-y": "gradient-y 10s ease infinite",
         "gradient-xy": "gradient-xy 10s ease infinite",
-        "fade-in": "fade-in 1s ease-out",
-        "fade-out": "fade-out 1s ease-out",
+        "fade-in": "fade-in 0.3s ease-in-out",
+        "fade-out": "fade-out 0.3s ease-out",
       },
     },
   },
