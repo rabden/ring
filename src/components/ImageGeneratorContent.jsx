@@ -53,6 +53,8 @@ const ImageGeneratorContent = ({
   const isNotificationsTab = location.hash === '#notifications';
   
   const [isPromptVisible, setIsPromptVisible] = useState(true);
+  const { settingsActive } = useUserPreferences();
+  
   const shouldShowSettings = useMemo(() => {
     return isMobile 
       ? isGenerateTab 
@@ -63,7 +65,6 @@ const ImageGeneratorContent = ({
   const [isSidebarMounted, setIsSidebarMounted] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTop, setShowTop] = useState(false);
-  const { settingsActive } = useUserPreferences();
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(session?.user?.id);
   const {
     following
