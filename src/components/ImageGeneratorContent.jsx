@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
@@ -119,11 +120,40 @@ const ImageGeneratorContent = ({
     // This function is kept for compatibility but we're now using the context directly
   };
 
+  // Mini prompt box props
+  const miniPromptProps = {
+    prompt: imageGeneratorProps.prompt,
+    onChange: e => imageGeneratorProps.setPrompt(e.target.value),
+    onSubmit: imageGeneratorProps.generateImage,
+    hasEnoughCredits: true,
+    onClear: () => imageGeneratorProps.setPrompt('')
+  };
+
   return <>
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground image-generator-content overflow-x-hidden">
         <div className={cn("flex-grow p-2 md:p-6 overflow-y-auto transition-[padding] duration-300 ease-in-out", !isGenerateTab ? 'block' : 'hidden md:block', isSidebarVisible ? 'md:pr-[350px]' : 'md:pr-6', "pb-20 md:pb-6")}>
           {session && <>
-              <DesktopHeader user={session.user} credits={credits} bonusCredits={bonusCredits} generatingImages={generatingImages} activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
+              <DesktopHeader 
+                user={session.user} 
+                credits={credits} 
+                bonusCredits={bonusCredits} 
+                generatingImages={generatingImages} 
+                activeFilters={activeFilters} 
+                onFilterChange={onFilterChange} 
+                onRemoveFilter={onRemoveFilter} 
+                onSearch={handleSearch} 
+                nsfwEnabled={nsfwEnabled} 
+                setNsfwEnabled={setNsfwEnabled} 
+                showPrivate={showPrivate} 
+                onTogglePrivate={handlePrivateToggle} 
+                showFollowing={showFollowing} 
+                showTop={showTop} 
+                onFollowingChange={setShowFollowing} 
+                onTopChange={setShowTop} 
+                searchQuery={searchQuery}
+                isPromptVisible={isPromptVisible}
+                promptProps={!isInspiration && !searchQuery ? miniPromptProps : null}
+              />
               <MobileHeader activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} isVisible={isHeaderVisible} nsfwEnabled={nsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
               
               {!isInspiration && !searchQuery && <DesktopPromptBox 
