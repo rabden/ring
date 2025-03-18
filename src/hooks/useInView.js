@@ -18,11 +18,15 @@ export const useInView = (threshold = 0.5) => {
       ([entry]) => {
         // Use a more direct approach with less calculations
         const visible = entry.isIntersecting;
-        setIsInView(visible);
         
-        if (visible && !hasBeenViewed) {
-          setHasBeenViewed(true);
-        }
+        // Use requestAnimationFrame for smoother state updates
+        requestAnimationFrame(() => {
+          setIsInView(visible);
+          
+          if (visible && !hasBeenViewed) {
+            setHasBeenViewed(true);
+          }
+        });
       },
       { 
         // Simplified thresholds for better performance

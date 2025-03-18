@@ -25,7 +25,8 @@ const MiniPromptBox = ({
     <div 
       className={cn(
         "flex items-center gap-2 max-w-[500px] w-full bg-card/80 rounded-full border border-border/80 px-3 py-1.5",
-        "transition-all duration-200 ease-in-out cursor-pointer",
+        "transition-all duration-300 ease-in-out cursor-pointer",
+        "animate-fade-in",
         className
       )}
       onClick={handleClick}
@@ -49,7 +50,7 @@ const MiniPromptBox = ({
       <div className="flex items-center">
         <Button
           size="sm"
-          className="h-7 px-3 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
+          className="h-7 px-3 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-300"
           onClick={(e) => {
             e.stopPropagation();
             onSubmit();
