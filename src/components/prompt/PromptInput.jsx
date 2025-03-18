@@ -134,8 +134,8 @@ const PromptInput = ({
       />
 
       <div className="relative bg-background transition-all duration-300">
-        <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-background/95 to-transparent pointer-events-none z-20 rounded-t-2xl" />
-        <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-background/95 to-transparent pointer-events-none z-20 rounded-b-2xl" />
+        <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-background to-background/10 pointer-events-none z-20 rounded-t-2xl" />
+        <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-background to-background/10 pointer-events-none z-20 rounded-b-2xl" />
         
         <div className="relative">
           {isImproving && (
