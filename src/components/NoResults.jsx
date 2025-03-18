@@ -14,79 +14,84 @@ const NoResults = () => {
   const [topSource, setTopSource] = useState('');
 
   useEffect(() => {
-    // Show top images after 10 seconds
+    // Show top images after 5 seconds (reduced from 10s)
     const timer = setTimeout(() => {
       setShowTopImages(true);
       fetchTopImages();
-    }, 10000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, []);
 
   const fetchTopImages = async () => {
-    // Try to fetch week's top images first
-    const now = new Date();
-    const weekStart = startOfWeek(now, { weekStartsOn: 1 }).toISOString();
-    
-    let { data: weekData } = await supabase
-      .from('user_images')
-      .select('*')
-      .gte('created_at', weekStart)
-      .gt('like_count', 0)
-      .eq('is_private', false)
-      .order('like_count', { ascending: false })
-      .limit(4);
+    try {
+      // Try to fetch week's top images first
+      const now = new Date();
+      const weekStart = startOfWeek(now, { weekStartsOn: 1 }).toISOString();
+      
+      let { data: weekData, error: weekError } = await supabase
+        .from('user_images')
+        .select('*')
+        .gte('created_at', weekStart)
+        .gt('like_count', 0)
+        .eq('is_private', false)
+        .order('like_count', { ascending: false })
+        .limit(4);
 
-    if (weekData && weekData.length === 4) {
-      setTopImages(weekData.map(image => ({
-        ...image,
-        image_url: supabase.storage
-          .from('user-images')
-          .getPublicUrl(image.storage_path).data.publicUrl
-      })));
-      setTopSource('top-week');
-      return;
-    }
+      // Process weekData if it exists and has enough images
+      if (weekData && weekData.length >= 4) {
+        setTopImages(weekData.map(image => ({
+          ...image,
+          image_url: supabase.storage
+            .from('user-images')
+            .getPublicUrl(image.storage_path).data.publicUrl
+        })));
+        setTopSource('top-week');
+        return;
+      }
 
-    // If not enough weekly images, try monthly
-    const monthStart = startOfMonth(now).toISOString();
-    let { data: monthData } = await supabase
-      .from('user_images')
-      .select('*')
-      .gte('created_at', monthStart)
-      .gt('like_count', 0)
-      .eq('is_private', false)
-      .order('like_count', { ascending: false })
-      .limit(4);
+      // If not enough weekly images, try monthly
+      const monthStart = startOfMonth(now).toISOString();
+      let { data: monthData, error: monthError } = await supabase
+        .from('user_images')
+        .select('*')
+        .gte('created_at', monthStart)
+        .gt('like_count', 0)
+        .eq('is_private', false)
+        .order('like_count', { ascending: false })
+        .limit(4);
 
-    if (monthData && monthData.length === 4) {
-      setTopImages(monthData.map(image => ({
-        ...image,
-        image_url: supabase.storage
-          .from('user-images')
-          .getPublicUrl(image.storage_path).data.publicUrl
-      })));
-      setTopSource('top-month');
-      return;
-    }
+      if (monthData && monthData.length >= 4) {
+        setTopImages(monthData.map(image => ({
+          ...image,
+          image_url: supabase.storage
+            .from('user-images')
+            .getPublicUrl(image.storage_path).data.publicUrl
+        })));
+        setTopSource('top-month');
+        return;
+      }
 
-    // If still not enough, use all-time
-    let { data: allTimeData } = await supabase
-      .from('user_images')
-      .select('*')
-      .gt('like_count', 0)
-      .eq('is_private', false)
-      .order('like_count', { ascending: false })
-      .limit(4);
+      // If still not enough, use all-time
+      let { data: allTimeData, error: allTimeError } = await supabase
+        .from('user_images')
+        .select('*')
+        .gt('like_count', 0)
+        .eq('is_private', false)
+        .order('like_count', { ascending: false })
+        .limit(4);
 
-    if (allTimeData && allTimeData.length > 0) {
-      setTopImages(allTimeData.map(image => ({
-        ...image,
-        image_url: supabase.storage
-          .from('user-images')
-          .getPublicUrl(image.storage_path).data.publicUrl
-      })));
-      setTopSource('top-all');
+      if (allTimeData && allTimeData.length > 0) {
+        setTopImages(allTimeData.map(image => ({
+          ...image,
+          image_url: supabase.storage
+            .from('user-images')
+            .getPublicUrl(image.storage_path).data.publicUrl
+        })));
+        setTopSource('top-all');
+      }
+    } catch (error) {
+      console.error("Error fetching top images:", error);
     }
   };
 
@@ -98,7 +103,7 @@ const NoResults = () => {
     )}>
       {!showTopImages ? (
         <>
-          <div className="w-full md:max-w-xl mb-8">
+          <div className="w-full">
             <DotLottieReact
               src="https://lottie.host/578388ec-9280-43b8-b22a-6adefde2f212/E8yaWCks1y.lottie"
               loop
