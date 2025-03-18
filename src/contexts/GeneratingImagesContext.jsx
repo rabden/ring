@@ -1,9 +1,11 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const GeneratingImagesContext = createContext();
 
 export const GeneratingImagesProvider = ({ children }) => {
   const [generatingImages, setGeneratingImages] = useState([]);
+  const [shouldOpenDrawer, setShouldOpenDrawer] = useState(false);
 
   // Add auto-removal of completed images after 10 seconds
   useEffect(() => {
@@ -39,6 +41,22 @@ export const GeneratingImagesProvider = ({ children }) => {
     }
   }, [generatingImages]);
 
+  // Auto-open drawer logic
+  useEffect(() => {
+    // If a new image is added and it's the only one processing/pending
+    if (generatingImages.length > 0) {
+      const processingOrPendingCount = generatingImages.filter(img => 
+        img.status === 'processing' || img.status === 'pending'
+      ).length;
+      
+      // Only trigger auto-open when we're just starting a new generation
+      // and there wasn't already something in the queue
+      if (processingOrPendingCount === 1) {
+        setShouldOpenDrawer(true);
+      }
+    }
+  }, [generatingImages]);
+
   const cancelGeneration = (imageId) => {
     setGeneratingImages(prev => {
       // Get the image being cancelled
@@ -65,10 +83,16 @@ export const GeneratingImagesProvider = ({ children }) => {
     });
   };
 
+  const resetShouldOpenDrawer = () => {
+    setShouldOpenDrawer(false);
+  };
+
   const value = {
     generatingImages,
     setGeneratingImages,
-    cancelGeneration
+    cancelGeneration,
+    shouldOpenDrawer,
+    resetShouldOpenDrawer
   };
 
   return (
