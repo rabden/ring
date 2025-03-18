@@ -124,7 +124,6 @@ export const useImageGeneration = ({
             model: queuedModelConfig.huggingfaceId || model,
             inputs: modifiedPrompt,
             parameters,
-            provider: "hf-inference",
           });
 
           // Log response for debugging
