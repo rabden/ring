@@ -142,7 +142,7 @@ const NoResults = () => {
       "mt-12"
     )}>
       <div className={cn(
-        "w-full transition-opacity duration-500 ease-in-out absolute",
+        "w-full transition-opacity duration-500 ease-in-out absolute mx-auto",
         showTopImages ? "opacity-0 pointer-events-none" : "opacity-100"
       )}>
         <DotLottieReact
