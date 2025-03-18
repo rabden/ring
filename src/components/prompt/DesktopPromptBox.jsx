@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -47,22 +46,20 @@ const DesktopPromptBox = ({
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const { settingsActive, setSettingsActive } = useUserPreferences();
-  const { ref: inViewRef, isInView } = useInView(0.2);
+  
+  const { ref: inViewRef, isInView } = useInView(0.1);
 
-  // Use callback ref to merge refs
   const setRefs = (element) => {
     boxRef.current = element;
     inViewRef.current = element;
   };
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load();
+    if (typeof onVisibilityChange === 'function') {
+      requestAnimationFrame(() => {
+        onVisibilityChange(isInView);
+      });
     }
-  }, []);
-
-  useEffect(() => {
-    onVisibilityChange?.(isInView);
   }, [isInView, onVisibilityChange]);
 
   useEffect(() => {
@@ -75,7 +72,8 @@ const DesktopPromptBox = ({
 
   useEffect(() => {
     if (onSettingsToggle) {
-      onSettingsToggle(settingsActive);
+      const settingsActiveValue = settingsActive === undefined ? true : settingsActive;
+      onSettingsToggle(settingsActiveValue);
     }
   }, [settingsActive, onSettingsToggle]);
 
@@ -147,7 +145,10 @@ const DesktopPromptBox = ({
   };
 
   const toggleSettings = () => {
-    setSettingsActive(prev => !prev);
+    setSettingsActive(prev => {
+      const newValue = prev === undefined ? false : !prev;
+      return newValue;
+    });
   };
 
   return (

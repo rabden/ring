@@ -12,7 +12,9 @@ const MiniPromptBox = ({
   className,
   focusMainPrompt
 }) => {
-  const handleClick = () => {
+  const handleClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     // Focus the main prompt instead of submitting
     if (focusMainPrompt) {
       focusMainPrompt();
@@ -27,6 +29,13 @@ const MiniPromptBox = ({
         className
       )}
       onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          handleClick(e);
+        }
+      }}
     >
       <input
         type="text"

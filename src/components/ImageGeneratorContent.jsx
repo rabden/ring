@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
 import ImageGallery from './ImageGallery';
@@ -52,8 +51,14 @@ const ImageGeneratorContent = ({
   const isInspiration = location.pathname === '/inspiration';
   const isGenerateTab = location.hash === '#imagegenerate';
   const isNotificationsTab = location.hash === '#notifications';
-  const shouldShowSettings = isMobile ? isGenerateTab : !isInspiration;
+  
   const [isPromptVisible, setIsPromptVisible] = useState(true);
+  const shouldShowSettings = useMemo(() => {
+    return isMobile 
+      ? isGenerateTab 
+      : !isInspiration && settingsActive;
+  }, [isMobile, isGenerateTab, isInspiration, settingsActive]);
+  
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isSidebarMounted, setIsSidebarMounted] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
@@ -68,13 +73,8 @@ const ImageGeneratorContent = ({
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const desktopPromptBoxRef = useRef(null);
 
-  // Handle sidebar visibility with transitions
   useEffect(() => {
-    const shouldMount = isMobile 
-      ? isGenerateTab 
-      : shouldShowSettings && isPromptVisible && !isInspiration && !searchQuery && settingsActive;
-      
-    if (shouldMount) {
+    if (shouldShowSettings) {
       setIsSidebarMounted(true);
       requestAnimationFrame(() => {
         setIsSidebarVisible(true);
@@ -83,12 +83,11 @@ const ImageGeneratorContent = ({
       setIsSidebarVisible(false);
       const timer = setTimeout(() => {
         setIsSidebarMounted(false);
-      }, 300);
+      }, 200);
       return () => clearTimeout(timer);
     }
-  }, [shouldShowSettings, isPromptVisible, isInspiration, isGenerateTab, isMobile, searchQuery, settingsActive]);
+  }, [shouldShowSettings, searchQuery]);
 
-  // Sync activeTab with URL hash
   useEffect(() => {
     if (isGenerateTab) {
       setActiveTab('input');
@@ -99,18 +98,86 @@ const ImageGeneratorContent = ({
     }
   }, [location.hash, setActiveTab]);
 
-  // Handle search
+  const focusMainPrompt = useCallback(() => {
+    if (desktopPromptBoxRef.current) {
+      desktopPromptBoxRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      
+      const textarea = desktopPromptBoxRef.current.querySelector('textarea');
+      if (textarea) {
+        requestAnimationFrame(() => {
+          textarea.focus();
+        });
+      }
+    }
+  }, []);
+
+  const promptProps = useMemo(() => ({
+    prompt: imageGeneratorProps.prompt,
+    onChange: imageGeneratorProps.setPrompt,
+    onSubmit: imageGeneratorProps.generateImage,
+    hasEnoughCredits: true,
+    handleImprovePrompt: async () => {
+      if (!session?.user?.id) {
+        toast.error('Please sign in to improve prompts');
+        return;
+      }
+
+      if (!hasEnoughCreditsForImprovement) {
+        toast.error('Not enough credits for prompt improvement');
+        return;
+      }
+
+      try {
+        let accumulatedPrompt = "";
+        let isFirstChunk = true;
+        await improveCurrentPrompt(
+          imageGeneratorProps.prompt, 
+          imageGeneratorProps.model, 
+          imageGeneratorProps.modelConfigs, 
+          (chunk, isStreaming) => {
+            if (isStreaming) {
+              if (isFirstChunk) {
+                imageGeneratorProps.setPrompt("");
+                isFirstChunk = false;
+              }
+              accumulatedPrompt += chunk;
+              imageGeneratorProps.setPrompt(accumulatedPrompt);
+            } else {
+              imageGeneratorProps.setPrompt(chunk);
+            }
+          }
+        );
+      } catch (error) {
+        console.error('Error improving prompt:', error);
+        toast.error('Failed to improve prompt');
+      }
+    },
+    isImproving,
+    hasEnoughCreditsForImprovement
+  }), [
+    imageGeneratorProps.prompt, 
+    imageGeneratorProps.setPrompt, 
+    imageGeneratorProps.generateImage,
+    imageGeneratorProps.model,
+    imageGeneratorProps.modelConfigs,
+    session?.user?.id,
+    hasEnoughCreditsForImprovement,
+    improveCurrentPrompt,
+    isImproving
+  ]);
+
   const handleSearch = query => {
     setSearchQuery(query);
     onSearch(query);
   };
 
-  // Handle private toggle
   const handlePrivateToggle = newValue => {
     setShowPrivate(newValue);
   };
 
-  // Reset search when changing views
   useEffect(() => {
     if (!isInspiration && !location.hash.includes('myimages')) {
       setSearchQuery('');
@@ -123,75 +190,6 @@ const ImageGeneratorContent = ({
   };
 
   const handleSettingsToggle = (isActive) => {
-    // This function is kept for compatibility but we're now using the context directly
-  };
-
-  // Function to focus the main prompt box
-  const focusMainPrompt = () => {
-    if (desktopPromptBoxRef.current) {
-      // Scroll to the prompt box
-      desktopPromptBoxRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
-      });
-      
-      // Try to focus the textarea inside
-      const textarea = desktopPromptBoxRef.current.querySelector('textarea');
-      if (textarea) {
-        setTimeout(() => {
-          textarea.focus();
-        }, 500); // Short delay to ensure the scroll has completed
-      }
-    }
-  };
-
-  // Function to handle improve prompt for mini prompt box
-  const handleImprovePrompt = async () => {
-    if (!session?.user?.id) {
-      toast.error('Please sign in to improve prompts');
-      return;
-    }
-
-    if (!hasEnoughCreditsForImprovement) {
-      toast.error('Not enough credits for prompt improvement');
-      return;
-    }
-
-    try {
-      let accumulatedPrompt = "";
-      let isFirstChunk = true;
-      await improveCurrentPrompt(
-        imageGeneratorProps.prompt, 
-        imageGeneratorProps.model, 
-        imageGeneratorProps.modelConfigs, 
-        (chunk, isStreaming) => {
-          if (isStreaming) {
-            if (isFirstChunk) {
-              imageGeneratorProps.setPrompt("");
-              isFirstChunk = false;
-            }
-            accumulatedPrompt += chunk;
-            imageGeneratorProps.setPrompt(accumulatedPrompt);
-          } else {
-            imageGeneratorProps.setPrompt(chunk);
-          }
-        }
-      );
-    } catch (error) {
-      console.error('Error improving prompt:', error);
-      toast.error('Failed to improve prompt');
-    }
-  };
-
-  // Prepare prompt props for mini prompt box
-  const promptProps = {
-    prompt: imageGeneratorProps.prompt,
-    onChange: imageGeneratorProps.setPrompt,
-    onSubmit: imageGeneratorProps.generateImage,
-    hasEnoughCredits: true,
-    handleImprovePrompt,
-    isImproving,
-    hasEnoughCreditsForImprovement
   };
 
   return <>
