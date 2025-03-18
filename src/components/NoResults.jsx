@@ -39,7 +39,7 @@ const NoResults = () => {
           setShowTopImages(true);
         }, 2000);
       }
-    }, 5000);
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, [isPreloadComplete]);
@@ -139,7 +139,7 @@ const NoResults = () => {
     <div className={cn(
       "flex flex-col items-center justify-center mx-auto",
       "transition-all duration-500",
-      "mt-12 md:mt-0"
+      "mt-12"
     )}>
       <div className={cn(
         "w-full transition-opacity duration-500 ease-in-out absolute",
@@ -149,7 +149,7 @@ const NoResults = () => {
           src="https://lottie.host/578388ec-9280-43b8-b22a-6adefde2f212/E8yaWCks1y.lottie"
           loop
           autoplay
-          className="w-full rounded-lg overflow-hidden"
+          className="w-full max-w-[700px] overflow-hidden"
         />
 
         <h2 className="text-xl font-semibold mb-2 text-center">Nothing Found</h2>
@@ -170,7 +170,7 @@ const NoResults = () => {
               <img 
                 src={image.image_url} 
                 alt={image.prompt} 
-                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-300"
               />
             </Link>
           ))}
