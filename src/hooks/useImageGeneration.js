@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -123,8 +122,7 @@ export const useImageGeneration = ({
           const imageBlob = await client.textToImage({
             model: queuedModelConfig.huggingfaceId || model,
             inputs: modifiedPrompt,
-            parameters,
-            provider: "hf-inference",
+            parameters
           });
 
           // Log response for debugging
