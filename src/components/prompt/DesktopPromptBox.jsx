@@ -1,13 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
+import { X, ArrowRight, ChevronRight, Sparkles, Loader } from 'lucide-react';
 import CreditCounter from '@/components/ui/credit-counter';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -33,8 +31,7 @@ const DesktopPromptBox = ({
   userId,
   onVisibilityChange,
   activeModel,
-  modelConfigs,
-  onSettingsToggle
+  modelConfigs
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -45,8 +42,8 @@ const DesktopPromptBox = ({
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
-  const { settingsActive, setSettingsActive } = useUserPreferences();
 
+  // Preload the video
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.load();
@@ -61,6 +58,7 @@ const DesktopPromptBox = ({
     return () => clearInterval(interval);
   }, []);
 
+  // Handle scroll visibility
   useEffect(() => {
     if (!boxRef.current) return;
 
@@ -78,12 +76,6 @@ const DesktopPromptBox = ({
     observer.observe(boxRef.current);
     return () => observer.disconnect();
   }, [onVisibilityChange]);
-
-  useEffect(() => {
-    if (onSettingsToggle) {
-      onSettingsToggle(settingsActive);
-    }
-  }, [settingsActive, onSettingsToggle]);
 
   const handlePromptChange = (e) => {
     if (typeof onChange === 'function') {
@@ -111,6 +103,7 @@ const DesktopPromptBox = ({
         modelConfigs, 
         (chunk, isStreaming) => {
           if (isStreaming) {
+            // Clear the prompt just before the first chunk arrives
             if (isFirstChunk) {
               onChange({ target: { value: "" } });
               isFirstChunk = false;
@@ -152,12 +145,9 @@ const DesktopPromptBox = ({
     }
   };
 
-  const toggleSettings = () => {
-    setSettingsActive(prev => !prev);
-  };
-
   return (
     <>
+      {/* Preloaded video */}
       <video 
         ref={videoRef}
         className="hidden"
@@ -165,6 +155,7 @@ const DesktopPromptBox = ({
         preload="auto"
       />
 
+      {/* Normal position box */}
       <div 
         ref={boxRef}
         className={cn(
@@ -261,37 +252,57 @@ const DesktopPromptBox = ({
                     )}
                   </div>
                 </Button>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant={settingsActive ? "default" : "ghost"}
-                        className={cn(
-                          "h-8 w-8 p-0 rounded-full transition-all duration-200",
-                          settingsActive 
-                            ? "bg-background hover:bg-background/80" 
-                            : "hover:bg-background/50"
-                        )}
-                        aria-label="Settings"
-                        onClick={toggleSettings}
-                      >
-                        <Settings 
-                          className={cn(
-                            "h-4 w-4", 
-                            settingsActive 
-                              ? "text-foreground" 
-                              : "text-foreground/70"
-                          )} 
-                        />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Toggle settings panel</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Fixed position box */}
+      <div 
+        className={cn(
+          "hidden md:block fixed top-11 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
+          isFixed ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+        )}
+      >
+        <div className="max-w-[850px] mx-auto px-10 py-2">
+          <div className="relative bg-card backdrop-blur-[2px] border border-border/80 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300">
+            <div className="flex items-center gap-4 p-1.5">
+              <div 
+                className="flex-1 px-4 text-muted-foreground/90 truncate cursor-pointer transition-colors duration-200 hover:text-muted-foreground/80"
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  setTimeout(() => {
+                    textareaRef.current?.focus();
+                    const length = textareaRef.current?.value.length || 0;
+                    textareaRef.current?.setSelectionRange(length, length);
+                  }, 500);
+                }}
+              >
+                {prompt || PROMPT_TIPS[currentTipIndex]}
+              </div>
+              <Button
+                size="sm"
+                className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
+                onClick={handleSubmit}
+                disabled={!prompt?.length || !hasEnoughCredits}
+              >
+                <div className="flex items-center">
+                  <span className="text-sm">Create</span>
+                  {isPlayingAnimation ? (
+                    <video 
+                      className="h-5 w-5 ml-2 rotate-[270deg] scale-150" 
+                      src={videoRef.current?.src}
+                      autoPlay
+                      muted
+                      playsInline
+                      onEnded={() => setIsPlayingAnimation(false)}
+                    />
+                  ) : (
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  )}
+                </div>
+              </Button>
             </div>
           </div>
         </div>

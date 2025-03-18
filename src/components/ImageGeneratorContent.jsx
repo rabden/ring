@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
@@ -10,10 +11,11 @@ import FullScreenImageView from './FullScreenImageView';
 import DesktopHeader from './header/DesktopHeader';
 import MobileHeader from './header/MobileHeader';
 import DesktopPromptBox from './prompt/DesktopPromptBox';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFollows } from '@/hooks/useFollows';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const ImageGeneratorContent = ({
   session,
@@ -55,7 +57,6 @@ const ImageGeneratorContent = ({
   const [isSidebarMounted, setIsSidebarMounted] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTop, setShowTop] = useState(false);
-  const { settingsActive } = useUserPreferences();
   const {
     following
   } = useFollows(session?.user?.id);
@@ -63,10 +64,7 @@ const ImageGeneratorContent = ({
 
   // Handle sidebar visibility with transitions
   useEffect(() => {
-    const shouldMount = isMobile 
-      ? isGenerateTab 
-      : shouldShowSettings && isPromptVisible && !isInspiration && !searchQuery && settingsActive;
-      
+    const shouldMount = isMobile ? isGenerateTab : shouldShowSettings && isPromptVisible && !isInspiration && !searchQuery;
     if (shouldMount) {
       setIsSidebarMounted(true);
       requestAnimationFrame(() => {
@@ -79,7 +77,7 @@ const ImageGeneratorContent = ({
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [shouldShowSettings, isPromptVisible, isInspiration, isGenerateTab, isMobile, searchQuery, settingsActive]);
+  }, [shouldShowSettings, isPromptVisible, isInspiration, isGenerateTab, isMobile, searchQuery]);
 
   // Sync activeTab with URL hash
   useEffect(() => {
@@ -115,10 +113,6 @@ const ImageGeneratorContent = ({
     navigate(`/image/${image.id}`);
   };
 
-  const handleSettingsToggle = (isActive) => {
-    // This function is kept for compatibility but we're now using the context directly
-  };
-
   return <>
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground image-generator-content overflow-x-hidden">
         <div className={cn("flex-grow p-2 md:p-6 overflow-y-auto transition-[padding] duration-300 ease-in-out", !isGenerateTab ? 'block' : 'hidden md:block', isSidebarVisible ? 'md:pr-[350px]' : 'md:pr-6', "pb-20 md:pb-6")}>
@@ -137,8 +131,7 @@ const ImageGeneratorContent = ({
                 userId={session?.user?.id} 
                 onVisibilityChange={setIsPromptVisible} 
                 activeModel={imageGeneratorProps.model} 
-                modelConfigs={imageGeneratorProps.modelConfigs}
-                onSettingsToggle={handleSettingsToggle}
+                modelConfigs={imageGeneratorProps.modelConfigs} 
               />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
