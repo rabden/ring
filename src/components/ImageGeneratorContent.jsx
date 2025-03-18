@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
@@ -14,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFollows } from '@/hooks/useFollows';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const ImageGeneratorContent = ({
   session,
@@ -45,7 +47,7 @@ const ImageGeneratorContent = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = window.innerWidth < 768;
+  const isMobile = useMediaQuery('(max-width: 767px)');
   const isInspiration = location.pathname === '/inspiration';
   const isGenerateTab = location.hash === '#imagegenerate';
   const isNotificationsTab = location.hash === '#notifications';
@@ -76,18 +78,6 @@ const ImageGeneratorContent = ({
       return () => clearTimeout(timer);
     }
   }, [shouldShowSettings, isPromptVisible, isInspiration, isGenerateTab, isMobile, searchQuery]);
-
-  // Track window resize for mobile state
-  useEffect(() => {
-    const handleResize = () => {
-      const newIsMobile = window.innerWidth < 768;
-      if (newIsMobile !== isMobile) {
-        window.location.reload();
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isMobile]);
 
   // Sync activeTab with URL hash
   useEffect(() => {
