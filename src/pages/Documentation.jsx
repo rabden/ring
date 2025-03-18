@@ -124,7 +124,7 @@ const modelData = [
   {
     id: 'ultra',
     name: 'Ultra',
-    description: 'The ultimate in image quality, pushing the boundaries of what's possible with AI generation.',
+    description: 'The ultimate in image quality, pushing the boundaries of what\'s possible with AI generation.',
     category: 'Maximum Quality',
     strengths: ['Highest quality', 'Photorealistic results', 'Superior detail'],
     suitableFor: ['Art prints', 'Professional portfolios', 'Commercial work'],
