@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
@@ -10,11 +11,13 @@ import FullScreenImageView from './FullScreenImageView';
 import DesktopHeader from './header/DesktopHeader';
 import MobileHeader from './header/MobileHeader';
 import DesktopPromptBox from './prompt/DesktopPromptBox';
+import MiniPromptBox from './prompt/MiniPromptBox';
 import { cn } from '@/lib/utils';
 import { useFollows } from '@/hooks/useFollows';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
+import { useInView } from '@/hooks/useInView';
 import { toast } from 'sonner';
 
 const ImageGeneratorContent = ({
@@ -73,6 +76,17 @@ const ImageGeneratorContent = ({
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const desktopPromptBoxRef = useRef(null);
+  
+  // Add ref and useInView hook for the desktop prompt box
+  const { ref: promptInViewRef, isInView: isPromptInView } = useInView(0.3);
+  
+  // Control when the mini prompt box should be visible
+  const shouldShowMiniPrompt = useMemo(() => {
+    return !isInspiration && 
+           !isPromptInView && 
+           !searchQuery &&
+           !isMobile;
+  }, [isInspiration, isPromptInView, searchQuery, isMobile]);
 
   useEffect(() => {
     if (shouldShowSettings) {
@@ -221,7 +235,10 @@ const ImageGeneratorContent = ({
               />
               <MobileHeader activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} isVisible={isHeaderVisible} nsfwEnabled={nsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
               
-              {!isInspiration && !searchQuery && <div ref={desktopPromptBoxRef}>
+              {!isInspiration && !searchQuery && <div ref={el => {
+                  desktopPromptBoxRef.current = el;
+                  promptInViewRef(el);
+                }}>
                 <DesktopPromptBox 
                   prompt={imageGeneratorProps.prompt} 
                   onChange={e => imageGeneratorProps.setPrompt(e.target.value)} 
@@ -276,6 +293,25 @@ const ImageGeneratorContent = ({
             </div>
           </div>}
       </div>
+
+      {/* Floating MiniPromptBox at the bottom-right */}
+      {!searchQuery && 
+        <div className={cn(
+          "fixed bottom-6 right-6 z-30",
+          "transition-all duration-300 ease-in-out",
+          "hidden md:block"
+        )}>
+          <MiniPromptBox
+            prompt={imageGeneratorProps.prompt}
+            onChange={e => imageGeneratorProps.setPrompt(e.target.value)}
+            onSubmit={imageGeneratorProps.generateImage}
+            hasEnoughCredits={true}
+            focusMainPrompt={focusMainPrompt}
+            visible={shouldShowMiniPrompt}
+            className="shadow-lg hover:shadow-xl"
+          />
+        </div>
+      }
 
       <MobileNotificationsMenu activeTab={activeTab} />
       <MobileProfileMenu user={session?.user} credits={credits} bonusCredits={bonusCredits} activeTab={activeTab} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} />
