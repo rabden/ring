@@ -7,7 +7,6 @@ import SearchBar from '../search/SearchBar';
 import NotificationBell from '../notifications/NotificationBell';
 import PrivateFilterButton from '../filters/PrivateFilterButton';
 import InspirationFilterButtons from '../filters/InspirationFilterButtons';
-import MiniPromptBox from '../prompt/MiniPromptBox';
 import { cn } from '@/lib/utils';
 
 const DesktopHeader = ({ 
@@ -24,14 +23,11 @@ const DesktopHeader = ({
   showTop,
   onFollowingChange,
   onTopChange,
-  rightContent,
-  isPromptVisible,
-  promptProps
+  rightContent
 }) => {
   const location = useLocation();
   const isInspiration = location.pathname === '/inspiration';
   const isMyImages = location.pathname === '/' && (!location.hash || location.hash === '#myimages');
-  const shouldShowMiniPrompt = !isPromptVisible && !isInspiration && promptProps && !onSearch;
 
   return (
     <div className={cn(
@@ -67,21 +63,9 @@ const DesktopHeader = ({
           )}>
             <NotificationBell />
           </div>
-          {shouldShowMiniPrompt ? (
-            <div className="w-[400px] transition-all duration-200 ease-in-out">
-              <MiniPromptBox 
-                prompt={promptProps.prompt}
-                onChange={promptProps.onChange}
-                onSubmit={promptProps.onSubmit}
-                hasEnoughCredits={promptProps.hasEnoughCredits}
-                onClear={promptProps.onClear}
-              />
-            </div>
-          ) : (
-            <div className="transition-all duration-200 ease-in-out">
-              <SearchBar onSearch={onSearch} />
-            </div>
-          )}
+          <div className="transition-all duration-200 ease-in-out">
+            <SearchBar onSearch={onSearch} />
+          </div>
         </div>
 
         {/* Right side - Navigation Buttons and Generating Status */}
