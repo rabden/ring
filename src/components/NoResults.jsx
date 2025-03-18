@@ -7,16 +7,9 @@ const NoResults = ({ animationUrl }) => {
   return (
     <div className={cn(
       "flex flex-col items-center justify-center mx-auto",
-      "p-4 md:p-8 rounded-xl m-2 mt-16 md:mt-10",
-      "bg-card border border-border",
       "transition-all duration-300"
     )}>
-      <h2 className="text-xl font-semibold mb-2">Nothing Found</h2>
-      <p className="text-sm text-muted-foreground/70 mb-8 text-center">
-        Explore something else or create something new
-      </p>
-
-      <div className="w-full max-w-xs">
+      <div className="w-full max-w-md mb-6">
         <DotLottieReact
           src="https://lottie.host/578388ec-9280-43b8-b22a-6adefde2f212/E8yaWCks1y.lottie"
           loop
@@ -24,6 +17,11 @@ const NoResults = ({ animationUrl }) => {
           className="w-full rounded-lg overflow-hidden"
         />
       </div>
+
+      <h2 className="text-xl font-semibold mb-2">Nothing Found</h2>
+      <p className="text-sm text-muted-foreground/70 text-center">
+        Explore something else or create something new
+      </p>
     </div>
   );
 };
