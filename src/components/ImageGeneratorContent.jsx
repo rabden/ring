@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
@@ -11,11 +10,10 @@ import FullScreenImageView from './FullScreenImageView';
 import DesktopHeader from './header/DesktopHeader';
 import MobileHeader from './header/MobileHeader';
 import DesktopPromptBox from './prompt/DesktopPromptBox';
-import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFollows } from '@/hooks/useFollows';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const ImageGeneratorContent = ({
   session,
@@ -57,7 +55,7 @@ const ImageGeneratorContent = ({
   const [isSidebarMounted, setIsSidebarMounted] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTop, setShowTop] = useState(false);
-  const [settingsActive, setSettingsActive] = useState(false);
+  const { settingsActive } = useUserPreferences();
   const {
     following
   } = useFollows(session?.user?.id);
@@ -118,7 +116,7 @@ const ImageGeneratorContent = ({
   };
 
   const handleSettingsToggle = (isActive) => {
-    setSettingsActive(isActive);
+    // This function is kept for compatibility but we're now using the context directly
   };
 
   return <>

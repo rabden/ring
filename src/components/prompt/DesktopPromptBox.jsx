@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ArrowRight, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
+import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
 import CreditCounter from '@/components/ui/credit-counter';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -43,7 +45,7 @@ const DesktopPromptBox = ({
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
-  const [settingsActive, setSettingsActive] = useState(false);
+  const { settingsActive, setSettingsActive } = useUserPreferences();
 
   useEffect(() => {
     if (videoRef.current) {
@@ -259,90 +261,37 @@ const DesktopPromptBox = ({
                     )}
                   </div>
                 </Button>
-                <Button
-                  size="sm"
-                  variant={settingsActive ? "default" : "ghost"}
-                  className={cn(
-                    "h-8 w-8 p-0 rounded-full transition-all duration-200",
-                    settingsActive ? "bg-background" : "hover:bg-background/50"
-                  )}
-                  aria-label="Settings"
-                  onClick={toggleSettings}
-                >
-                  <Settings 
-                    className={cn(
-                      "h-4 w-4", 
-                      settingsActive ? "text-foreground" : "text-foreground/70"
-                    )} 
-                  />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant={settingsActive ? "default" : "ghost"}
+                        className={cn(
+                          "h-8 w-8 p-0 rounded-full transition-all duration-200",
+                          settingsActive 
+                            ? "bg-background hover:bg-background/80" 
+                            : "hover:bg-background/50"
+                        )}
+                        aria-label="Settings"
+                        onClick={toggleSettings}
+                      >
+                        <Settings 
+                          className={cn(
+                            "h-4 w-4", 
+                            settingsActive 
+                              ? "text-foreground" 
+                              : "text-foreground/70"
+                          )} 
+                        />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Toggle settings panel</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div 
-        className={cn(
-          "hidden md:block fixed top-11 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
-          isFixed ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
-        )}
-      >
-        <div className="max-w-[850px] mx-auto px-10 py-2">
-          <div className="relative bg-card backdrop-blur-[2px] border border-border/80 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300">
-            <div className="flex items-center gap-4 p-1.5">
-              <div 
-                className="flex-1 px-4 text-muted-foreground/90 truncate cursor-pointer transition-colors duration-200 hover:text-muted-foreground/80"
-                onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                  setTimeout(() => {
-                    textareaRef.current?.focus();
-                    const length = textareaRef.current?.value.length || 0;
-                    textareaRef.current?.setSelectionRange(length, length);
-                  }, 500);
-                }}
-              >
-                {prompt || PROMPT_TIPS[currentTipIndex]}
-              </div>
-              <Button
-                size="sm"
-                className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
-                onClick={handleSubmit}
-                disabled={!prompt?.length || !hasEnoughCredits}
-              >
-                <div className="flex items-center">
-                  <span className="text-sm">Create</span>
-                  {isPlayingAnimation ? (
-                    <video 
-                      className="h-5 w-5 ml-2 rotate-[270deg] scale-150" 
-                      src={videoRef.current?.src}
-                      autoPlay
-                      muted
-                      playsInline
-                      onEnded={() => setIsPlayingAnimation(false)}
-                    />
-                  ) : (
-                    <ChevronRight className="ml-2 h-5 w-5" />
-                  )}
-                </div>
-              </Button>
-              <Button
-                size="sm"
-                variant={settingsActive ? "default" : "ghost"}
-                className={cn(
-                  "h-8 w-8 p-0 rounded-full transition-all duration-200",
-                  settingsActive ? "bg-background" : "hover:bg-background/50"
-                )}
-                aria-label="Settings"
-                onClick={toggleSettings}
-              >
-                <Settings 
-                  className={cn(
-                    "h-4 w-4", 
-                    settingsActive ? "text-foreground" : "text-foreground/70"
-                  )} 
-                />
-              </Button>
             </div>
           </div>
         </div>
