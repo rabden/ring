@@ -9,6 +9,7 @@ import PrivateFilterButton from '../filters/PrivateFilterButton';
 import InspirationFilterButtons from '../filters/InspirationFilterButtons';
 import MiniPromptBox from '../prompt/MiniPromptBox';
 import { cn } from '@/lib/utils';
+import { useScrollPosition } from '@/hooks/useScrollPosition';
 
 const DesktopHeader = ({ 
   user, 
@@ -30,6 +31,7 @@ const DesktopHeader = ({
   focusMainPrompt
 }) => {
   const location = useLocation();
+  const { isScrolled } = useScrollPosition(20);
   const isInspiration = location.pathname === '/inspiration';
   const isMyImages = location.pathname === '/' && (!location.hash || location.hash === '#myimages');
 
@@ -43,8 +45,7 @@ const DesktopHeader = ({
   return (
     <div className={cn(
       "hidden md:block fixed top-0 left-0 right-0 z-50 h-12",
-      "bg-background/95 backdrop-blur-[2px]",
-      "border-b border-border/90",
+      isScrolled ? "bg-background/95 backdrop-blur-[2px] border-b border-border/90" : "bg-transparent border-b-0",
       "transition-all duration-200 ease-in-out"
     )}>
       <div className={cn(
