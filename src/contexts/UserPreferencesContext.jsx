@@ -21,7 +21,8 @@ export const UserPreferencesProvider = ({ children }) => {
   // Add settings toggle state with default value of true (ON)
   const [settingsActive, setSettingsActive] = useState(() => {
     const saved = localStorage.getItem('settingsActive');
-    return saved ? JSON.parse(saved) : true;
+    // Default to true if no saved value exists
+    return saved !== null ? JSON.parse(saved) : true;
   });
 
   // Update localStorage when states change

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -45,7 +46,8 @@ const DesktopPromptBox = ({
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
-  const { settingsActive, setSettingsActive } = useUserPreferences();
+  // Set default value to true if not found in context
+  const { settingsActive = true, setSettingsActive } = useUserPreferences();
 
   useEffect(() => {
     if (videoRef.current) {
