@@ -1,3 +1,4 @@
+
 /* Remove focus ring and outline from shadcn components */
 .ring-offset-background,
 [data-radix-popper-content-wrapper] * {
@@ -10,4 +11,15 @@
 *:focus-visible {
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* Smoothen tab transitions */
+[role="tablist"] {
+  position: relative;
+  overflow: hidden;
+}
+
+[role="tab"] {
+  position: relative;
+  z-index: 1;
 }
