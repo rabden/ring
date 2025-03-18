@@ -1,6 +1,7 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ArrowRight, ChevronRight, Sparkles, Loader } from 'lucide-react';
+import { X, ArrowRight, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
 import CreditCounter from '@/components/ui/credit-counter';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -232,6 +233,14 @@ const DesktopPromptBox = ({
                 </Button>
                 <Button
                   size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0 rounded-full hover:bg-background/50"
+                  aria-label="Settings"
+                >
+                  <Settings className="h-4 w-4 text-foreground/70" />
+                </Button>
+                <Button
+                  size="sm"
                   className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
                   onClick={handleSubmit}
                   disabled={!prompt?.length || !hasEnoughCredits || isImproving}
@@ -281,6 +290,14 @@ const DesktopPromptBox = ({
               >
                 {prompt || PROMPT_TIPS[currentTipIndex]}
               </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 w-8 p-0 rounded-full hover:bg-background/50"
+                aria-label="Settings"
+              >
+                <Settings className="h-4 w-4 text-foreground/70" />
+              </Button>
               <Button
                 size="sm"
                 className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
