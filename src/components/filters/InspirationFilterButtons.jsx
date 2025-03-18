@@ -101,10 +101,20 @@ const InspirationFilterButtons = ({ className }) => {
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32 m-4">
+            <DropdownMenuContent 
+              align="end" 
+              className={cn(
+                "w-32 p-2 m-2",
+                "border-border/80 bg-card",
+                "animate-in fade-in-0 zoom-in-95 duration-200"
+              )}
+            >
               <DropdownMenuItem
                 className={cn(
-                  "text-xs",
+                  "flex items-center py-2 px-3 rounded-lg",
+                  "cursor-pointer transition-colors duration-200",
+                  "hover:bg-accent/30 focus:bg-background/50",
+                  "group text-xs",
                   topPeriod === 'week' && "bg-accent/50",
                   !hasTopThisWeek && "opacity-50 cursor-not-allowed"
                 )}
@@ -119,7 +129,10 @@ const InspirationFilterButtons = ({ className }) => {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className={cn(
-                  "text-xs",
+                  "flex items-center py-2 px-3 rounded-lg",
+                  "cursor-pointer transition-colors duration-200",
+                  "hover:bg-accent/30 focus:bg-background/50",
+                  "group text-xs",
                   topPeriod === 'month' && "bg-accent/50",
                   !hasTopThisMonth && "opacity-50 cursor-not-allowed"
                 )}
@@ -134,7 +147,10 @@ const InspirationFilterButtons = ({ className }) => {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className={cn(
-                  "text-xs",
+                  "flex items-center py-2 px-3 rounded-lg",
+                  "cursor-pointer transition-colors duration-200",
+                  "hover:bg-accent/30 focus:bg-background/50",
+                  "group text-xs",
                   topPeriod === 'all' && "bg-accent/50",
                   !hasTopAllTime && "opacity-50 cursor-not-allowed"
                 )}
