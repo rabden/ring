@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -44,7 +43,7 @@ const DesktopPromptBox = ({
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
-  const { settingsActive, setSettingsActive } = useUserPreferences();
+  const [settingsActive, setSettingsActive] = useState(false);
 
   useEffect(() => {
     if (videoRef.current) {

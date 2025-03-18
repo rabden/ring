@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
@@ -15,7 +16,6 @@ import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFollows } from '@/hooks/useFollows';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const ImageGeneratorContent = ({
   session,
@@ -57,7 +57,7 @@ const ImageGeneratorContent = ({
   const [isSidebarMounted, setIsSidebarMounted] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTop, setShowTop] = useState(false);
-  const { settingsActive } = useUserPreferences();
+  const [settingsActive, setSettingsActive] = useState(false);
   const {
     following
   } = useFollows(session?.user?.id);
