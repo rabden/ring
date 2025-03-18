@@ -17,13 +17,6 @@ export const UserPreferencesProvider = ({ children }) => {
 
   // Add a state to track if we're in remix mode
   const [isRemixMode, setIsRemixMode] = useState(false);
-  
-  // Add settings toggle state with default value of true (ON)
-  const [settingsActive, setSettingsActive] = useState(() => {
-    const saved = localStorage.getItem('settingsActive');
-    // Default to true if no value is found
-    return saved !== null ? JSON.parse(saved) : true;
-  });
 
   // Update localStorage when states change
   useEffect(() => {
@@ -35,11 +28,6 @@ export const UserPreferencesProvider = ({ children }) => {
       localStorage.setItem('aspectRatio', aspectRatio);
     }
   }, [aspectRatio, isRemixMode]);
-  
-  // Save settings toggle state to localStorage
-  useEffect(() => {
-    localStorage.setItem('settingsActive', JSON.stringify(settingsActive));
-  }, [settingsActive]);
 
   const value = {
     nsfwEnabled,
@@ -48,8 +36,6 @@ export const UserPreferencesProvider = ({ children }) => {
     setAspectRatio,
     isRemixMode,
     setIsRemixMode,
-    settingsActive,
-    setSettingsActive,
   };
 
   return (
