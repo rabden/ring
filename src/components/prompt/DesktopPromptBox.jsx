@@ -8,7 +8,6 @@ import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { useInView } from '@/hooks/useInView';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -37,6 +36,7 @@ const DesktopPromptBox = ({
   modelConfigs,
   onSettingsToggle
 }) => {
+  const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const boxRef = useRef(null);
   const textareaRef = useRef(null);
@@ -46,21 +46,12 @@ const DesktopPromptBox = ({
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const { settingsActive, setSettingsActive } = useUserPreferences();
-  
-  const { ref: inViewRef, isInView } = useInView(0.1);
-
-  const setRefs = (element) => {
-    boxRef.current = element;
-    inViewRef.current = element;
-  };
 
   useEffect(() => {
-    if (typeof onVisibilityChange === 'function') {
-      requestAnimationFrame(() => {
-        onVisibilityChange(isInView);
-      });
+    if (videoRef.current) {
+      videoRef.current.load();
     }
-  }, [isInView, onVisibilityChange]);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -71,9 +62,26 @@ const DesktopPromptBox = ({
   }, []);
 
   useEffect(() => {
+    if (!boxRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsFixed(!entry.isIntersecting);
+        onVisibilityChange?.(entry.isIntersecting);
+      },
+      {
+        threshold: 0,
+        rootMargin: '-64px 0px 0px 0px'
+      }
+    );
+
+    observer.observe(boxRef.current);
+    return () => observer.disconnect();
+  }, [onVisibilityChange]);
+
+  useEffect(() => {
     if (onSettingsToggle) {
-      const settingsActiveValue = settingsActive === undefined ? true : settingsActive;
-      onSettingsToggle(settingsActiveValue);
+      onSettingsToggle(settingsActive);
     }
   }, [settingsActive, onSettingsToggle]);
 
@@ -145,10 +153,7 @@ const DesktopPromptBox = ({
   };
 
   const toggleSettings = () => {
-    setSettingsActive(prev => {
-      const newValue = prev === undefined ? false : !prev;
-      return newValue;
-    });
+    setSettingsActive(prev => !prev);
   };
 
   return (
@@ -161,7 +166,7 @@ const DesktopPromptBox = ({
       />
 
       <div 
-        ref={setRefs}
+        ref={boxRef}
         className={cn(
           "hidden md:block w-full max-w-[850px] mx-auto px-2 mt-20 transition-all duration-300",
           className
