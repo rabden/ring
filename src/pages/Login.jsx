@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { AuthUI } from '@/integrations/supabase/components/AuthUI';
@@ -64,13 +65,92 @@ const AnimatedText = () => {
   );
 };
 
+// New component for preloading and displaying images with enhanced animations
+const AnimatedImageGallery = ({ currentImageIndex }) => {
+  const [loadedImages, setLoadedImages] = useState({});
+  
+  // Preload all images
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imagePromises = images.map((src, index) => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.src = src;
+          img.onload = () => {
+            setLoadedImages(prev => ({
+              ...prev,
+              [index]: true
+            }));
+            resolve();
+          };
+          img.onerror = () => {
+            console.error(`Failed to load image: ${src}`);
+            resolve();
+          };
+        });
+      });
+      
+      // Wait for all images to load
+      await Promise.all(imagePromises);
+    };
+    
+    preloadImages();
+  }, []);
+  
+  return (
+    <div className="relative w-full h-full">
+      <div className="absolute inset-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentImageIndex}
+            initial={{ opacity: 0, scale: 1.1, filter: "blur(8px)" }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              filter: "blur(0px)",
+              transition: { 
+                opacity: { duration: 0.8 },
+                scale: { duration: 1, ease: [0.34, 1.56, 0.64, 1] },
+                filter: { duration: 0.8 }
+              }
+            }}
+            exit={{ 
+              opacity: 0, 
+              scale: 0.95,
+              filter: "blur(8px)",
+              transition: { duration: 0.4 }
+            }}
+            className="absolute inset-0"
+          >
+            <img
+              src={images[currentImageIndex]}
+              alt="Feature showcase"
+              className={cn(
+                "w-full h-full object-cover transition-all duration-500",
+                loadedImages[currentImageIndex] ? "opacity-100" : "opacity-0"
+              )}
+              style={{ 
+                imageRendering: "high-quality",
+                WebkitImageSmoothing: "high"
+              }}
+              loading="eager"
+              fetchpriority="high"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent mix-blend-overlay" />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
 const Login = () => {
   const { session, loading } = useSupabaseAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [currentImageIndex, setCurrentImageIndex] = useState(() => Math.floor(Math.random() * images.length));
-  const [isImageLoading, setIsImageLoading] = useState(true);
   const [isInIframe, setIsInIframe] = useState(false);
+  const preloadedImagesRef = useRef({});
 
   useEffect(() => {
     // Check if page is in an iframe or being rendered by puppeteer
@@ -93,14 +173,23 @@ const Login = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
-      setIsImageLoading(true);
     }, DISPLAY_DURATION);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Preload logo
+  // Preload all images immediately when component mounts
   useEffect(() => {
+    // Preload all images at once
+    images.forEach((src, index) => {
+      if (!preloadedImagesRef.current[index]) {
+        const img = new Image();
+        img.src = src;
+        preloadedImagesRef.current[index] = img;
+      }
+    });
+
+    // Preload logo
     const link = document.createElement('link');
     link.rel = 'preload';
     link.as = 'image';
@@ -129,51 +218,24 @@ const Login = () => {
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full h-[50vh] md:h-auto md:w-3/5 relative overflow-hidden z-10"
       >
-        <div className="relative w-full h-full">
-          <div className="absolute inset-0">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentImageIndex}
-                initial={{ opacity: 0, scale: 1.1 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="absolute inset-0"
-              >
-                <img
-                  src={images[currentImageIndex]}
-                  alt="Feature showcase"
-                  onLoad={() => setIsImageLoading(false)}
-                  className={cn(
-                    "w-full h-full object-cover transition-all duration-500",
-                    isImageLoading ? "opacity-0" : "opacity-100"
-                  )}
-                  style={{ 
-                    imageRendering: "high-quality",
-                    WebkitImageSmoothing: "high"
-                  }}
-                />
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
+        <AnimatedImageGallery currentImageIndex={currentImageIndex} />
       </motion.div>
 
       {/* Right side - Auth UI */}
       <motion.div 
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3, delay: 0.2, ease: "easeOut" }}
+        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
         className="w-full md:h-auto md:w-3/5 flex items-center justify-center p-2 mt-10 md:mt-0 relative z-10"
       >
         <div className="w-full space-y-4 relative">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.4 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
             className="space-y-2 text-center"
           >
             <div className="flex items-center justify-center gap-2">
@@ -199,7 +261,7 @@ const Login = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
             className="space-y-4"
           >
             <AuthUI buttonText="Continue with Google" />
