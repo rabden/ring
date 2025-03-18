@@ -58,8 +58,8 @@ const ImageGeneratorContent = ({
   const shouldShowSettings = useMemo(() => {
     return isMobile 
       ? isGenerateTab 
-      : !isInspiration && settingsActive;
-  }, [isMobile, isGenerateTab, isInspiration, settingsActive]);
+      : !isInspiration && settingsActive && isPromptVisible;
+  }, [isMobile, isGenerateTab, isInspiration, settingsActive, isPromptVisible]);
   
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [isSidebarMounted, setIsSidebarMounted] = useState(false);
