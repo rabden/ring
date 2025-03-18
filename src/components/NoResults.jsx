@@ -39,7 +39,7 @@ const NoResults = () => {
           setShowTopImages(true);
         }, 2000);
       }
-    }, 10000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, [isPreloadComplete]);
@@ -143,13 +143,14 @@ const NoResults = () => {
     )}>
       <div className={cn(
         "w-full transition-opacity duration-500 ease-in-out absolute mx-auto",
-        showTopImages ? "opacity-0 pointer-events-none" : "opacity-100"
+        showTopImages ? "opacity-0 pointer-events-none" : "opacity-100",
+        "flex flex-col items-center justify-center" // Added to center content
       )}>
         <DotLottieReact
           src="https://lottie.host/578388ec-9280-43b8-b22a-6adefde2f212/E8yaWCks1y.lottie"
           loop
           autoplay
-          className="w-full max-w-[700px] overflow-hidden"
+          className="w-full max-w-[700px] mx-auto overflow-hidden" // Added mx-auto to center
         />
 
         <h2 className="text-xl font-semibold mb-2 text-center">Nothing Found</h2>
