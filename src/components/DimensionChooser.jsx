@@ -1,10 +1,10 @@
-
 import React, { useEffect, useRef, useState } from 'react'
-import { Lock, ChevronUp, ChevronDown, RefreshCcw, ChevronsUp, ChevronsDown } from "lucide-react"
+import { Lock, ChevronUp, ChevronDown, RefreshCcw, ChevronsUp, ChevronsDown, Maximize, Minimize } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { motion } from "framer-motion";
 
 const useMediaQuery = (query) => {
   const [matches, setMatches] = useState(false);
@@ -68,7 +68,8 @@ const DimensionVisualizer = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span 
+                  <motion.span 
+                    whileTap={{ scale: 0.95 }}
                     role={isQualityLocked ? undefined : "button"}
                     tabIndex={isQualityLocked ? undefined : 0}
                     onClick={isQualityLocked ? undefined : onQualityToggle}
@@ -81,9 +82,9 @@ const DimensionVisualizer = ({
                     <span 
                       className={cn(
                         "inline-flex items-center rounded-full text-xs font-semibold",
-                        "border-transparent bg-primary text-primary-foreground",
-                        !isQualityLocked && "hover:bg-primary/90",
-                        "flex items-center gap-1 px-5 py-0.5"
+                        "border-transparent bg-primary/90 text-primary-foreground",
+                        !isQualityLocked && "hover:bg-primary/80",
+                        "flex items-center gap-1 px-5 py-0.5 shadow-sm"
                       )}
                     >
                       {quality}
@@ -91,7 +92,7 @@ const DimensionVisualizer = ({
                         quality === "HD" ? <ChevronsUp className="h-3 w-3" /> : <ChevronsDown className="h-3 w-3" />
                       )}
                     </span>
-                  </span>
+                  </motion.span>
                 </TooltipTrigger>
                 <TooltipContent>
                   {isQualityLocked ? "Quality is locked to HD" : "Click to toggle quality"}
@@ -99,13 +100,15 @@ const DimensionVisualizer = ({
               </Tooltip>
             </TooltipProvider>
 
-            <div 
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
               className={cn(
                 "relative overflow-hidden",
-                "rounded-lg",
+                "rounded-xl",
                 "flex items-center justify-center",
                 "transition-all duration-200 ease-in-out",
-                "border-2 border-border/80",
+                "border-2 border-border/80 shadow-sm",
               )}
               style={{
                 width: `${finalWidth}px`,
@@ -144,11 +147,15 @@ const DimensionVisualizer = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="absolute -inset-3 flex items-center justify-center">
+                    <motion.div 
+                      whileTap={{ scale: 0.95 }}
+                      onClick={onToggleView}
+                      className="absolute -inset-3 flex items-center justify-center cursor-pointer"
+                    >
                       <div className={cn(
-                        "flex items-center gap-2 group cursor-pointer",
+                        "flex items-center gap-2 group",
                         "text-base font-medium hover:text-primary transition-colors"
-                      )} onClick={onToggleView}>
+                      )}>
                         <span className="flex items-center gap-1.5">
                           {ratio.split(':')[0]}
                           <RefreshCcw className="h-3.5 w-3.5 group-hover:rotate-180 transition-transform duration-300" />
@@ -158,14 +165,14 @@ const DimensionVisualizer = ({
                           <Lock className="h-3 w-3 text-primary opacity-80 group-hover:opacity-100 transition-opacity duration-200" />
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    Use slider below to change aspect ratio
+                    {showButtons ? "Click to use slider" : "Click to view aspect ratio options"}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -295,13 +302,14 @@ const AspectRatioButtons = ({ ratios, currentRatio, onChange, proMode, premiumRa
           {group.map((ratio) => {
             const isPremium = !proMode && premiumRatios.includes(ratio);
             return (
-              <button
+              <motion.button
                 key={ratio}
+                whileTap={!isPremium ? { scale: 0.95 } : undefined}
                 onClick={() => !isPremium && onChange(ratio)}
                 className={cn(
                   "relative px-2 py-1.5 text-sm rounded-full border transition-all duration-200",
-                  "hover:bg-accent/30 border border-border/50 hover:border-border/80 text-primary/90",
-                  currentRatio === ratio && "bg-accent border border-border/0 hover:border-border text-primary hover:bg-accent/70",
+                  "hover:bg-accent/30 border-border/50 hover:border-border/80 text-foreground/70 hover:text-foreground/90",
+                  currentRatio === ratio && "bg-primary/10 border-primary/30 text-primary shadow-sm hover:bg-primary/20 hover:border-primary/40",
                   !isPremium && "cursor-pointer",
                   isPremium && "opacity-50 cursor-not-allowed",
                   // Center 1:1 ratio
@@ -310,10 +318,19 @@ const AspectRatioButtons = ({ ratios, currentRatio, onChange, proMode, premiumRa
                 disabled={isPremium}
               >
                 {ratio}
+                {currentRatio === ratio && (
+                  <motion.div
+                    layoutId="active-ratio-indicator"
+                    className="absolute inset-0 rounded-full -z-10"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                )}
                 {isPremium && (
                   <Lock className="absolute top-1 right-1 h-3 w-3 text-primary/70" />
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </React.Fragment>
@@ -322,7 +339,6 @@ const AspectRatioButtons = ({ ratios, currentRatio, onChange, proMode, premiumRa
   );
 };
 
-// Helper functions for slider calculations
 const getCurrentRatioIndex = (currentRatio, ratios) => {
   const centerIndex = ratios.indexOf("1:1");
   const currentIndex = ratios.indexOf(currentRatio);
