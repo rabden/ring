@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
 import ImageGallery from './ImageGallery';
@@ -16,6 +16,7 @@ import { useFollows } from '@/hooks/useFollows';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
+import { toast } from 'sonner';
 
 const ImageGeneratorContent = ({
   session,
@@ -65,6 +66,7 @@ const ImageGeneratorContent = ({
   const [searchQuery, setSearchQuery] = useState('');
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
+  const desktopPromptBoxRef = useRef(null);
 
   // Handle sidebar visibility with transitions
   useEffect(() => {
@@ -122,6 +124,25 @@ const ImageGeneratorContent = ({
 
   const handleSettingsToggle = (isActive) => {
     // This function is kept for compatibility but we're now using the context directly
+  };
+
+  // Function to focus the main prompt box
+  const focusMainPrompt = () => {
+    if (desktopPromptBoxRef.current) {
+      // Scroll to the prompt box
+      desktopPromptBoxRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      
+      // Try to focus the textarea inside
+      const textarea = desktopPromptBoxRef.current.querySelector('textarea');
+      if (textarea) {
+        setTimeout(() => {
+          textarea.focus();
+        }, 500); // Short delay to ensure the scroll has completed
+      }
+    }
   };
 
   // Function to handle improve prompt for mini prompt box
@@ -197,23 +218,26 @@ const ImageGeneratorContent = ({
                 searchQuery={searchQuery}
                 promptBoxVisible={isPromptVisible}
                 promptProps={promptProps}
+                focusMainPrompt={focusMainPrompt}
               />
               <MobileHeader activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} isVisible={isHeaderVisible} nsfwEnabled={nsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
               
-              {!isInspiration && !searchQuery && <DesktopPromptBox 
-                prompt={imageGeneratorProps.prompt} 
-                onChange={e => imageGeneratorProps.setPrompt(e.target.value)} 
-                onSubmit={imageGeneratorProps.generateImage} 
-                hasEnoughCredits={true} 
-                onClear={() => imageGeneratorProps.setPrompt('')} 
-                credits={credits} 
-                bonusCredits={bonusCredits} 
-                userId={session?.user?.id} 
-                onVisibilityChange={setIsPromptVisible} 
-                activeModel={imageGeneratorProps.model} 
-                modelConfigs={imageGeneratorProps.modelConfigs}
-                onSettingsToggle={handleSettingsToggle}
-              />}
+              {!isInspiration && !searchQuery && <div ref={desktopPromptBoxRef}>
+                <DesktopPromptBox 
+                  prompt={imageGeneratorProps.prompt} 
+                  onChange={e => imageGeneratorProps.setPrompt(e.target.value)} 
+                  onSubmit={imageGeneratorProps.generateImage} 
+                  hasEnoughCredits={true} 
+                  onClear={() => imageGeneratorProps.setPrompt('')} 
+                  credits={credits} 
+                  bonusCredits={bonusCredits} 
+                  userId={session?.user?.id} 
+                  onVisibilityChange={setIsPromptVisible} 
+                  activeModel={imageGeneratorProps.model} 
+                  modelConfigs={imageGeneratorProps.modelConfigs}
+                  onSettingsToggle={handleSettingsToggle}
+                />
+              </div>}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
                 <ImageGallery 

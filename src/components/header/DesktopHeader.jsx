@@ -26,7 +26,8 @@ const DesktopHeader = ({
   onTopChange,
   rightContent,
   promptBoxVisible,
-  promptProps
+  promptProps,
+  focusMainPrompt
 }) => {
   const location = useLocation();
   const isInspiration = location.pathname === '/inspiration';
@@ -86,9 +87,7 @@ const DesktopHeader = ({
               onChange={e => promptProps.onChange(e.target.value)}
               onSubmit={promptProps.onSubmit}
               hasEnoughCredits={promptProps.hasEnoughCredits}
-              handleImprovePrompt={promptProps.handleImprovePrompt}
-              isImproving={promptProps.isImproving}
-              hasEnoughCreditsForImprovement={promptProps.hasEnoughCreditsForImprovement}
+              focusMainPrompt={focusMainPrompt}
             />
           </div>
         )}
