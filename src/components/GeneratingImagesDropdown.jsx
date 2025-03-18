@@ -60,7 +60,7 @@ const GeneratingImagesDropdown = () => {
             variant="ghost" 
             size="sm" 
             className={cn(
-              "h-8 rounded-xl bg-background/50 hover:bg-accent",
+              "h-8 rounded-full bg-transparent hover:bg-accent/50",
               "transition-all duration-200",
               isAllCompleted && "text-primary"
             )}
