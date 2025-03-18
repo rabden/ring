@@ -1,4 +1,3 @@
-
 /* Remove focus ring and outline from shadcn components */
 .ring-offset-background,
 [data-radix-popper-content-wrapper] * {
@@ -11,36 +10,4 @@
 *:focus-visible {
   outline: none !important;
   box-shadow: none !important;
-}
-
-/* Smoothen tab transitions */
-[role="tablist"] {
-  position: relative;
-  overflow: hidden;
-}
-
-[role="tab"] {
-  position: relative;
-  z-index: 1;
-}
-
-/* Add smooth transitions to buttons */
-button {
-  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-/* Improve tooltip animations */
-[data-radix-tooltip-content] {
-  animation: tooltipFadeIn 0.2s ease-out;
-}
-
-@keyframes tooltipFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
