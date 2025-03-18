@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { useFollows } from '@/hooks/useFollows';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 
 const ImageGeneratorContent = ({
   session,
@@ -56,10 +58,13 @@ const ImageGeneratorContent = ({
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const { settingsActive } = useUserPreferences();
+  const { isImproving, improveCurrentPrompt } = usePromptImprovement(session?.user?.id);
   const {
     following
   } = useFollows(session?.user?.id);
   const [searchQuery, setSearchQuery] = useState('');
+  const totalCredits = (credits || 0) + (bonusCredits || 0);
+  const hasEnoughCreditsForImprovement = totalCredits >= 1;
 
   // Handle sidebar visibility with transitions
   useEffect(() => {
@@ -119,11 +124,80 @@ const ImageGeneratorContent = ({
     // This function is kept for compatibility but we're now using the context directly
   };
 
+  // Function to handle improve prompt for mini prompt box
+  const handleImprovePrompt = async () => {
+    if (!session?.user?.id) {
+      toast.error('Please sign in to improve prompts');
+      return;
+    }
+
+    if (!hasEnoughCreditsForImprovement) {
+      toast.error('Not enough credits for prompt improvement');
+      return;
+    }
+
+    try {
+      let accumulatedPrompt = "";
+      let isFirstChunk = true;
+      await improveCurrentPrompt(
+        imageGeneratorProps.prompt, 
+        imageGeneratorProps.model, 
+        imageGeneratorProps.modelConfigs, 
+        (chunk, isStreaming) => {
+          if (isStreaming) {
+            if (isFirstChunk) {
+              imageGeneratorProps.setPrompt("");
+              isFirstChunk = false;
+            }
+            accumulatedPrompt += chunk;
+            imageGeneratorProps.setPrompt(accumulatedPrompt);
+          } else {
+            imageGeneratorProps.setPrompt(chunk);
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error improving prompt:', error);
+      toast.error('Failed to improve prompt');
+    }
+  };
+
+  // Prepare prompt props for mini prompt box
+  const promptProps = {
+    prompt: imageGeneratorProps.prompt,
+    onChange: imageGeneratorProps.setPrompt,
+    onSubmit: imageGeneratorProps.generateImage,
+    hasEnoughCredits: true,
+    handleImprovePrompt,
+    isImproving,
+    hasEnoughCreditsForImprovement
+  };
+
   return <>
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground image-generator-content overflow-x-hidden">
         <div className={cn("flex-grow p-2 md:p-6 overflow-y-auto transition-[padding] duration-300 ease-in-out", !isGenerateTab ? 'block' : 'hidden md:block', isSidebarVisible ? 'md:pr-[350px]' : 'md:pr-6', "pb-20 md:pb-6")}>
           {session && <>
-              <DesktopHeader user={session.user} credits={credits} bonusCredits={bonusCredits} generatingImages={generatingImages} activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
+              <DesktopHeader 
+                user={session.user} 
+                credits={credits} 
+                bonusCredits={bonusCredits} 
+                generatingImages={generatingImages} 
+                activeFilters={activeFilters} 
+                onFilterChange={onFilterChange} 
+                onRemoveFilter={onRemoveFilter} 
+                onSearch={handleSearch} 
+                nsfwEnabled={nsfwEnabled} 
+                setNsfwEnabled={setNsfwEnabled} 
+                showPrivate={showPrivate} 
+                onTogglePrivate={handlePrivateToggle} 
+                showFollowing={showFollowing} 
+                showTop={showTop} 
+                onFollowingChange={setShowFollowing} 
+                onTopChange={setShowTop} 
+                searchQuery={searchQuery}
+                promptBoxVisible={isPromptVisible}
+                promptProps={promptProps}
+              />
               <MobileHeader activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} isVisible={isHeaderVisible} nsfwEnabled={nsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
               
               {!isInspiration && !searchQuery && <DesktopPromptBox 

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -8,6 +9,7 @@ import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useInView } from '@/hooks/useInView';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -36,7 +38,6 @@ const DesktopPromptBox = ({
   modelConfigs,
   onSettingsToggle
 }) => {
-  const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const boxRef = useRef(null);
   const textareaRef = useRef(null);
@@ -46,6 +47,13 @@ const DesktopPromptBox = ({
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const { settingsActive, setSettingsActive } = useUserPreferences();
+  const { ref: inViewRef, isInView } = useInView(0.2);
+
+  // Use callback ref to merge refs
+  const setRefs = (element) => {
+    boxRef.current = element;
+    inViewRef.current = element;
+  };
 
   useEffect(() => {
     if (videoRef.current) {
@@ -54,30 +62,16 @@ const DesktopPromptBox = ({
   }, []);
 
   useEffect(() => {
+    onVisibilityChange?.(isInView);
+  }, [isInView, onVisibilityChange]);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTipIndex((prev) => (prev + 1) % PROMPT_TIPS.length);
     }, 10000); // Change every 10 seconds
 
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    if (!boxRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsFixed(!entry.isIntersecting);
-        onVisibilityChange?.(entry.isIntersecting);
-      },
-      {
-        threshold: 0,
-        rootMargin: '-64px 0px 0px 0px'
-      }
-    );
-
-    observer.observe(boxRef.current);
-    return () => observer.disconnect();
-  }, [onVisibilityChange]);
 
   useEffect(() => {
     if (onSettingsToggle) {
@@ -166,7 +160,7 @@ const DesktopPromptBox = ({
       />
 
       <div 
-        ref={boxRef}
+        ref={setRefs}
         className={cn(
           "hidden md:block w-full max-w-[850px] mx-auto px-2 mt-20 transition-all duration-300",
           className

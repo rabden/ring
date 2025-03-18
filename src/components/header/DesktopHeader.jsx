@@ -7,6 +7,7 @@ import SearchBar from '../search/SearchBar';
 import NotificationBell from '../notifications/NotificationBell';
 import PrivateFilterButton from '../filters/PrivateFilterButton';
 import InspirationFilterButtons from '../filters/InspirationFilterButtons';
+import MiniPromptBox from '../prompt/MiniPromptBox';
 import { cn } from '@/lib/utils';
 
 const DesktopHeader = ({ 
@@ -23,11 +24,20 @@ const DesktopHeader = ({
   showTop,
   onFollowingChange,
   onTopChange,
-  rightContent
+  rightContent,
+  promptBoxVisible,
+  promptProps
 }) => {
   const location = useLocation();
   const isInspiration = location.pathname === '/inspiration';
   const isMyImages = location.pathname === '/' && (!location.hash || location.hash === '#myimages');
+
+  // Only show mini prompt box when main prompt box is not visible
+  // And we're not on inspiration page and there's no search query active
+  const shouldShowMiniPrompt = !promptBoxVisible && 
+                               !isInspiration && 
+                               promptProps && 
+                               !location.search.includes('search');
 
   return (
     <div className={cn(
@@ -67,6 +77,21 @@ const DesktopHeader = ({
             <SearchBar onSearch={onSearch} />
           </div>
         </div>
+
+        {/* Center - Mini Prompt Box when main prompt box is not visible */}
+        {shouldShowMiniPrompt && promptProps && (
+          <div className="absolute left-1/2 transform -translate-x-1/2">
+            <MiniPromptBox
+              prompt={promptProps.prompt}
+              onChange={e => promptProps.onChange(e.target.value)}
+              onSubmit={promptProps.onSubmit}
+              hasEnoughCredits={promptProps.hasEnoughCredits}
+              handleImprovePrompt={promptProps.handleImprovePrompt}
+              isImproving={promptProps.isImproving}
+              hasEnoughCreditsForImprovement={promptProps.hasEnoughCreditsForImprovement}
+            />
+          </div>
+        )}
 
         {/* Right side - Navigation Buttons and Generating Status */}
         <div className={cn(
