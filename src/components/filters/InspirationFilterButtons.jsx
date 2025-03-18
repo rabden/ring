@@ -1,8 +1,10 @@
+
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
+import { useTopImagesRoute } from '@/hooks/useTopImagesRoute';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,17 +16,16 @@ const InspirationFilterButtons = ({ className }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentHash = location.hash.replace('#', '');
-  const [topPeriod, setTopPeriod] = useState('week'); // Default to 'week' instead of 'month'
+  const [topPeriod, setTopPeriod] = useState('week');
+  const { hasTopThisWeek, hasTopThisMonth, hasTopAllTime } = useTopImagesRoute();
 
-  // Set default to latest if no hash
   useEffect(() => {
     if (!currentHash && location.pathname === '/inspiration') {
       navigate('/inspiration#latest', { replace: true });
     }
 
-    // Parse period from hash if it exists
     if (currentHash === 'top') {
-      setTopPeriod('week'); // Default to week when just #top
+      setTopPeriod('week');
     } else if (currentHash.startsWith('top-')) {
       const period = currentHash.split('-')[1];
       setTopPeriod(period);
@@ -36,7 +37,14 @@ const InspirationFilterButtons = ({ className }) => {
   };
 
   const handleTopClick = () => {
-    navigate(`/inspiration#top-${topPeriod}`);
+    // Default to the first available period
+    if (hasTopThisWeek) {
+      navigate('/inspiration#top-week');
+    } else if (hasTopThisMonth) {
+      navigate('/inspiration#top-month');
+    } else if (hasTopAllTime) {
+      navigate('/inspiration#top-all');
+    }
   };
 
   const handleLatestClick = () => {
@@ -95,28 +103,46 @@ const InspirationFilterButtons = ({ className }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-32 m-4">
               <DropdownMenuItem
-                className={cn("text-xs", topPeriod === 'week' && "bg-accent/50")}
+                className={cn(
+                  "text-xs",
+                  topPeriod === 'week' && "bg-accent/50",
+                  !hasTopThisWeek && "opacity-50 cursor-not-allowed"
+                )}
                 onClick={() => {
-                  setTopPeriod('week');
-                  navigate('/inspiration#top-week');
+                  if (hasTopThisWeek) {
+                    setTopPeriod('week');
+                    navigate('/inspiration#top-week');
+                  }
                 }}
               >
                 This Week
               </DropdownMenuItem>
               <DropdownMenuItem
-                className={cn("text-xs", topPeriod === 'month' && "bg-accent/50")}
+                className={cn(
+                  "text-xs",
+                  topPeriod === 'month' && "bg-accent/50",
+                  !hasTopThisMonth && "opacity-50 cursor-not-allowed"
+                )}
                 onClick={() => {
-                  setTopPeriod('month');
-                  navigate('/inspiration#top-month');
+                  if (hasTopThisMonth) {
+                    setTopPeriod('month');
+                    navigate('/inspiration#top-month');
+                  }
                 }}
               >
                 This Month
               </DropdownMenuItem>
               <DropdownMenuItem
-                className={cn("text-xs", topPeriod === 'all' && "bg-accent/50")}
+                className={cn(
+                  "text-xs",
+                  topPeriod === 'all' && "bg-accent/50",
+                  !hasTopAllTime && "opacity-50 cursor-not-allowed"
+                )}
                 onClick={() => {
-                  setTopPeriod('all');
-                  navigate('/inspiration#top-all');
+                  if (hasTopAllTime) {
+                    setTopPeriod('all');
+                    navigate('/inspiration#top-all');
+                  }
                 }}
               >
                 All Time
@@ -143,4 +169,4 @@ const InspirationFilterButtons = ({ className }) => {
   );
 };
 
-export default InspirationFilterButtons; 
+export default InspirationFilterButtons;
