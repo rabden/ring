@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import SearchBar from '../search/SearchBar';
@@ -17,12 +18,13 @@ const MobileHeader = ({
   showFollowing,
   showTop,
   onFollowingChange,
-  onTopChange
+  onTopChange,
+  searchQuery
 }) => {
   const location = useLocation();
   const isInspiration = location.pathname === '/inspiration';
   const isMyImages = location.pathname === '/' && (!location.hash || location.hash === '#myimages');
-  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(!!searchQuery);
 
   return (
     <div 

@@ -1,11 +1,28 @@
+
 import React, { useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
   const [searchValue, setSearchValue] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Extract search query from URL on initial load
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchQuery = params.get('search');
+    if (searchQuery) {
+      setSearchValue(searchQuery);
+      if (onSearch) {
+        onSearch(searchQuery);
+      }
+      setIsExpanded(true);
+    }
+  }, [location.search, onSearch]);
 
   useEffect(() => {
     if (onSearchOpenChange) {
@@ -15,7 +32,16 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
 
   const handleSearch = () => {
     if (searchValue.trim()) {
-      onSearch(searchValue.trim());
+      // Update URL with search parameter
+      const params = new URLSearchParams(location.search);
+      params.set('search', searchValue.trim());
+      navigate({ search: params.toString() }, { replace: true });
+      
+      if (onSearch) {
+        onSearch(searchValue.trim());
+      }
+    } else {
+      handleClear();
     }
   };
 
@@ -29,7 +55,15 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
 
   const handleClear = () => {
     setSearchValue('');
-    onSearch('');
+    
+    // Remove search parameter from URL
+    const params = new URLSearchParams(location.search);
+    params.delete('search');
+    navigate({ search: params.toString() }, { replace: true });
+    
+    if (onSearch) {
+      onSearch('');
+    }
     setIsExpanded(false);
   };
 

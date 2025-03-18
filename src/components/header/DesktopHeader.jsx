@@ -23,7 +23,8 @@ const DesktopHeader = ({
   showTop,
   onFollowingChange,
   onTopChange,
-  rightContent
+  rightContent,
+  searchQuery
 }) => {
   const location = useLocation();
   const isInspiration = location.pathname === '/inspiration';

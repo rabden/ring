@@ -7,9 +7,10 @@ const NoResults = ({ animationUrl }) => {
   return (
     <div className={cn(
       "flex flex-col items-center justify-center mx-auto",
-      "transition-all duration-300"
+      "transition-all duration-300",
+      "mt-12 md:mt-0"
     )}>
-      <div className="w-full max-w-md mb-6">
+      <div className="w-full max-w-[80%] md:max-w-xl mb-8">
         <DotLottieReact
           src="https://lottie.host/578388ec-9280-43b8-b22a-6adefde2f212/E8yaWCks1y.lottie"
           loop

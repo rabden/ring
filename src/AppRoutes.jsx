@@ -30,7 +30,8 @@ const ProtectedRoute = ({ children }) => {
   }
   
   if (!session && !isInitialLoad) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Preserve the search parameters when redirecting to login
+    return <Navigate to={`/login${location.search}`} state={{ from: location }} replace />;
   }
   
   return children;
@@ -54,7 +55,9 @@ const AuthRoute = ({ children }) => {
   
   if (session && !isInitialLoad) {
     const to = location.state?.from?.pathname || '/';
-    return <Navigate to={to} replace />;
+    // Preserve the search parameters when redirecting
+    const search = location.state?.from?.search || location.search;
+    return <Navigate to={`${to}${search}`} replace />;
   }
   
   return children;
@@ -64,13 +67,14 @@ const AuthRoute = ({ children }) => {
 const AuthCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
         const { error } = await supabase.auth.getSession();
         if (error) throw error;
-        navigate('/', { replace: true });
+        navigate('/' + location.search, { replace: true });
       } catch (error) {
         console.error('Error handling auth callback:', error);
         setError(error.message);
@@ -78,7 +82,7 @@ const AuthCallback = () => {
     };
 
     handleCallback();
-  }, [navigate]);
+  }, [navigate, location.search]);
 
   if (error) {
     return (
