@@ -25,10 +25,9 @@ const MiniPromptBox = ({
   return (
     <div 
       className={cn(
-        "flex items-center gap-2 max-w-[350px] w-full bg-card/80 backdrop-blur-sm rounded-full border border-border/80 px-3 py-1.5",
+        "flex items-center gap-2 bg-card/80 backdrop-blur-sm rounded-full border border-border/80 px-3 py-1.5",
         "shadow-md hover:shadow-lg",
         "transition-all duration-300 ease-in-out cursor-pointer",
-        visible ? "translate-x-0 opacity-100" : "translate-x-[200px] opacity-0 pointer-events-none",
         className
       )}
       onClick={handleClick}

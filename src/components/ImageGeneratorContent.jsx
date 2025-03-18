@@ -299,23 +299,22 @@ const ImageGeneratorContent = ({
       </div>
 
       {/* Floating MiniPromptBox at the bottom-right */}
-      {!searchQuery && 
-        <div className={cn(
-          "fixed bottom-6 right-6 z-30",
-          "transition-all duration-300 ease-in-out",
-          "hidden md:block"
-        )}>
-          <MiniPromptBox
-            prompt={imageGeneratorProps.prompt}
-            onChange={e => imageGeneratorProps.setPrompt(e.target.value)}
-            onSubmit={imageGeneratorProps.generateImage}
-            hasEnoughCredits={true}
-            focusMainPrompt={focusMainPrompt}
-            visible={shouldShowMiniPrompt}
-            className="shadow-lg hover:shadow-xl"
-          />
-        </div>
-      }
+      <div className={cn(
+        "fixed bottom-6 right-6 z-30",
+        "transition-all duration-300 ease-in-out",
+        !shouldShowMiniPrompt && "translate-x-[200px] opacity-0",
+        shouldShowMiniPrompt && "translate-x-0 opacity-100"
+      )}>
+        <MiniPromptBox
+          prompt={imageGeneratorProps.prompt}
+          onChange={e => imageGeneratorProps.setPrompt(e.target.value)}
+          onSubmit={imageGeneratorProps.generateImage}
+          hasEnoughCredits={true}
+          focusMainPrompt={focusMainPrompt}
+          visible={shouldShowMiniPrompt}
+          className="shadow-lg hover:shadow-xl max-w-[350px] w-full"
+        />
+      </div>
 
       <MobileNotificationsMenu activeTab={activeTab} />
       <MobileProfileMenu user={session?.user} credits={credits} bonusCredits={bonusCredits} activeTab={activeTab} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} />
