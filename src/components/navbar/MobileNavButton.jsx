@@ -87,7 +87,7 @@ const MobileNavButton = ({
           )} />
           {(badge > 0 || showCheckmark) && (
             <span className={cn(
-              "absolute -top-1 -right-1.5 h-4 w-4 rounded-full bg-primary/30 text-[10px] font-medium text-primary-foreground flex items-center justify-center backdrop-blur-[1px]",
+              "absolute  -top-0 -right-1 h-4 w-4 rounded-full bg-primary/30 text-[10px] font-medium text-primary-foreground flex items-center justify-center backdrop-blur-[1px]",
               showCheckmark && "animate-in zoom-in duration-300"
             )}>
               {showCheckmark ? (
