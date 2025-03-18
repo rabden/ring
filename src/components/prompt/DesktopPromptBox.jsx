@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ArrowRight, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -32,7 +31,8 @@ const DesktopPromptBox = ({
   userId,
   onVisibilityChange,
   activeModel,
-  modelConfigs
+  modelConfigs,
+  onSettingsToggle
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -43,8 +43,8 @@ const DesktopPromptBox = ({
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
+  const [settingsActive, setSettingsActive] = useState(false);
 
-  // Preload the video
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.load();
@@ -59,7 +59,6 @@ const DesktopPromptBox = ({
     return () => clearInterval(interval);
   }, []);
 
-  // Handle scroll visibility
   useEffect(() => {
     if (!boxRef.current) return;
 
@@ -77,6 +76,12 @@ const DesktopPromptBox = ({
     observer.observe(boxRef.current);
     return () => observer.disconnect();
   }, [onVisibilityChange]);
+
+  useEffect(() => {
+    if (onSettingsToggle) {
+      onSettingsToggle(settingsActive);
+    }
+  }, [settingsActive, onSettingsToggle]);
 
   const handlePromptChange = (e) => {
     if (typeof onChange === 'function') {
@@ -104,7 +109,6 @@ const DesktopPromptBox = ({
         modelConfigs, 
         (chunk, isStreaming) => {
           if (isStreaming) {
-            // Clear the prompt just before the first chunk arrives
             if (isFirstChunk) {
               onChange({ target: { value: "" } });
               isFirstChunk = false;
@@ -146,9 +150,12 @@ const DesktopPromptBox = ({
     }
   };
 
+  const toggleSettings = () => {
+    setSettingsActive(prev => !prev);
+  };
+
   return (
     <>
-      {/* Preloaded video */}
       <video 
         ref={videoRef}
         className="hidden"
@@ -156,7 +163,6 @@ const DesktopPromptBox = ({
         preload="auto"
       />
 
-      {/* Normal position box */}
       <div 
         ref={boxRef}
         className={cn(
@@ -233,14 +239,6 @@ const DesktopPromptBox = ({
                 </Button>
                 <Button
                   size="sm"
-                  variant="ghost"
-                  className="h-8 w-8 p-0 rounded-full hover:bg-background/50"
-                  aria-label="Settings"
-                >
-                  <Settings className="h-4 w-4 text-foreground/70" />
-                </Button>
-                <Button
-                  size="sm"
                   className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
                   onClick={handleSubmit}
                   disabled={!prompt?.length || !hasEnoughCredits || isImproving}
@@ -261,13 +259,29 @@ const DesktopPromptBox = ({
                     )}
                   </div>
                 </Button>
+                <Button
+                  size="sm"
+                  variant={settingsActive ? "default" : "ghost"}
+                  className={cn(
+                    "h-8 w-8 p-0 rounded-full transition-all duration-200",
+                    settingsActive ? "bg-background" : "hover:bg-background/50"
+                  )}
+                  aria-label="Settings"
+                  onClick={toggleSettings}
+                >
+                  <Settings 
+                    className={cn(
+                      "h-4 w-4", 
+                      settingsActive ? "text-foreground" : "text-foreground/70"
+                    )} 
+                  />
+                </Button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Fixed position box */}
       <div 
         className={cn(
           "hidden md:block fixed top-11 left-0 right-0 z-50 transition-all duration-300 ease-in-out",
@@ -292,14 +306,6 @@ const DesktopPromptBox = ({
               </div>
               <Button
                 size="sm"
-                variant="ghost"
-                className="h-8 w-8 p-0 rounded-full hover:bg-background/50"
-                aria-label="Settings"
-              >
-                <Settings className="h-4 w-4 text-foreground/70" />
-              </Button>
-              <Button
-                size="sm"
                 className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
                 onClick={handleSubmit}
                 disabled={!prompt?.length || !hasEnoughCredits}
@@ -319,6 +325,23 @@ const DesktopPromptBox = ({
                     <ChevronRight className="ml-2 h-5 w-5" />
                   )}
                 </div>
+              </Button>
+              <Button
+                size="sm"
+                variant={settingsActive ? "default" : "ghost"}
+                className={cn(
+                  "h-8 w-8 p-0 rounded-full transition-all duration-200",
+                  settingsActive ? "bg-background" : "hover:bg-background/50"
+                )}
+                aria-label="Settings"
+                onClick={toggleSettings}
+              >
+                <Settings 
+                  className={cn(
+                    "h-4 w-4", 
+                    settingsActive ? "text-foreground" : "text-foreground/70"
+                  )} 
+                />
               </Button>
             </div>
           </div>

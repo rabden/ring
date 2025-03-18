@@ -57,6 +57,7 @@ const ImageGeneratorContent = ({
   const [isSidebarMounted, setIsSidebarMounted] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTop, setShowTop] = useState(false);
+  const [settingsActive, setSettingsActive] = useState(false);
   const {
     following
   } = useFollows(session?.user?.id);
@@ -64,7 +65,10 @@ const ImageGeneratorContent = ({
 
   // Handle sidebar visibility with transitions
   useEffect(() => {
-    const shouldMount = isMobile ? isGenerateTab : shouldShowSettings && isPromptVisible && !isInspiration && !searchQuery;
+    const shouldMount = isMobile 
+      ? isGenerateTab 
+      : shouldShowSettings && isPromptVisible && !isInspiration && !searchQuery && settingsActive;
+      
     if (shouldMount) {
       setIsSidebarMounted(true);
       requestAnimationFrame(() => {
@@ -77,7 +81,7 @@ const ImageGeneratorContent = ({
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [shouldShowSettings, isPromptVisible, isInspiration, isGenerateTab, isMobile, searchQuery]);
+  }, [shouldShowSettings, isPromptVisible, isInspiration, isGenerateTab, isMobile, searchQuery, settingsActive]);
 
   // Sync activeTab with URL hash
   useEffect(() => {
@@ -113,6 +117,10 @@ const ImageGeneratorContent = ({
     navigate(`/image/${image.id}`);
   };
 
+  const handleSettingsToggle = (isActive) => {
+    setSettingsActive(isActive);
+  };
+
   return <>
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground image-generator-content overflow-x-hidden">
         <div className={cn("flex-grow p-2 md:p-6 overflow-y-auto transition-[padding] duration-300 ease-in-out", !isGenerateTab ? 'block' : 'hidden md:block', isSidebarVisible ? 'md:pr-[350px]' : 'md:pr-6', "pb-20 md:pb-6")}>
@@ -131,7 +139,8 @@ const ImageGeneratorContent = ({
                 userId={session?.user?.id} 
                 onVisibilityChange={setIsPromptVisible} 
                 activeModel={imageGeneratorProps.model} 
-                modelConfigs={imageGeneratorProps.modelConfigs} 
+                modelConfigs={imageGeneratorProps.modelConfigs}
+                onSettingsToggle={handleSettingsToggle}
               />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
