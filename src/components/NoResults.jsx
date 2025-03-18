@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { cn } from "@/lib/utils";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const NoResults = ({ animationUrl }) => {
   return (
@@ -14,17 +16,14 @@ const NoResults = ({ animationUrl }) => {
         Explore something else or create something new
       </p>
 
-      {animationUrl && (
-        <video
-          autoPlay
+      <div className="w-full max-w-xs">
+        <DotLottieReact
+          src="https://lottie.host/578388ec-9280-43b8-b22a-6adefde2f212/E8yaWCks1y.lottie"
           loop
-          muted
-          playsInline
+          autoplay
           className="w-full rounded-lg overflow-hidden"
-        >
-          <source src={animationUrl} type="video/webm" />
-        </video>
-      )}
+        />
+      </div>
     </div>
   );
 };
