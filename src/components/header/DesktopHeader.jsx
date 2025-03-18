@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation } from 'react-router-dom';
 import ProfileMenu from '../ProfileMenu';
 import ActionButtons from '../ActionButtons';
@@ -8,7 +8,6 @@ import NotificationBell from '../notifications/NotificationBell';
 import PrivateFilterButton from '../filters/PrivateFilterButton';
 import InspirationFilterButtons from '../filters/InspirationFilterButtons';
 import { cn } from '@/lib/utils';
-import { useScrollPosition } from '@/hooks/useScrollPosition';
 
 const DesktopHeader = ({ 
   user, 
@@ -24,34 +23,31 @@ const DesktopHeader = ({
   showTop,
   onFollowingChange,
   onTopChange,
-  rightContent,
-  promptBoxVisible,
-  promptProps,
-  focusMainPrompt
+  rightContent
 }) => {
   const location = useLocation();
-  const { isScrolled } = useScrollPosition(20);
   const isInspiration = location.pathname === '/inspiration';
   const isMyImages = location.pathname === '/' && (!location.hash || location.hash === '#myimages');
 
   return (
     <div className={cn(
       "hidden md:block fixed top-0 left-0 right-0 z-50 h-12",
-      isScrolled ? "bg-background/95 backdrop-blur-[2px] border-b border-border/90" : "bg-transparent border-b-0",
-      "transition-all duration-300 ease-in-out"
+      "bg-background/95 backdrop-blur-[2px]",
+      "border-b border-border/90",
+      "transition-all duration-200 ease-in-out"
     )}>
       <div className={cn(
         "flex justify-between items-center h-full px-10 max-w-full",
-        "transition-all duration-300 ease-in-out"
+        "transition-all duration-200 ease-in-out"
       )}>
         {/* Left side - Profile, Notifications, Search */}
         <div className={cn(
           "flex items-center gap-4",
-          "transition-all duration-300 ease-in-out"
+          "transition-all duration-200 ease-in-out"
         )}>
           <div className={cn(
             "h-8",
-            "transition-transform duration-300 ease-in-out",
+            "transition-transform duration-200 ease-in-out",
           )}>
             <ProfileMenu 
               user={user} 
@@ -63,11 +59,11 @@ const DesktopHeader = ({
           </div>
           <div className={cn(
             "h-8",
-            "transition-transform duration-300 ease-in-out",
+            "transition-transform duration-200 ease-in-out",
           )}>
             <NotificationBell />
           </div>
-          <div className="transition-all duration-300 ease-in-out">
+          <div className="transition-all duration-200 ease-in-out">
             <SearchBar onSearch={onSearch} />
           </div>
         </div>
@@ -75,10 +71,10 @@ const DesktopHeader = ({
         {/* Right side - Navigation Buttons and Generating Status */}
         <div className={cn(
           "flex items-center gap-3",
-          "transition-all duration-300 ease-in-out"
+          "transition-all duration-200 ease-in-out"
         )}>
           {isMyImages && (
-            <div className="transition-transform duration-300 ease-in-out">
+            <div className="transition-transform duration-200 ease-in-out">
               <PrivateFilterButton
                 showPrivate={showPrivate}
                 onToggle={onTogglePrivate}
@@ -86,29 +82,29 @@ const DesktopHeader = ({
             </div>
           )}
           {isInspiration && (
-            <div className="transition-transform duration-300 ease-in-out">
+            <div className="transition-transform duration-200 ease-in-out">
               <InspirationFilterButtons
                 className="flex-1"
               />
             </div>
           )}
-          <div className="transition-transform duration-300 ease-in-out">
+          <div className="transition-transform duration-200 ease-in-out">
             <ActionButtons 
               generatingImages={generatingImages}
               className={cn(
                 "gap-3",
-                "transition-all duration-300 ease-in-out"
+                "transition-all duration-200 ease-in-out"
               )}
               buttonClassName={cn(
                 "h-8 rounded-lg px-3",
                 "bg-transparent hover:bg-muted/50",
                 "text-foreground/70 hover:text-foreground",
-                "transition-all duration-300 ease-in-out"
+                "transition-all duration-200 ease-in-out"
               )}
             />
           </div>
           {rightContent && (
-            <div className="transition-transform duration-300 ease-in-out">
+            <div className="transition-transform duration-200 ease-in-out">
               {rightContent}
             </div>
           )}
