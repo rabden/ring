@@ -235,25 +235,29 @@ const ImageGeneratorContent = ({
               />
               <MobileHeader activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} isVisible={isHeaderVisible} nsfwEnabled={nsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
               
-              {!isInspiration && !searchQuery && <div ref={el => {
+              {!isInspiration && !searchQuery && (
+                <div ref={(el) => {
                   desktopPromptBoxRef.current = el;
-                  promptInViewRef(el);
+                  if (promptInViewRef && typeof promptInViewRef === 'function') {
+                    promptInViewRef(el);
+                  }
                 }}>
-                <DesktopPromptBox 
-                  prompt={imageGeneratorProps.prompt} 
-                  onChange={e => imageGeneratorProps.setPrompt(e.target.value)} 
-                  onSubmit={imageGeneratorProps.generateImage} 
-                  hasEnoughCredits={true} 
-                  onClear={() => imageGeneratorProps.setPrompt('')} 
-                  credits={credits} 
-                  bonusCredits={bonusCredits} 
-                  userId={session?.user?.id} 
-                  onVisibilityChange={setIsPromptVisible} 
-                  activeModel={imageGeneratorProps.model} 
-                  modelConfigs={imageGeneratorProps.modelConfigs}
-                  onSettingsToggle={handleSettingsToggle}
-                />
-              </div>}
+                  <DesktopPromptBox 
+                    prompt={imageGeneratorProps.prompt} 
+                    onChange={e => imageGeneratorProps.setPrompt(e.target.value)} 
+                    onSubmit={imageGeneratorProps.generateImage} 
+                    hasEnoughCredits={true} 
+                    onClear={() => imageGeneratorProps.setPrompt('')} 
+                    credits={credits} 
+                    bonusCredits={bonusCredits} 
+                    userId={session?.user?.id} 
+                    onVisibilityChange={setIsPromptVisible} 
+                    activeModel={imageGeneratorProps.model} 
+                    modelConfigs={imageGeneratorProps.modelConfigs}
+                    onSettingsToggle={handleSettingsToggle}
+                  />
+                </div>
+              )}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
                 <ImageGallery 
