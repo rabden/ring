@@ -81,7 +81,7 @@ const NoResults = () => {
       "mt-12"
     )}>
       <div className={cn(
-        "w-full transition-opacity duration-500 ease-in-out absolute mx-auto",
+        "w-full transition-opacity duration-500 ease-in-out absolute mx-auto mb-5",
         showTopImages ? "opacity-0 pointer-events-none" : "opacity-100",
         "flex flex-col items-center justify-center" // Center content
       )}>

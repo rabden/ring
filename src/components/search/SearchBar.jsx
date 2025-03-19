@@ -92,7 +92,7 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
         "bg-secondary/0",
         "rounded-full",
         "transition-all duration-200",
-        (isFocused || isExpanded) && "bg-secondary/50 hover:bg-secondary/60",
+        (isFocused || isExpanded) && "bg-secondary/80 hover:bg-secondary/90",
       )}>
         {!isExpanded ? (
           <button
