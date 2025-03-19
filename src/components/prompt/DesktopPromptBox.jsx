@@ -320,7 +320,7 @@ const DesktopPromptBox = ({
             clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
           }}
         >
-          <div className="p-4 flex items-center justify-center h-full">
+          <div className="p-4 h-full">
             {modelConfigs && activeModel && onModelChange && (
               <MiniModelChooser 
                 currentModel={activeModel} 

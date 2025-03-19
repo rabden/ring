@@ -42,6 +42,13 @@ export const modelConfigs = {
     isPremium: true,
     tagline: "Advanced NSFW generation",
     image: "/models/fluxdev.png"
+  },
+  realism: {
+    name: "Realism",
+    category: "General",
+    isPremium: false,
+    tagline: "Photorealistic image generation",
+    image: "/models/realism.png"
   }
 }
 
