@@ -328,7 +328,7 @@ const DesktopPromptBox = ({
           }}
         >
           <div className="p-3 h-full">
-            <div className="flex flex-row items-start justify-between gap-2">
+            <div className="flex flex-row items-start justify-between gap-5">
               {modelConfigs && activeModel && onModelChange && (
                 <div className="flex-1">
                   <MiniModelChooser 
