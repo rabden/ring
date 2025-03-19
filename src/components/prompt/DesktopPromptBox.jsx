@@ -325,21 +325,25 @@ const DesktopPromptBox = ({
           }}
         >
           <div className="p-2 h-full">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-row items-start gap-4">
               {modelConfigs && activeModel && onModelChange && (
-                <MiniModelChooser 
-                  currentModel={activeModel} 
-                  onModelChange={onModelChange} 
-                  modelConfigs={modelConfigs}
-                />
+                <div className="w-1/2">
+                  <MiniModelChooser 
+                    currentModel={activeModel} 
+                    onModelChange={onModelChange} 
+                    modelConfigs={modelConfigs}
+                  />
+                </div>
               )}
               
               {aspectRatio && onAspectRatioChange && (
-                <MiniDimensionChooser
-                  currentRatio={aspectRatio}
-                  onRatioChange={onAspectRatioChange}
-                  proMode={proMode}
-                />
+                <div className="w-1/2">
+                  <MiniDimensionChooser
+                    currentRatio={aspectRatio}
+                    onRatioChange={onAspectRatioChange}
+                    proMode={proMode}
+                  />
+                </div>
               )}
             </div>
           </div>
