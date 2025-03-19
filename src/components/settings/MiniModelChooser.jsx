@@ -72,10 +72,9 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="default"
-                  size="sm"
                   className="h-7 w-7 rounded-full transition-all duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
                 >
-                  <CircleChevronDown className="h-4 w-4" />
+                  <CircleChevronDown className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
