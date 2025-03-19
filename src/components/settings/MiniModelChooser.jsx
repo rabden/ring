@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Check, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
   const isActive = currentModel === modelKey;
@@ -13,7 +14,7 @@ const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
       size="sm"
       onClick={() => onClick(modelKey)}
       className={cn(
-        "h-7 rounded-full transition-all duration-200 flex items-center gap-1.5 text-xs px-2",
+        "h-7 rounded-full transition-all duration-200 flex items-center gap-1.5 text-xs px-2 flex-shrink-0",
         isActive ? "bg-primary/90" : "bg-background hover:bg-background/80"
       )}
     >
@@ -28,14 +29,11 @@ const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
 };
 
 const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
-  // Define the quick access models
+  // Define the quick access models (reduced to 3)
   const quickModels = [
     { key: 'flux', name: 'Normal' },
     { key: 'turbo', name: 'Fast' },
-    { key: 'sd35l', name: 'StableDiff' },
-    { key: 'anime', name: 'Anime' },
-    { key: 'logodesign4', name: 'Logo' },
-    { key: 'realism', name: 'Realistic' }
+    { key: 'illustration', name: 'Design' }
   ];
   
   // Check if current model is not in our quick models
@@ -47,27 +45,29 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
   return (
     <div className="flex flex-col gap-2 items-start">
       <h3 className="text-sm font-medium ml-1">Model</h3>
-      <div className="flex flex-wrap gap-1.5 max-w-[300px]">
-        {quickModels.map(model => (
-          <ModelButton
-            key={model.key}
-            name={model.name}
-            modelKey={model.key}
-            currentModel={currentModel}
-            onClick={onModelChange}
-          />
-        ))}
-        
-        {/* Add temporary button for custom model selection */}
-        {isCustomModel && (
-          <ModelButton
-            name={currentModelName}
-            modelKey={currentModel}
-            currentModel={currentModel}
-            onClick={onModelChange}
-          />
-        )}
-      </div>
+      <ScrollArea className="w-[300px]">
+        <div className="flex gap-1.5 pb-1">
+          {quickModels.map(model => (
+            <ModelButton
+              key={model.key}
+              name={model.name}
+              modelKey={model.key}
+              currentModel={currentModel}
+              onClick={onModelChange}
+            />
+          ))}
+          
+          {/* Add temporary button for custom model selection */}
+          {isCustomModel && (
+            <ModelButton
+              name={currentModelName}
+              modelKey={currentModel}
+              currentModel={currentModel}
+              onClick={onModelChange}
+            />
+          )}
+        </div>
+      </ScrollArea>
     </div>
   );
 };
