@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Check, Circle, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,9 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
         { key: 'Illustration', name: 'Design' }
       ];
   
+  // Default model based on NSFW state
+  const defaultModel = nsfwEnabled ? 'nsfwMaster' : 'flux';
+  
   // Check if current model is not in our quick models
   const isCustomModel = !quickModels.some(model => model.key === currentModel);
   
@@ -58,6 +61,18 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
   
   // Get the current custom model for the dropdown (when a custom model is selected)
   const currentCustomModel = isCustomModel ? { key: currentModel, name: currentModelName } : null;
+  
+  // Effect to update model when NSFW state changes
+  useEffect(() => {
+    const currentModelConfig = modelConfigs?.[currentModel];
+    const isCorrectCategory = nsfwEnabled 
+      ? currentModelConfig?.category === "NSFW"
+      : currentModelConfig?.category === "General";
+      
+    if (currentModelConfig && !isCorrectCategory) {
+      onModelChange(defaultModel);
+    }
+  }, [nsfwEnabled, currentModel, modelConfigs, onModelChange, defaultModel]);
   
   return (
     <SettingSection label="Model">
