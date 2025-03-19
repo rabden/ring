@@ -33,7 +33,7 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
   const quickModels = [
     { key: 'flux', name: 'Normal' },
     { key: 'turbo', name: 'Fast' },
-    { key: 'illustration', name: 'Design' }
+    { key: 'Illustration', name: 'Design' }
   ];
   
   // Check if current model is not in our quick models
