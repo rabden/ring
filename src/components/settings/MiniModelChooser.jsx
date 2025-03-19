@@ -1,9 +1,15 @@
 
-import React, { useRef } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Check, Circle } from "lucide-react";
+import { Check, Circle, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
   const isActive = currentModel === modelKey;
@@ -29,7 +35,7 @@ const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
 };
 
 const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
-  // Define the quick access models (reduced to 3)
+  // Define the quick access models (3 basic models)
   const quickModels = [
     { key: 'flux', name: 'Normal' },
     { key: 'turbo', name: 'Fast' },
@@ -39,8 +45,14 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
   // Check if current model is not in our quick models
   const isCustomModel = !quickModels.some(model => model.key === currentModel);
   
-  // Get the current model name for the custom button
+  // Get the current model name for the dropdown button
   const currentModelName = modelConfigs?.[currentModel]?.name || 'Custom';
+  
+  // Get all available models for the dropdown
+  const allModels = modelConfigs ? Object.entries(modelConfigs).map(([key, config]) => ({
+    key,
+    name: config.name
+  })).filter(model => !quickModels.some(qm => qm.key === model.key)) : [];
   
   return (
     <div className="flex flex-col gap-2 items-start">
@@ -57,14 +69,35 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
             />
           ))}
           
-          {/* Add temporary button for custom model selection */}
+          {/* Add dropdown for custom model selection */}
           {isCustomModel && (
-            <ModelButton
-              name={currentModelName}
-              modelKey={currentModel}
-              currentModel={currentModel}
-              onClick={onModelChange}
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="h-7 rounded-full transition-all duration-200 flex items-center gap-1.5 text-xs px-2 flex-shrink-0 bg-primary/90"
+                >
+                  <Check className="h-3 w-3" />
+                  <span>{currentModelName}</span>
+                  <ChevronDown className="h-3 w-3 ml-0.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {allModels.map(model => (
+                  <DropdownMenuItem 
+                    key={model.key}
+                    onClick={() => onModelChange(model.key)}
+                    className={cn(
+                      "cursor-pointer",
+                      currentModel === model.key && "bg-accent/80"
+                    )}
+                  >
+                    {model.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </ScrollArea>
