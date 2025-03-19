@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Circle, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,8 @@ const AspectRatioButton = ({ ratio, currentRatio, onClick }) => {
 };
 
 const MiniDimensionChooser = ({ currentRatio, onRatioChange, proMode }) => {
+  const { aspectRatio, setAspectRatio, isRemixMode } = useUserPreferences();
+  
   // Define the quick access ratios
   const quickRatios = [
     { key: '1:1', name: '1:1' },
@@ -56,6 +59,16 @@ const MiniDimensionChooser = ({ currentRatio, onRatioChange, proMode }) => {
   // Check if current ratio is not in our quick ratios
   const isCustomRatio = !quickRatios.some(ratio => ratio.key === currentRatio);
   
+  const handleRatioChange = (ratio) => {
+    // Call the provided onRatioChange prop
+    onRatioChange(ratio);
+    
+    // Also update the context if not in remix mode
+    if (!isRemixMode) {
+      setAspectRatio(ratio);
+    }
+  };
+  
   return (
     <div className="flex flex-col gap-2 items-start">
       <h3 className="text-sm font-medium ml-1">Aspect Ratio</h3>
@@ -66,7 +79,7 @@ const MiniDimensionChooser = ({ currentRatio, onRatioChange, proMode }) => {
               key={ratio.key}
               ratio={ratio.key}
               currentRatio={currentRatio}
-              onClick={onRatioChange}
+              onClick={handleRatioChange}
             />
           ))}
           
@@ -85,7 +98,7 @@ const MiniDimensionChooser = ({ currentRatio, onRatioChange, proMode }) => {
               <DropdownMenuContent align="start">
                 <DropdownMenuItem 
                   key={currentRatio}
-                  onClick={() => onRatioChange(currentRatio)}
+                  onClick={() => handleRatioChange(currentRatio)}
                   className="cursor-pointer bg-accent/80"
                 >
                   {currentRatio}
