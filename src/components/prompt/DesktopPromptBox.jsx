@@ -9,6 +9,7 @@ import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import HeartAnimation from '@/components/animations/HeartAnimation';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -48,6 +49,7 @@ const DesktopPromptBox = ({
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   // Set default value to true if not found in context
   const { settingsActive = true, setSettingsActive } = useUserPreferences();
+  const [showInfoContainer, setShowInfoContainer] = useState(!settingsActive);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -86,6 +88,16 @@ const DesktopPromptBox = ({
       onSettingsToggle(settingsActive);
     }
   }, [settingsActive, onSettingsToggle]);
+
+  // Update showInfoContainer when settingsActive changes
+  useEffect(() => {
+    // Use a small delay to allow for animation
+    const timer = setTimeout(() => {
+      setShowInfoContainer(!settingsActive);
+    }, settingsActive ? 0 : 300); // Show immediately when settings close, delay when settings open
+    
+    return () => clearTimeout(timer);
+  }, [settingsActive]);
 
   const handlePromptChange = (e) => {
     if (typeof onChange === 'function') {
@@ -294,6 +306,27 @@ const DesktopPromptBox = ({
                   </Tooltip>
                 </TooltipProvider>
               </div>
+            </div>
+          </div>
+          
+          <HeartAnimation isAnimating={isPlayingAnimation} />
+        </div>
+        
+        {/* Info Container that slides down when settings sidebar is closed */}
+        <div 
+          className={cn(
+            "relative w-[85%] h-0 mx-auto overflow-hidden transition-all duration-300 ease-in-out bg-card border border-border/80 border-t-0",
+            "rounded-b-2xl",
+            showInfoContainer ? "h-[100px] opacity-100 -mt-[1px]" : "h-0 opacity-0"
+          )}
+          style={{
+            clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
+          }}
+        >
+          <div className="p-4 flex items-center justify-center h-full">
+            <div className="text-center">
+              <h3 className="text-lg font-medium mb-1">Pro Tip</h3>
+              <p className="text-sm text-muted-foreground">{PROMPT_TIPS[currentTipIndex]}</p>
             </div>
           </div>
         </div>
