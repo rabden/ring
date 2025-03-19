@@ -69,36 +69,46 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
             />
           ))}
           
-          {/* Add dropdown for custom model selection */}
-          {isCustomModel && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="h-7 rounded-full transition-all duration-200 flex items-center gap-1.5 text-xs px-2 flex-shrink-0 bg-primary/90"
+          {/* Dropdown for custom model selection */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant={isCustomModel ? "default" : "outline"}
+                size="sm"
+                className={cn(
+                  "h-7 rounded-full transition-all duration-200 flex items-center gap-1.5 text-xs px-2 flex-shrink-0",
+                  isCustomModel ? "bg-primary/90" : "bg-background hover:bg-background/80"
+                )}
+              >
+                {isCustomModel ? (
+                  <>
+                    <Check className="h-3 w-3" />
+                    <span>{currentModelName}</span>
+                  </>
+                ) : (
+                  <>
+                    <Circle className="h-3 w-3 text-muted-foreground/50" />
+                    <span>More</span>
+                  </>
+                )}
+                <ChevronDown className="h-3 w-3 ml-0.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {allModels.map(model => (
+                <DropdownMenuItem 
+                  key={model.key}
+                  onClick={() => onModelChange(model.key)}
+                  className={cn(
+                    "cursor-pointer",
+                    currentModel === model.key && "bg-accent/80"
+                  )}
                 >
-                  <Check className="h-3 w-3" />
-                  <span>{currentModelName}</span>
-                  <ChevronDown className="h-3 w-3 ml-0.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                {allModels.map(model => (
-                  <DropdownMenuItem 
-                    key={model.key}
-                    onClick={() => onModelChange(model.key)}
-                    className={cn(
-                      "cursor-pointer",
-                      currentModel === model.key && "bg-accent/80"
-                    )}
-                  >
-                    {model.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+                  {model.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </ScrollArea>
     </div>
