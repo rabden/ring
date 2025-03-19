@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -55,7 +54,6 @@ const DesktopPromptBox = ({
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
-  const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const { settingsActive = true, setSettingsActive } = useUserPreferences();
   const [showInfoContainer, setShowInfoContainer] = useState(!settingsActive);
 
@@ -162,13 +160,11 @@ const DesktopPromptBox = ({
       return;
     }
     
-    setIsPlayingAnimation(true);
     try {
       await onSubmit();
     } catch (error) {
       console.error('Error during image generation:', error);
       toast.error('Failed to generate image');
-      setIsPlayingAnimation(false);
     }
   };
 
@@ -285,18 +281,7 @@ const DesktopPromptBox = ({
                 >
                   <div className="flex items-center">
                     <span className="text-sm">Create</span>
-                    {isPlayingAnimation ? (
-                      <video 
-                        className="h-5 w-5 ml-2 rotate-[270deg] scale-150" 
-                        src={videoRef.current?.src}
-                        autoPlay
-                        muted
-                        playsInline
-                        onEnded={() => setIsPlayingAnimation(false)}
-                      />
-                    ) : (
-                      <ChevronRight className="ml-2 h-5 w-5" />
-                    )}
+                    <ChevronRight className="ml-2 h-5 w-5" />
                   </div>
                 </Button>
                 <TooltipProvider>
@@ -333,7 +318,6 @@ const DesktopPromptBox = ({
             </div>
           </div>
           
-          <HeartAnimation isAnimating={isPlayingAnimation} />
         </div>
         
         <div 
