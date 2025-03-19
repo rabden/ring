@@ -75,7 +75,7 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
                   size="sm"
                   className="h-7 w-7 rounded-full transition-all duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
                 >
-                  <MoreHorizontal className="h-3.5 w-3.5" />
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
