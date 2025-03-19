@@ -70,9 +70,9 @@ const MiniDimensionChooser = ({ currentRatio, onRatioChange, proMode }) => {
   };
   
   return (
-    <div className="flex flex-col gap-2 items-start w-full">
+    <div className="flex flex-col gap-1 items-start w-full">
       <h3 className="text-sm font-medium ml-1">Aspect Ratio</h3>
-      <ScrollArea className="w-auto">
+      <ScrollArea className="w-full">
         <div className="flex gap-1.5 pb-1 items-center">
           {quickRatios.map(ratio => (
             <AspectRatioButton

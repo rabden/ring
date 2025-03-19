@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -324,10 +325,10 @@ const DesktopPromptBox = ({
             clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
           }}
         >
-          <div className="p-4 h-full">
-            <div className="flex flex-row items-start justify-between gap-4">
+          <div className="p-3 h-full">
+            <div className="flex flex-row items-start justify-between gap-0">
               {modelConfigs && activeModel && onModelChange && (
-                <div className="w-1/2 pr-2">
+                <div className="w-1/2">
                   <MiniModelChooser 
                     currentModel={activeModel} 
                     onModelChange={onModelChange} 
@@ -337,7 +338,7 @@ const DesktopPromptBox = ({
               )}
               
               {aspectRatio && onAspectRatioChange && (
-                <div className="w-1/2 pl-2">
+                <div className="w-1/2">
                   <MiniDimensionChooser
                     currentRatio={aspectRatio}
                     onRatioChange={onAspectRatioChange}
