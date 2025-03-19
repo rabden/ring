@@ -278,7 +278,8 @@ const ImageGenerator = () => {
           modelConfigs,
           negativePrompt,
           setNegativePrompt,
-          updateCredits
+          updateCredits,
+          onModelChange: handleModelChange
         }}
       />
     </>

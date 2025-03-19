@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useModelConfigs } from './useModelConfigs';
 
@@ -10,7 +11,7 @@ export const useImageGeneratorState = () => {
     randomizeSeed: true,
     width: 1024,
     height: 1024,
-    model: 'flux',
+    model: 'flux', // Now using flux as default
     activeTab: 'images',
     aspectRatio: '1:1',
     useAspectRatio: true,

@@ -38,7 +38,8 @@ const ImageGeneratorSettings = ({
   setIsPrivate,
   hidePromptOnDesktop = false,
   updateCredits,
-  negativePrompt, setNegativePrompt
+  negativePrompt, setNegativePrompt,
+  onModelChange
 }) => {
   const location = useLocation();
   const isGenerateTab = location.hash === '#imagegenerate';
@@ -57,7 +58,12 @@ const ImageGeneratorSettings = ({
         setQuality('HD');
       }
     }
-    setModel(newModel);
+    
+    if (onModelChange) {
+      onModelChange(newModel);
+    } else {
+      setModel(newModel);
+    }
   };
 
   const handleClearPrompt = () => {

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -10,6 +9,7 @@ import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import HeartAnimation from '@/components/animations/HeartAnimation';
+import MiniModelChooser from '@/components/settings/MiniModelChooser';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -36,7 +36,8 @@ const DesktopPromptBox = ({
   onVisibilityChange,
   activeModel,
   modelConfigs,
-  onSettingsToggle
+  onSettingsToggle,
+  onModelChange
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -324,10 +325,13 @@ const DesktopPromptBox = ({
           }}
         >
           <div className="p-4 flex items-center justify-center h-full">
-            <div className="text-center">
-              <h3 className="text-lg font-medium mb-1">Pro Tip</h3>
-              <p className="text-sm text-muted-foreground">{PROMPT_TIPS[currentTipIndex]}</p>
-            </div>
+            {modelConfigs && activeModel && onModelChange && (
+              <MiniModelChooser 
+                currentModel={activeModel} 
+                onModelChange={onModelChange} 
+                modelConfigs={modelConfigs}
+              />
+            )}
           </div>
         </div>
       </div>
