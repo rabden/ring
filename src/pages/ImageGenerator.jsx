@@ -121,6 +121,10 @@ const ImageGenerator = () => {
     }
   };
 
+  const handleAspectRatioChange = (newRatio) => {
+    setAspectRatio(newRatio);
+  };
+
   const {
     handleImageClick,
     handleModelChange,
@@ -279,7 +283,9 @@ const ImageGenerator = () => {
           negativePrompt,
           setNegativePrompt,
           updateCredits,
-          onModelChange: handleModelChange
+          onModelChange: handleModelChange,
+          onAspectRatioChange: handleAspectRatioChange,
+          proMode: isPro
         }}
       />
     </>

@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import HeartAnimation from '@/components/animations/HeartAnimation';
 import MiniModelChooser from '@/components/settings/MiniModelChooser';
+import MiniDimensionChooser from '@/components/settings/MiniDimensionChooser';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -37,7 +38,10 @@ const DesktopPromptBox = ({
   activeModel,
   modelConfigs,
   onSettingsToggle,
-  onModelChange
+  onModelChange,
+  aspectRatio,
+  onAspectRatioChange,
+  proMode
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -321,13 +325,23 @@ const DesktopPromptBox = ({
           }}
         >
           <div className="p-2 h-full">
-            {modelConfigs && activeModel && onModelChange && (
-              <MiniModelChooser 
-                currentModel={activeModel} 
-                onModelChange={onModelChange} 
-                modelConfigs={modelConfigs}
-              />
-            )}
+            <div className="flex flex-col gap-4">
+              {modelConfigs && activeModel && onModelChange && (
+                <MiniModelChooser 
+                  currentModel={activeModel} 
+                  onModelChange={onModelChange} 
+                  modelConfigs={modelConfigs}
+                />
+              )}
+              
+              {aspectRatio && onAspectRatioChange && (
+                <MiniDimensionChooser
+                  currentRatio={aspectRatio}
+                  onRatioChange={onAspectRatioChange}
+                  proMode={proMode}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

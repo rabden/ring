@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -39,7 +40,8 @@ const ImageGeneratorSettings = ({
   hidePromptOnDesktop = false,
   updateCredits,
   negativePrompt, setNegativePrompt,
-  onModelChange
+  onModelChange,
+  onAspectRatioChange
 }) => {
   const location = useLocation();
   const isGenerateTab = location.hash === '#imagegenerate';
@@ -63,6 +65,14 @@ const ImageGeneratorSettings = ({
       onModelChange(newModel);
     } else {
       setModel(newModel);
+    }
+  };
+  
+  const handleAspectRatioChange = (newRatio) => {
+    if (onAspectRatioChange) {
+      onAspectRatioChange(newRatio);
+    } else {
+      setAspectRatio(newRatio);
     }
   };
 
@@ -134,7 +144,7 @@ const ImageGeneratorSettings = ({
       <SettingSection label="Dimensions">
         <DimensionChooser 
           aspectRatio={aspectRatio} 
-          setAspectRatio={setAspectRatio}
+          setAspectRatio={handleAspectRatioChange}
           quality={quality}
           setQuality={setQuality}
           proMode={proMode}
