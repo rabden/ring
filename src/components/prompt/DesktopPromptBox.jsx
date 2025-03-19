@@ -312,9 +312,9 @@ const DesktopPromptBox = ({
         
         <div 
           className={cn(
-            "relative w-[85%] h-0 mx-auto overflow-hidden transition-all duration-300 ease-in-out bg-card border border-border/80 border-t-0",
+            "relative w-[95%] h-0 mx-auto overflow-hidden transition-all duration-300 ease-in-out bg-card border border-border/80 border-t-0",
             "rounded-b-2xl",
-            showInfoContainer ? "h-[100px] opacity-100 -mt-[1px]" : "h-0 opacity-0"
+            showInfoContainer ? "h-auto min-h-100px opacity-100 -mt-[1px]" : "h-0 opacity-0"
           )}
           style={{
             clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)"

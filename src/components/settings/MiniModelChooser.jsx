@@ -13,7 +13,7 @@ const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
       size="sm"
       onClick={() => onClick(modelKey)}
       className={cn(
-        "h-7 rounded-full transition-all duration-200 flex items-center gap-1.5 text-xs px-2.5",
+        "h-7 rounded-full transition-all duration-200 flex items-center gap-1.5 text-xs px-2",
         isActive ? "bg-primary/90" : "bg-background hover:bg-background/80"
       )}
     >
@@ -47,7 +47,7 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
   return (
     <div className="flex flex-col gap-2 items-start">
       <h3 className="text-sm font-medium ml-1">Model</h3>
-      <div className="flex flex-wrap gap-1.5 max-w-[400px]">
+      <div className="flex flex-wrap gap-1.5 max-w-[300px]">
         {quickModels.map(model => (
           <ModelButton
             key={model.key}
