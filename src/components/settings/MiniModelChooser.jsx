@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Check, Circle, CircleChevronDown } from "lucide-react";
+import { Check, Circle, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -54,7 +54,7 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
   return (
     <div className="flex flex-col gap-2 items-start">
       <h3 className="text-sm font-medium ml-1">Model</h3>
-      <ScrollArea className="w-[300px]">
+      <ScrollArea className="w-auto">
         <div className="flex gap-1.5 pb-1">
           {quickModels.map(model => (
             <ModelButton
@@ -75,7 +75,7 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
                   size="sm"
                   className="h-7 w-7 rounded-full transition-all p-0 duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
                 >
-                  <CircleChevronDown className="h-4 w-4" />
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
