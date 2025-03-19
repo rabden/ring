@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,7 +24,7 @@ const ImageCountChooser = ({ count = 1, setCount }) => {
               "transition-all duration-200",
               count === value 
                 ? "bg-accent border border-border/0 hover:border-border text-primary hover:bg-accent/70" 
-                : "hover:bg-accent/30 border border-border/0 hover:border-border/50 text-primary/50 "
+                : "hover:bg-accent/30 border border-border/0 hover:border-border/50 text-primary/50"
             )}
           >
             {value}
