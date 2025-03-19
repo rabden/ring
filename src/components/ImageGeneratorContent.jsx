@@ -61,7 +61,12 @@ const ImageGeneratorContent = ({
   } = useFollows(session?.user?.id);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Handle sidebar visibility with transitions
+  const handleModelChange = (newModel) => {
+    if (imageGeneratorProps && imageGeneratorProps.onModelChange) {
+      imageGeneratorProps.onModelChange(newModel);
+    }
+  };
+
   useEffect(() => {
     const shouldMount = isMobile 
       ? isGenerateTab 
@@ -81,7 +86,6 @@ const ImageGeneratorContent = ({
     }
   }, [shouldShowSettings, isPromptVisible, isInspiration, isGenerateTab, isMobile, searchQuery, settingsActive]);
 
-  // Sync activeTab with URL hash
   useEffect(() => {
     if (isGenerateTab) {
       setActiveTab('input');
@@ -92,18 +96,15 @@ const ImageGeneratorContent = ({
     }
   }, [location.hash, setActiveTab]);
 
-  // Handle search
   const handleSearch = query => {
     setSearchQuery(query);
     onSearch(query);
   };
 
-  // Handle private toggle
   const handlePrivateToggle = newValue => {
     setShowPrivate(newValue);
   };
 
-  // Reset search when changing views
   useEffect(() => {
     if (!isInspiration && !location.hash.includes('myimages')) {
       setSearchQuery('');
@@ -139,6 +140,7 @@ const ImageGeneratorContent = ({
                 activeModel={imageGeneratorProps.model} 
                 modelConfigs={imageGeneratorProps.modelConfigs}
                 onSettingsToggle={handleSettingsToggle}
+                onModelChange={handleModelChange}
               />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
