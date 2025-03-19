@@ -8,7 +8,6 @@ import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { MeshGradient } from '@/components/ui/mesh-gradient';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import HeartAnimation from '@/components/animations/HeartAnimation';
 import MiniModelChooser from '@/components/settings/MiniModelChooser';
 import MiniDimensionChooser from '@/components/settings/MiniDimensionChooser';
 import ImageCountChooser from '@/components/settings/ImageCountChooser';
@@ -56,6 +55,7 @@ const DesktopPromptBox = ({
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const { settingsActive = true, setSettingsActive } = useUserPreferences();
   const [showInfoContainer, setShowInfoContainer] = useState(!settingsActive);
+  const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -161,10 +161,12 @@ const DesktopPromptBox = ({
     }
     
     try {
+      setIsPlayingAnimation(true);
       await onSubmit();
     } catch (error) {
       console.error('Error during image generation:', error);
       toast.error('Failed to generate image');
+      setIsPlayingAnimation(false);
     }
   };
 
@@ -281,7 +283,18 @@ const DesktopPromptBox = ({
                 >
                   <div className="flex items-center">
                     <span className="text-sm">Create</span>
-                    <ChevronRight className="ml-2 h-5 w-5" />
+                    {isPlayingAnimation ? (
+                      <video 
+                        className="h-5 w-5 ml-2 rotate-[270deg] scale-150" 
+                        src={videoRef.current?.src}
+                        autoPlay
+                        muted
+                        playsInline
+                        onEnded={() => setIsPlayingAnimation(false)}
+                      />
+                    ) : (
+                      <ChevronRight className="ml-2 h-5 w-5" />
+                    )}
                   </div>
                 </Button>
                 <TooltipProvider>
@@ -317,7 +330,6 @@ const DesktopPromptBox = ({
               </div>
             </div>
           </div>
-          
         </div>
         
         <div 
