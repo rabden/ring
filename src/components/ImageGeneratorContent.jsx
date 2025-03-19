@@ -73,6 +73,12 @@ const ImageGeneratorContent = ({
       imageGeneratorProps.onAspectRatioChange(newRatio);
     }
   };
+  
+  const handleImageCountChange = (newCount) => {
+    if (imageGeneratorProps && imageGeneratorProps.setImageCount) {
+      imageGeneratorProps.setImageCount(newCount);
+    }
+  };
 
   useEffect(() => {
     const shouldMount = isMobile 
@@ -151,6 +157,8 @@ const ImageGeneratorContent = ({
                 aspectRatio={imageGeneratorProps.aspectRatio}
                 onAspectRatioChange={handleAspectRatioChange}
                 proMode={proMode}
+                imageCount={imageGeneratorProps.imageCount}
+                onImageCountChange={handleImageCountChange}
               />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">

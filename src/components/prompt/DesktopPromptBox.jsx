@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -12,6 +11,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import HeartAnimation from '@/components/animations/HeartAnimation';
 import MiniModelChooser from '@/components/settings/MiniModelChooser';
 import MiniDimensionChooser from '@/components/settings/MiniDimensionChooser';
+import ImageCountChooser from '@/components/settings/ImageCountChooser';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -42,7 +42,9 @@ const DesktopPromptBox = ({
   onModelChange,
   aspectRatio,
   onAspectRatioChange,
-  proMode
+  proMode,
+  imageCount,
+  onImageCountChange
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -326,26 +328,39 @@ const DesktopPromptBox = ({
           }}
         >
           <div className="p-3 h-full">
-            <div className="flex flex-row items-start justify-between gap-0">
-              {modelConfigs && activeModel && onModelChange && (
-                <div className="w-1/2">
-                  <MiniModelChooser 
-                    currentModel={activeModel} 
-                    onModelChange={onModelChange} 
-                    modelConfigs={modelConfigs}
-                  />
-                </div>
-              )}
+            <div className="flex flex-col space-y-3">
+              <div className="flex flex-row items-start justify-between gap-0">
+                {modelConfigs && activeModel && onModelChange && (
+                  <div className="w-1/2">
+                    <MiniModelChooser 
+                      currentModel={activeModel} 
+                      onModelChange={onModelChange} 
+                      modelConfigs={modelConfigs}
+                    />
+                  </div>
+                )}
+                
+                {aspectRatio && onAspectRatioChange && (
+                  <div className="w-1/2">
+                    <MiniDimensionChooser
+                      currentRatio={aspectRatio}
+                      onRatioChange={onAspectRatioChange}
+                      proMode={proMode}
+                    />
+                  </div>
+                )}
+              </div>
               
-              {aspectRatio && onAspectRatioChange && (
-                <div className="w-1/2">
-                  <MiniDimensionChooser
-                    currentRatio={aspectRatio}
-                    onRatioChange={onAspectRatioChange}
-                    proMode={proMode}
-                  />
-                </div>
-              )}
+              <div className="flex flex-row items-start">
+                {imageCount !== undefined && onImageCountChange && (
+                  <div className="w-full">
+                    <ImageCountChooser
+                      count={imageCount}
+                      setCount={onImageCountChange}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
