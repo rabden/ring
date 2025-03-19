@@ -6,43 +6,18 @@ import { supabase } from '@/integrations/supabase/supabase';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { ArrowRight } from 'lucide-react';
-import { startOfWeek, startOfMonth } from 'date-fns';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
 
 const NoResults = () => {
   const [showTopImages, setShowTopImages] = useState(false);
   const [topImages, setTopImages] = useState([]);
-  const [topSource, setTopSource] = useState('');
-  const [isPreloadComplete, setIsPreloadComplete] = useState(false);
   const [imageUrls, setImageUrls] = useState([]);
+  const [isPreloadComplete, setIsPreloadComplete] = useState(false);
 
-  // Setup preload effect
+  // First load the top images
   useEffect(() => {
-    fetchTopImages();
-    
-    // Show top images after 5 seconds (reduced from 10s)
-    const timer = setTimeout(() => {
-      if (isPreloadComplete) {
-        setShowTopImages(true);
-      } else {
-        // If images aren't loaded yet, wait for them
-        const checkInterval = setInterval(() => {
-          if (isPreloadComplete) {
-            setShowTopImages(true);
-            clearInterval(checkInterval);
-          }
-        }, 500);
-        
-        // Safety timeout to ensure we show something even if preload fails
-        setTimeout(() => {
-          clearInterval(checkInterval);
-          setShowTopImages(true);
-        }, 2000);
-      }
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [isPreloadComplete]);
+    fetchTopAllTimeImages();
+  }, []);
 
   // Use the image preloader hook
   const { isPreloading } = useImagePreloader(imageUrls);
@@ -54,62 +29,27 @@ const NoResults = () => {
     }
   }, [isPreloading, imageUrls]);
 
-  const fetchTopImages = async () => {
+  // Setup UI alternating loop
+  useEffect(() => {
+    if (topImages.length === 0) return;
+    
+    // Start with Nothing Found UI
+    setShowTopImages(false);
+    
+    // Setup the alternating loop
+    const alternateUIs = () => {
+      setShowTopImages(prev => !prev);
+    };
+    
+    // Run the loop every 10 seconds
+    const interval = setInterval(alternateUIs, 10000);
+    
+    return () => clearInterval(interval);
+  }, [topImages.length]);
+
+  const fetchTopAllTimeImages = async () => {
     try {
-      // Try to fetch week's top images first
-      const now = new Date();
-      const weekStart = startOfWeek(now, { weekStartsOn: 1 }).toISOString();
-      
-      let { data: weekData, error: weekError } = await supabase
-        .from('user_images')
-        .select('*')
-        .gte('created_at', weekStart)
-        .gt('like_count', 0)
-        .eq('is_private', false)
-        .order('like_count', { ascending: false })
-        .limit(4);
-
-      // Process weekData if it exists and has enough images
-      if (weekData && weekData.length >= 4) {
-        const processedImages = weekData.map(image => ({
-          ...image,
-          image_url: supabase.storage
-            .from('user-images')
-            .getPublicUrl(image.storage_path).data.publicUrl
-        }));
-        
-        setTopImages(processedImages);
-        setImageUrls(processedImages.map(img => img.image_url));
-        setTopSource('top-week');
-        return;
-      }
-
-      // If not enough weekly images, try monthly
-      const monthStart = startOfMonth(now).toISOString();
-      let { data: monthData, error: monthError } = await supabase
-        .from('user_images')
-        .select('*')
-        .gte('created_at', monthStart)
-        .gt('like_count', 0)
-        .eq('is_private', false)
-        .order('like_count', { ascending: false })
-        .limit(4);
-
-      if (monthData && monthData.length >= 4) {
-        const processedImages = monthData.map(image => ({
-          ...image,
-          image_url: supabase.storage
-            .from('user-images')
-            .getPublicUrl(image.storage_path).data.publicUrl
-        }));
-        
-        setTopImages(processedImages);
-        setImageUrls(processedImages.map(img => img.image_url));
-        setTopSource('top-month');
-        return;
-      }
-
-      // If still not enough, use all-time
+      // Fetch all-time top images directly
       let { data: allTimeData, error: allTimeError } = await supabase
         .from('user_images')
         .select('*')
@@ -128,7 +68,6 @@ const NoResults = () => {
         
         setTopImages(processedImages);
         setImageUrls(processedImages.map(img => img.image_url));
-        setTopSource('top-all');
       }
     } catch (error) {
       console.error("Error fetching top images:", error);
@@ -144,13 +83,13 @@ const NoResults = () => {
       <div className={cn(
         "w-full transition-opacity duration-500 ease-in-out absolute mx-auto",
         showTopImages ? "opacity-0 pointer-events-none" : "opacity-100",
-        "flex flex-col items-center justify-center" // Added to center content
+        "flex flex-col items-center justify-center" // Center content
       )}>
         <DotLottieReact
           src="https://lottie.host/578388ec-9280-43b8-b22a-6adefde2f212/E8yaWCks1y.lottie"
           loop
           autoplay
-          className="w-full max-w-[700px] mx-auto overflow-hidden" // Added mx-auto to center
+          className="w-full max-w-[700px] mx-auto overflow-hidden" // Centered with mx-auto
         />
 
         <h2 className="text-xl font-semibold mb-2 text-center">Nothing Found</h2>
@@ -179,7 +118,7 @@ const NoResults = () => {
         
         <div className="flex justify-center">
           <Button asChild variant="default" className="mb-4 mt-2 group">
-            <Link to={`/inspiration#${topSource}`} className="flex items-center gap-1">
+            <Link to="/inspiration#top-all" className="flex items-center gap-1">
               View More in Inspiration 
               <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
             </Link>
