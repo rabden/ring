@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Check, Circle, ChevronDown } from "lucide-react";
+import { Check, Circle, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -48,11 +48,8 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
   // Get the current model name for the dropdown button
   const currentModelName = modelConfigs?.[currentModel]?.name || 'Custom';
   
-  // Get all available models for the dropdown
-  const allModels = modelConfigs ? Object.entries(modelConfigs).map(([key, config]) => ({
-    key,
-    name: config.name
-  })).filter(model => !quickModels.some(qm => qm.key === model.key)) : [];
+  // Get the current custom model for the dropdown (when a custom model is selected)
+  const currentCustomModel = isCustomModel ? { key: currentModel, name: currentModelName } : null;
   
   return (
     <div className="flex flex-col gap-2 items-start">
@@ -69,46 +66,31 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
             />
           ))}
           
-          {/* Dropdown for custom model selection */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant={isCustomModel ? "default" : "outline"}
-                size="sm"
-                className={cn(
-                  "h-7 rounded-full transition-all duration-200 flex items-center gap-1.5 text-xs px-2 flex-shrink-0",
-                  isCustomModel ? "bg-primary/90" : "bg-background hover:bg-background/80"
-                )}
-              >
-                {isCustomModel ? (
-                  <>
-                    <Check className="h-3 w-3" />
-                    <span>{currentModelName}</span>
-                  </>
-                ) : (
-                  <>
-                    <Circle className="h-3 w-3 text-muted-foreground/50" />
-                    <span>More</span>
-                  </>
-                )}
-                <ChevronDown className="h-3 w-3 ml-0.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {allModels.map(model => (
-                <DropdownMenuItem 
-                  key={model.key}
-                  onClick={() => onModelChange(model.key)}
-                  className={cn(
-                    "cursor-pointer",
-                    currentModel === model.key && "bg-accent/80"
-                  )}
+          {/* Only show the more icon when a custom model is selected */}
+          {isCustomModel && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="h-7 w-7 rounded-full transition-all duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
                 >
-                  {model.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {currentCustomModel && (
+                  <DropdownMenuItem 
+                    key={currentCustomModel.key}
+                    onClick={() => onModelChange(currentCustomModel.key)}
+                    className="cursor-pointer bg-accent/80"
+                  >
+                    {currentCustomModel.name}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </ScrollArea>
     </div>
