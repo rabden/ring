@@ -328,39 +328,35 @@ const DesktopPromptBox = ({
           }}
         >
           <div className="p-3 h-full">
-            <div className="flex flex-col space-y-3">
-              <div className="flex flex-row items-start justify-between gap-0">
-                {modelConfigs && activeModel && onModelChange && (
-                  <div className="w-1/2">
-                    <MiniModelChooser 
-                      currentModel={activeModel} 
-                      onModelChange={onModelChange} 
-                      modelConfigs={modelConfigs}
-                    />
-                  </div>
-                )}
-                
-                {aspectRatio && onAspectRatioChange && (
-                  <div className="w-1/2">
-                    <MiniDimensionChooser
-                      currentRatio={aspectRatio}
-                      onRatioChange={onAspectRatioChange}
-                      proMode={proMode}
-                    />
-                  </div>
-                )}
-              </div>
+            <div className="flex flex-row items-start justify-between gap-2">
+              {modelConfigs && activeModel && onModelChange && (
+                <div className="flex-1">
+                  <MiniModelChooser 
+                    currentModel={activeModel} 
+                    onModelChange={onModelChange} 
+                    modelConfigs={modelConfigs}
+                  />
+                </div>
+              )}
               
-              <div className="flex flex-row items-start">
-                {imageCount !== undefined && onImageCountChange && (
-                  <div className="w-full">
-                    <ImageCountChooser
-                      count={imageCount}
-                      setCount={onImageCountChange}
-                    />
-                  </div>
-                )}
-              </div>
+              {aspectRatio && onAspectRatioChange && (
+                <div className="flex-1">
+                  <MiniDimensionChooser
+                    currentRatio={aspectRatio}
+                    onRatioChange={onAspectRatioChange}
+                    proMode={proMode}
+                  />
+                </div>
+              )}
+              
+              {imageCount !== undefined && onImageCountChange && (
+                <div className="flex-1">
+                  <ImageCountChooser
+                    count={imageCount}
+                    setCount={onImageCountChange}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

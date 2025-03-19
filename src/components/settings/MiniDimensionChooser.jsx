@@ -11,26 +11,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import SettingSection from './SettingSection';
 
 const AspectRatioButton = ({ ratio, currentRatio, onClick }) => {
   const isActive = currentRatio === ratio;
   
   return (
     <Button
-      variant={isActive ? "default" : "outline"}
+      variant="outline"
       size="sm"
       onClick={() => onClick(ratio)}
       className={cn(
-        "h-7 rounded-full transition-all duration-200 flex items-center gap-1.5 text-xs px-2 flex-shrink-0",
-        isActive ? "bg-primary/90" : "bg-background hover:bg-background/80"
+        "flex-1 h-8 rounded-full",
+        "transition-all duration-200",
+        isActive 
+          ? "bg-accent border border-border/0 hover:border-border text-primary hover:bg-accent/70" 
+          : "hover:bg-accent/30 border border-border/0 hover:border-border/50 text-primary/50"
       )}
     >
-      {isActive ? (
-        <Check className="h-3 w-3" />
-      ) : (
-        <Circle className="h-3 w-3 text-muted-foreground/50" />
-      )}
-      <span>{ratio}</span>
+      {ratio}
     </Button>
   );
 };
@@ -70,10 +69,9 @@ const MiniDimensionChooser = ({ currentRatio, onRatioChange, proMode }) => {
   };
   
   return (
-    <div className="flex flex-col gap-1 items-start w-full">
-      <h3 className="text-sm font-medium ml-1">Aspect Ratio</h3>
+    <SettingSection label="Aspect Ratio">
       <ScrollArea className="w-full">
-        <div className="flex gap-1.5 pb-1 items-center">
+        <div className="flex gap-2 pb-1 items-center">
           {quickRatios.map(ratio => (
             <AspectRatioButton
               key={ratio.key}
@@ -90,7 +88,7 @@ const MiniDimensionChooser = ({ currentRatio, onRatioChange, proMode }) => {
                 <Button
                   variant="default"
                   size="sm"
-                  className="h-7 w-7 rounded-full transition-all p-0 duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
+                  className="h-8 w-8 rounded-full transition-all p-0 duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -108,7 +106,7 @@ const MiniDimensionChooser = ({ currentRatio, onRatioChange, proMode }) => {
           )}
         </div>
       </ScrollArea>
-    </div>
+    </SettingSection>
   );
 };
 
