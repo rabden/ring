@@ -10,7 +10,7 @@ export const useImageGeneratorState = () => {
     randomizeSeed: true,
     width: 1024,
     height: 1024,
-    model: 'fluxDev',
+    model: 'flux',
     activeTab: 'images',
     aspectRatio: '1:1',
     useAspectRatio: true,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -58,57 +58,9 @@ const ImageGenerator = () => {
   const [showPrivate, setShowPrivate] = useState(false);
   const [negativePrompt, setNegativePrompt] = useState("");
 
-  // Query for remix image if remixId is present
-  const { data: remixImage, isLoading: isRemixLoading } = useQuery({
-    queryKey: ['remixImage', remixId],
-    queryFn: async () => {
-      if (!remixId) return null;
-      const { data, error } = await supabase
-        .from('user_images')
-        .select('*')
-        .eq('id', remixId)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!remixId,
-  });
-
-  // Apply remix settings when remixImage is loaded
-  useEffect(() => {
-    if (remixImage) {
-      // Set remix mode flag
-      setIsRemixMode(true);
-      
-      setPrompt(remixImage.prompt);
-      setSeed(remixImage.seed);
-      setRandomizeSeed(false);
-      setWidth(remixImage.width);
-      setHeight(remixImage.height);
-      setModel(remixImage.model);
-      setQuality(remixImage.quality);
-      if (remixImage.aspect_ratio) {
-        setAspectRatio(remixImage.aspect_ratio);
-        setUseAspectRatio(true);
-      }
-      
-      // Switch to input tab when remixing
-      setActiveTab('input');
-      
-      // Clear the remix parameter from URL without page reload
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete('remix');
-      window.history.replaceState({}, '', `${window.location.pathname}${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`);
-    }
-  }, [remixImage]);
-  
-  // Reset remix mode when image is generated
-  useEffect(() => {
-    return () => {
-      // Reset remix mode when component unmounts
-      setIsRemixMode(false);
-    };
-  }, []);
+  const defaultModel = useMemo(() => {
+    return nsfwEnabled ? 'nsfwMaster' : 'flux';
+  }, [nsfwEnabled]);
 
   const { generateImage, nsfwDetected } = useImageGeneration({
     session,
@@ -198,7 +150,6 @@ const ImageGenerator = () => {
     setActiveView,
   });
 
-  // Sync activeTab with URL hash
   useEffect(() => {
     const hash = window.location.hash;
     if (hash === '#imagegenerate') {
@@ -209,6 +160,51 @@ const ImageGenerator = () => {
       setActiveTab('images');
     }
   }, [window.location.hash]);
+
+  const { data: remixImage, isLoading: isRemixLoading } = useQuery({
+    queryKey: ['remixImage', remixId],
+    queryFn: async () => {
+      if (!remixId) return null;
+      const { data, error } = await supabase
+        .from('user_images')
+        .select('*')
+        .eq('id', remixId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!remixId,
+  });
+
+  useEffect(() => {
+    if (remixImage) {
+      setIsRemixMode(true);
+      
+      setPrompt(remixImage.prompt);
+      setSeed(remixImage.seed);
+      setRandomizeSeed(false);
+      setWidth(remixImage.width);
+      setHeight(remixImage.height);
+      setModel(remixImage.model);
+      setQuality(remixImage.quality);
+      if (remixImage.aspect_ratio) {
+        setAspectRatio(remixImage.aspect_ratio);
+        setUseAspectRatio(true);
+      }
+      
+      setActiveTab('input');
+      
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('remix');
+      window.history.replaceState({}, '', `${window.location.pathname}${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`);
+    }
+  }, [remixImage]);
+  
+  useEffect(() => {
+    return () => {
+      setIsRemixMode(false);
+    };
+  }, []);
 
   if (isRemixLoading) {
     return <div>Loading remix...</div>;

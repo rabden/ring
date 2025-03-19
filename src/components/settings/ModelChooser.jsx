@@ -13,7 +13,6 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 
-// Current card style for selected model
 const ModelCard = ({ modelKey, config, isActive, showRadio = false, onClick, disabled, proMode }) => (
   <div
     className={cn(
@@ -52,7 +51,6 @@ const ModelCard = ({ modelKey, config, isActive, showRadio = false, onClick, dis
   </div>
 );
 
-// New grid card style for dropdown/drawer
 const ModelGridCard = ({ modelKey, config, isActive, onClick, disabled, proMode }) => (
   <div
     className={cn(
@@ -68,18 +66,13 @@ const ModelGridCard = ({ modelKey, config, isActive, onClick, disabled, proMode 
       alt={config.name}
       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
     />
-    {/* Gradient overlay */}
     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-    
-    {/* Content */}
     <div className="absolute bottom-0 left-0 right-0 p-2.5">
       <div className="flex items-center gap-1.5">
         <span className="font-medium text-white/95 truncate text-xs">{config.name}</span>
         {config.isPremium && !proMode && <Lock className="h-3 w-3 flex-shrink-0 text-white/80" />}
       </div>
     </div>
-
-    {/* Active indicator */}
     {isActive && (
       <div className="absolute top-2 right-2 h-6 w-6 rounded-md bg-background text-white flex items-center justify-center">
         <Check className="h-3.5 w-3.5" />
@@ -118,47 +111,38 @@ const ModelGrid = ({ filteredModels, model, setModel, proMode, className, onClos
   const [activeGroup, setActiveGroup] = useState("all");
   const isMobile = window.innerWidth < 768;
 
-  // Get unique groups from filtered models
   const groups = useMemo(() => {
     const groupSet = new Set(filteredModels.map(([_, config]) => config.group));
     return Array.from(groupSet).sort();
   }, [filteredModels]);
 
-  // Filter models by active group
   const groupFilteredModels = useMemo(() => {
     if (activeGroup === "all") return filteredModels;
     return filteredModels.filter(([_, config]) => config.group === activeGroup);
   }, [filteredModels, activeGroup]);
 
-  // Scroll to active model when grid is mounted or group changes
   React.useEffect(() => {
     if (activeCardRef.current && scrollAreaRef.current) {
-      // Get the scroll viewport for both drawer and dialog cases
       const scrollViewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (!scrollViewport) return;
 
       const scrollContainer = scrollViewport;
       const activeCard = activeCardRef.current;
       
-      // Get the container's dimensions and scroll position
       const containerRect = scrollContainer.getBoundingClientRect();
       const activeCardRect = activeCard.getBoundingClientRect();
       
-      // Calculate relative position of the card within the scroll container
       const relativeTop = activeCardRect.top - containerRect.top;
       const relativeBottom = activeCardRect.bottom - containerRect.top;
       
-      // Check if the card is outside the visible area
       const isCardVisible = (
         relativeTop >= 0 &&
         relativeBottom <= containerRect.height
       );
 
       if (!isCardVisible) {
-        // Calculate the ideal scroll position to center the card
         const scrollTop = scrollContainer.scrollTop + relativeTop - (containerRect.height - activeCardRect.height) / 2;
         
-        // Smooth scroll to the position
         scrollContainer.scrollTo({
           top: scrollTop,
           behavior: 'smooth'
@@ -209,7 +193,6 @@ const ModelGrid = ({ filteredModels, model, setModel, proMode, className, onClos
   );
 };
 
-// Add this new component for mobile view
 const MobileModelGrid = ({ filteredModels, model, setModel, proMode, className, onClose }) => {
   const activeCardRef = React.useRef(null);
   const [activeGroup, setActiveGroup] = useState("all");
@@ -224,7 +207,6 @@ const MobileModelGrid = ({ filteredModels, model, setModel, proMode, className, 
     return filteredModels.filter(([_, config]) => config.group === activeGroup);
   }, [filteredModels, activeGroup]);
 
-  // Auto scroll when drawer opens
   useEffect(() => {
     const timer = setTimeout(() => {
       if (activeCardRef.current) {
@@ -233,7 +215,7 @@ const MobileModelGrid = ({ filteredModels, model, setModel, proMode, className, 
           block: 'center'
         });
       }
-    }, 300); // Wait for drawer animation
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [model, activeGroup]);
@@ -282,14 +264,11 @@ const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) =
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   
-  // Filter models based on NSFW state
   const filteredModels = useMemo(() => {
     if (!modelConfigs) return [];
     
-    // Get all models as entries
     const allModels = Object.entries(modelConfigs);
     
-    // Filter based on NSFW state
     return allModels.filter(([_, config]) => {
       if (nsfwEnabled) {
         return config.category === "NSFW";
@@ -298,12 +277,10 @@ const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) =
     });
   }, [nsfwEnabled, modelConfigs]);
 
-  // Default model for each mode
   const defaultModel = useMemo(() => {
-    return nsfwEnabled ? 'nsfwMaster' : 'fluxDev';
+    return nsfwEnabled ? 'nsfwMaster' : 'flux';
   }, [nsfwEnabled]);
 
-  // Handle model selection
   const handleModelSelection = useCallback((newModel) => {
     const modelData = modelConfigs?.[newModel];
     if (!modelData) return;
@@ -318,7 +295,6 @@ const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) =
     }
   }, [nsfwEnabled, setModel, modelConfigs]);
 
-  // Ensure current model is valid for NSFW state
   useEffect(() => {
     const currentModel = modelConfigs?.[model];
     if (!currentModel || currentModel.category !== (nsfwEnabled ? "NSFW" : "General")) {
@@ -334,7 +310,6 @@ const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) =
       label="Model" 
       tooltip="Choose between fast generation or higher quality output."
     >
-      {/* Desktop: Popover */}
       <div className="hidden md:block">
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
           <PopoverTrigger asChild>
@@ -366,7 +341,6 @@ const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) =
         </Popover>
       </div>
 
-      {/* Mobile: Drawer */}
       <div className="md:hidden">
         <div className="w-full group" onClick={() => setIsDrawerOpen(true)}>
           <ModelCard
