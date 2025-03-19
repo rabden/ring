@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -232,32 +233,50 @@ const DesktopPromptBox = ({
               </div>
               <div className="flex items-center gap-2">
                 {prompt?.length > 0 && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0 rounded-full hover:bg-background/50"
-                    onClick={onClear}
-                    disabled={isImproving}
-                  >
-                    <X className="h-4 w-4 text-foreground/70" />
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0 rounded-full hover:bg-background/50"
+                          onClick={onClear}
+                          disabled={isImproving}
+                        >
+                          <X className="h-4 w-4 text-foreground/70" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Clear prompt</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 rounded-full bg-card hover:bg-background/50 transition-all duration-200"
-                  onClick={handleImprovePrompt}
-                  disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
-                >
-                  <div className="flex items-center">
-                    {isImproving ? (
-                      <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
-                    ) : (
-                      <Sparkles className="h-4 w-4 mr-2 text-foreground/70" />
-                    )}
-                    <span className="text-sm">Improve</span>
-                  </div>
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 rounded-full bg-card hover:bg-background/50 transition-all duration-200"
+                        onClick={handleImprovePrompt}
+                        disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
+                      >
+                        <div className="flex items-center">
+                          {isImproving ? (
+                            <Loader className="h-4 w-4 mr-2 animate-spin text-foreground/70" />
+                          ) : (
+                            <Sparkles className="h-4 w-4 mr-2 text-foreground/70" />
+                          )}
+                          <span className="text-sm">Improve</span>
+                        </div>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Improve prompt with AI (costs 1 credit)</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <Button
                   size="sm"
                   className="h-8 rounded-full bg-primary/90 hover:bg-primary/80 transition-all duration-200"
