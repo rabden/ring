@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import SettingSection from './SettingSection';
+import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
   const isActive = currentModel === modelKey;
@@ -34,12 +35,20 @@ const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
 };
 
 const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
-  // Define the quick access models (3 basic models)
-  const quickModels = [
-    { key: 'flux', name: 'Normal' },
-    { key: 'turbo', name: 'Fast' },
-    { key: 'Illustration', name: 'Design' }
-  ];
+  const { nsfwEnabled } = useUserPreferences();
+  
+  // Define the quick access models based on NSFW setting
+  const quickModels = nsfwEnabled 
+    ? [
+        { key: 'nsfwMaster', name: 'Normal' },
+        { key: 'animeNsfw', name: 'Anime' },
+        { key: 'deepthroat', name: 'Blowjob' }
+      ]
+    : [
+        { key: 'flux', name: 'Normal' },
+        { key: 'turbo', name: 'Fast' },
+        { key: 'Illustration', name: 'Design' }
+      ];
   
   // Check if current model is not in our quick models
   const isCustomModel = !quickModels.some(model => model.key === currentModel);
