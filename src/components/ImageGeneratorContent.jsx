@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
@@ -64,6 +65,12 @@ const ImageGeneratorContent = ({
   const handleModelChange = (newModel) => {
     if (imageGeneratorProps && imageGeneratorProps.onModelChange) {
       imageGeneratorProps.onModelChange(newModel);
+    }
+  };
+  
+  const handleAspectRatioChange = (newRatio) => {
+    if (imageGeneratorProps && imageGeneratorProps.onAspectRatioChange) {
+      imageGeneratorProps.onAspectRatioChange(newRatio);
     }
   };
 
@@ -141,6 +148,9 @@ const ImageGeneratorContent = ({
                 modelConfigs={imageGeneratorProps.modelConfigs}
                 onSettingsToggle={handleSettingsToggle}
                 onModelChange={handleModelChange}
+                aspectRatio={imageGeneratorProps.aspectRatio}
+                onAspectRatioChange={handleAspectRatioChange}
+                proMode={proMode}
               />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
