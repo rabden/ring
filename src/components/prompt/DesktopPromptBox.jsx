@@ -324,10 +324,10 @@ const DesktopPromptBox = ({
             clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
           }}
         >
-          <div className="p-2 h-full">
-            <div className="flex flex-row items-start gap-4">
+          <div className="p-4 h-full">
+            <div className="flex flex-row items-start justify-between gap-4">
               {modelConfigs && activeModel && onModelChange && (
-                <div className="w-1/2">
+                <div className="w-1/2 pr-2">
                   <MiniModelChooser 
                     currentModel={activeModel} 
                     onModelChange={onModelChange} 
@@ -337,7 +337,7 @@ const DesktopPromptBox = ({
               )}
               
               {aspectRatio && onAspectRatioChange && (
-                <div className="w-1/2">
+                <div className="w-1/2 pl-2">
                   <MiniDimensionChooser
                     currentRatio={aspectRatio}
                     onRatioChange={onAspectRatioChange}
