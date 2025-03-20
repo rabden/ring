@@ -258,7 +258,7 @@ export const modelConfig = {
     huggingfaceId: "Nishitbaria/Anime-style-flux-lora-Large",
     qualityLimits: null,
     isPremium: false,
-    promptSuffix: ", ANMCH",
+    promptSuffix: ", anm",
     tagline: "Flwaless Anime style images",
     image: "https://i.ibb.co/c1kPmWg/Euv-INv-Bs-CKZQusp-ZHN-u-F.png",
     example: "make sure the prompt excels in making Anime style images, add any word tags that might enhance or indicate to Anime styles.",
