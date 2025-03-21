@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Check, Circle, MoreHorizontal } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
@@ -22,11 +22,11 @@ const AspectRatioButton = ({ ratio, currentRatio, onClick }) => {
       size="sm"
       onClick={() => onClick(ratio)}
       className={cn(
-        "flex-1 h-7 rounded-full text-xs",
+        "flex-1 h-7 rounded-full text-xs py-0 px-3",
         "transition-all duration-200",
         isActive 
-          ? "bg-accent border border-border/0 hover:border-border text-primary hover:bg-accent/70" 
-          : "hover:bg-accent/30 border border-border/0 hover:border-border/50 text-primary/50"
+          ? "bg-accent text-accent-foreground border-primary/20" 
+          : "bg-secondary/50 hover:bg-secondary/80 text-muted-foreground hover:text-foreground/90 border-transparent"
       )}
     >
       {ratio}

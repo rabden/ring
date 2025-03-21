@@ -124,6 +124,10 @@ const ImageGeneratorSettings = ({
           userId={session?.user?.id}
           credits={credits}
           bonusCredits={bonusCredits}
+          seed={seed}
+          setSeed={setSeed}
+          randomizeSeed={randomizeSeed}
+          setRandomizeSeed={setRandomizeSeed}
         />
       </div>
 

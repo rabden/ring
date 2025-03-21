@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Eraser, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -11,6 +12,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import MiniModelChooser from '@/components/settings/MiniModelChooser';
 import MiniDimensionChooser from '@/components/settings/MiniDimensionChooser';
 import ImageCountChooser from '@/components/settings/ImageCountChooser';
+import MiniSeedInput from '@/components/settings/MiniSeedInput';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -43,7 +45,11 @@ const DesktopPromptBox = ({
   onAspectRatioChange,
   proMode,
   imageCount,
-  onImageCountChange
+  onImageCountChange,
+  seed,
+  setSeed,
+  randomizeSeed,
+  setRandomizeSeed
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -248,9 +254,7 @@ const DesktopPromptBox = ({
             </div>
 
             {internalSettingsActive && (
-              <div className="w-[35%] p-3 flex flex-col space-y-4">
-                <div className="text-sm font-medium text-foreground/90 mb-1">Settings</div>
-                
+              <div className="w-[35%] p-3 flex flex-col space-y-3 border-l-0">
                 {modelConfigs && activeModel && onModelChange && (
                   <MiniModelChooser 
                     currentModel={activeModel} 
@@ -273,11 +277,20 @@ const DesktopPromptBox = ({
                     setCount={onImageCountChange}
                   />
                 )}
+
+                {seed !== undefined && setSeed && randomizeSeed !== undefined && setRandomizeSeed && (
+                  <MiniSeedInput
+                    seed={seed}
+                    setSeed={setSeed}
+                    randomizeSeed={randomizeSeed}
+                    setRandomizeSeed={setRandomizeSeed}
+                  />
+                )}
               </div>
             )}
           </div>
 
-          <div className="p-2">
+          <div className="p-2 border-t-0">
             <div className="flex justify-between items-center">
               <div className="w-[300px]">
                 <CreditCounter credits={credits} bonusCredits={bonusCredits} />

@@ -21,11 +21,11 @@ const ImageCountChooser = ({ count = 1, setCount }) => {
             size="sm"
             onClick={() => setCount(value)}
             className={cn(
-              "flex-1 h-7 rounded-full text-xs",
+              "flex-1 h-7 rounded-full text-xs py-0 px-3",
               "transition-all duration-200",
               count === value 
-                ? "bg-accent border border-border/0 hover:border-border text-primary hover:bg-accent/70" 
-                : "hover:bg-accent/30 border border-border/0 hover:border-border/50 text-primary/50"
+                ? "bg-accent text-accent-foreground border-primary/20" 
+                : "bg-secondary/50 hover:bg-secondary/80 text-muted-foreground hover:text-foreground/90 border-transparent"
             )}
           >
             {value}
