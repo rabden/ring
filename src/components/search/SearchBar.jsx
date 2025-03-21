@@ -35,7 +35,13 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
       // Update URL with search parameter
       const params = new URLSearchParams(location.search);
       params.set('search', searchValue.trim());
-      navigate({ search: params.toString() }, { replace: true });
+      
+      // Preserve the current hash (tab) when updating search
+      navigate({ 
+        pathname: location.pathname,
+        search: params.toString(),
+        hash: location.hash
+      }, { replace: true });
       
       if (onSearch) {
         onSearch(searchValue.trim());
@@ -56,10 +62,14 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
   const handleClear = () => {
     setSearchValue('');
     
-    // Remove search parameter from URL
+    // Remove search parameter from URL while preserving hash
     const params = new URLSearchParams(location.search);
     params.delete('search');
-    navigate({ search: params.toString() }, { replace: true });
+    navigate({ 
+      pathname: location.pathname,
+      search: params.toString(),
+      hash: location.hash
+    }, { replace: true });
     
     if (onSearch) {
       onSearch('');

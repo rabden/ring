@@ -32,23 +32,32 @@ const InspirationFilterButtons = ({ className }) => {
     }
   }, [currentHash, location.pathname]);
 
+  const navigateWithSearchPreserved = (hash) => {
+    // Preserve search parameters when changing tabs
+    navigate({
+      pathname: '/inspiration',
+      search: location.search,
+      hash
+    });
+  };
+
   const handleFollowingClick = () => {
-    navigate('/inspiration#following');
+    navigateWithSearchPreserved('#following');
   };
 
   const handleTopClick = () => {
     // Default to the first available period
     if (hasTopThisWeek) {
-      navigate('/inspiration#top-week');
+      navigateWithSearchPreserved('#top-week');
     } else if (hasTopThisMonth) {
-      navigate('/inspiration#top-month');
+      navigateWithSearchPreserved('#top-month');
     } else if (hasTopAllTime) {
-      navigate('/inspiration#top-all');
+      navigateWithSearchPreserved('#top-all');
     }
   };
 
   const handleLatestClick = () => {
-    navigate('/inspiration#latest');
+    navigateWithSearchPreserved('#latest');
   };
 
   const isTopActive = currentHash === 'top' || currentHash.startsWith('top-');
@@ -121,7 +130,7 @@ const InspirationFilterButtons = ({ className }) => {
                 onClick={() => {
                   if (hasTopThisWeek) {
                     setTopPeriod('week');
-                    navigate('/inspiration#top-week');
+                    navigateWithSearchPreserved('#top-week');
                   }
                 }}
               >
@@ -139,7 +148,7 @@ const InspirationFilterButtons = ({ className }) => {
                 onClick={() => {
                   if (hasTopThisMonth) {
                     setTopPeriod('month');
-                    navigate('/inspiration#top-month');
+                    navigateWithSearchPreserved('#top-month');
                   }
                 }}
               >
@@ -157,7 +166,7 @@ const InspirationFilterButtons = ({ className }) => {
                 onClick={() => {
                   if (hasTopAllTime) {
                     setTopPeriod('all');
-                    navigate('/inspiration#top-all');
+                    navigateWithSearchPreserved('#top-all');
                   }
                 }}
               >

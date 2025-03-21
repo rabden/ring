@@ -37,7 +37,14 @@ const Inspiration = () => {
   const [activeTab, setActiveTab] = useState('images');
   const { isPro } = useProUser();
 
-  // Sync activeTab with URL hash and update filters based on hash
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const searchFromUrl = params.get('search');
+    if (searchFromUrl) {
+      setSearchQuery(searchFromUrl);
+    }
+  }, [location.search]);
+
   useEffect(() => {
     const hash = location.hash.replace('#', '');
     switch (hash) {
@@ -56,7 +63,6 @@ const Inspiration = () => {
         setShowFollowing(false);
         setShowTop(true);
         setShowLatest(false);
-        // Set period filter
         setActiveFilters(prev => ({
           ...prev,
           period: hash === 'top-all' ? 'all' : 
@@ -70,7 +76,6 @@ const Inspiration = () => {
         break;
       default:
         setActiveTab('images');
-        // If no hash, default to latest
         if (!hash) {
           setShowFollowing(false);
           setShowTop(false);
@@ -107,14 +112,30 @@ const Inspiration = () => {
     document.body.removeChild(a);
   };
 
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    
+    const params = new URLSearchParams(location.search);
+    if (query) {
+      params.set('search', query);
+    } else {
+      params.delete('search');
+    }
+    
+    navigate({
+      pathname: location.pathname,
+      search: params.toString(),
+      hash: location.hash
+    }, { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Desktop Header */}
       <DesktopHeader
         user={session?.user}
         credits={credits}
         bonusCredits={bonusCredits}
-        onSearch={setSearchQuery}
+        onSearch={handleSearch}
         nsfwEnabled={nsfwEnabled}
         setNsfwEnabled={setNsfwEnabled}
         activeFilters={activeFilters}
@@ -139,7 +160,6 @@ const Inspiration = () => {
         }
       />
 
-      {/* Mobile Header */}
       <MobileHeader
         activeFilters={activeFilters}
         onFilterChange={(type, value) => setActiveFilters(prev => ({ ...prev, [type]: value }))}
@@ -148,7 +168,7 @@ const Inspiration = () => {
           delete newFilters[type];
           setActiveFilters(newFilters);
         }}
-        onSearch={setSearchQuery}
+        onSearch={handleSearch}
         isVisible={isHeaderVisible}
         nsfwEnabled={nsfwEnabled}
         onToggleNsfw={() => setNsfwEnabled(!nsfwEnabled)}
@@ -160,7 +180,6 @@ const Inspiration = () => {
         onLatestChange={setShowLatest}
       />
 
-      {/* Main Content */}
       <main className="pt-16 md:pt-20 px-1 md:px-6 pb-20 md:pb-6">
         <ImageGallery
           userId={session?.user?.id}
@@ -180,7 +199,6 @@ const Inspiration = () => {
         />
       </main>
 
-      {/* Mobile Navigation */}
       <BottomNavbar 
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -201,7 +219,6 @@ const Inspiration = () => {
         setNsfwEnabled={setNsfwEnabled}
       />
 
-      {/* Dialogs */}
       <ImageDetailsDialog
         open={detailsDialogOpen}
         onOpenChange={setDetailsDialogOpen}
