@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -175,11 +174,6 @@ const DesktopPromptBox = ({
     setSettingsActive(prev => !prev);
   };
 
-  // CSS for the corner cutouts when settings panel is open
-  const cornerCutoutStyle = showInfoContainer ? {
-    clipPath: 'path("M0 0H100V100H0V0Z M13 97A10 10 0 0 0 3 87V85 A12 12 0 0 1 15 73H100V97H13Z M100 73H85 A12 12 0 0 1 73 85V87 A10 10 0 0 0 83 97H100V73Z")'
-  } : {};
-
   return (
     <>
       <video 
@@ -340,14 +334,12 @@ const DesktopPromptBox = ({
         
         <div 
           className={cn(
-            "relative w-[90%] mx-auto overflow-hidden transition-all duration-300 ease-in-out bg-card border border-border/80 border-t-0",
+            "relative w-[90%] h-0 mx-auto overflow-hidden transition-all duration-300 ease-in-out bg-card border border-border/80 border-t-0",
             "rounded-b-2xl",
             showInfoContainer ? "h-auto opacity-100 -mt-[1px]" : "h-0 opacity-0"
           )}
           style={{
-            clipPath: showInfoContainer 
-              ? "path('M0 0 H100% V100% H0 V0 Z M12px 0 A12 12 0 0 1 0 12px V0 Z M100% 0 V12px A12 12 0 0 1 88% 0 Z')" 
-              : "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
+            clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
           }}
         >
           <div className="p-3 h-full">

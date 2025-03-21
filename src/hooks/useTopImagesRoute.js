@@ -55,19 +55,16 @@ export const useTopImagesRoute = () => {
     const hash = location.hash.replace('#', '');
     
     if (hash === 'top' || !hash) {
-      // Preserve search parameters
-      const searchParams = location.search;
-      
       // Set default route based on available top images
       if (hasTopThisWeek) {
-        navigate(`/inspiration#top-week${searchParams}`, { replace: true });
+        navigate('/inspiration#top-week', { replace: true });
       } else if (hasTopThisMonth) {
-        navigate(`/inspiration#top-month${searchParams}`, { replace: true });
+        navigate('/inspiration#top-month', { replace: true });
       } else if (hasTopAllTime) {
-        navigate(`/inspiration#top-all${searchParams}`, { replace: true });
+        navigate('/inspiration#top-all', { replace: true });
       }
     }
-  }, [location.hash, hasTopThisWeek, hasTopThisMonth, hasTopAllTime, navigate, location.search]);
+  }, [location.hash, hasTopThisWeek, hasTopThisMonth, hasTopAllTime, navigate]);
 
   return {
     hasTopThisWeek,

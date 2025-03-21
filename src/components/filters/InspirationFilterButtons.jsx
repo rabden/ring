@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
@@ -31,29 +32,23 @@ const InspirationFilterButtons = ({ className }) => {
     }
   }, [currentHash, location.pathname]);
 
-  const navigateWithSearchPreserved = (hash) => {
-    // Preserve search parameters when changing tabs
-    const searchParams = location.search;
-    navigate(`/inspiration${hash}${searchParams}`, { replace: true });
-  };
-
   const handleFollowingClick = () => {
-    navigateWithSearchPreserved('#following');
+    navigate('/inspiration#following');
   };
 
   const handleTopClick = () => {
     // Default to the first available period
     if (hasTopThisWeek) {
-      navigateWithSearchPreserved('#top-week');
+      navigate('/inspiration#top-week');
     } else if (hasTopThisMonth) {
-      navigateWithSearchPreserved('#top-month');
+      navigate('/inspiration#top-month');
     } else if (hasTopAllTime) {
-      navigateWithSearchPreserved('#top-all');
+      navigate('/inspiration#top-all');
     }
   };
 
   const handleLatestClick = () => {
-    navigateWithSearchPreserved('#latest');
+    navigate('/inspiration#latest');
   };
 
   const isTopActive = currentHash === 'top' || currentHash.startsWith('top-');
@@ -126,7 +121,7 @@ const InspirationFilterButtons = ({ className }) => {
                 onClick={() => {
                   if (hasTopThisWeek) {
                     setTopPeriod('week');
-                    navigateWithSearchPreserved('#top-week');
+                    navigate('/inspiration#top-week');
                   }
                 }}
               >
@@ -144,7 +139,7 @@ const InspirationFilterButtons = ({ className }) => {
                 onClick={() => {
                   if (hasTopThisMonth) {
                     setTopPeriod('month');
-                    navigateWithSearchPreserved('#top-month');
+                    navigate('/inspiration#top-month');
                   }
                 }}
               >
@@ -162,7 +157,7 @@ const InspirationFilterButtons = ({ className }) => {
                 onClick={() => {
                   if (hasTopAllTime) {
                     setTopPeriod('all');
-                    navigateWithSearchPreserved('#top-all');
+                    navigate('/inspiration#top-all');
                   }
                 }}
               >
