@@ -190,7 +190,7 @@ const DesktopPromptBox = ({
       <div 
         ref={boxRef}
         className={cn(
-          "hidden md:block w-full max-w-[1000px] mx-auto px-2 pb-1 mt-20 transition-all duration-300",
+          "hidden md:block w-full max-w-[950px] mx-auto px-2 pb-1 mt-20 transition-all duration-300",
           className
         )}
       >
@@ -241,9 +241,9 @@ const DesktopPromptBox = ({
                   onChange={handlePromptChange}
                   placeholder={PROMPT_TIPS[currentTipIndex]}
                   className={cn(
-                    "w-full min-h-[350px] resize-none bg-transparent text-base focus:outline-none",
+                    "w-full min-h-[380px] resize-none bg-transparent text-base focus:outline-none",
                     "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
-                    "pt-6 pb-6 px-3",
+                    "pt-6 pb-12 pl-3 pr-5",
                     "transition-colors duration-200",
                     isImproving && "opacity-80"
                   )}
@@ -256,7 +256,7 @@ const DesktopPromptBox = ({
             </div>
 
             {internalSettingsActive && (
-              <div className="w-[35%] p-3 flex flex-col space-y-2">
+              <div className="w-[35%] p-3 flex flex-col space-y-4 mt-3">
                 {modelConfigs && activeModel && onModelChange && (
                   <MiniModelChooser 
                     currentModel={activeModel} 
