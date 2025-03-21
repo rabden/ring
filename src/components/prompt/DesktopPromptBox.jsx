@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
+import { Eraser, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
 import CreditCounter from '@/components/ui/credit-counter';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -90,7 +89,6 @@ const DesktopPromptBox = ({
     return () => observer.disconnect();
   }, [onVisibilityChange]);
 
-  // Update mini settings visibility when sidebar settings change
   useEffect(() => {
     setInternalSettingsActive(!settingsActive);
   }, [settingsActive]);
@@ -190,13 +188,35 @@ const DesktopPromptBox = ({
       >
         <div className="relative bg-card border border-border/80 rounded-2xl transition-all duration-300">
           <div className="flex flex-row">
-            {/* Left side - Textarea */}
             <div className={cn(
               "flex-1 relative transition-all duration-300",
               internalSettingsActive ? "w-[65%]" : "w-full"
             )}>
               <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-card to-transparent pointer-events-none z-20 rounded-tl-2xl" />
               <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-card to-transparent pointer-events-none z-20" />
+              
+              {prompt?.length > 0 && (
+                <div className="absolute top-2 right-2 z-30">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0 rounded-full hover:bg-background/50"
+                          onClick={onClear}
+                          disabled={isImproving}
+                        >
+                          <Eraser className="h-4 w-4 text-foreground/70" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Clear prompt</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              )}
               
               <div className="relative">
                 {isImproving && (
@@ -227,7 +247,6 @@ const DesktopPromptBox = ({
               </div>
             </div>
 
-            {/* Right side - Settings */}
             {internalSettingsActive && (
               <div className="w-[35%] p-3 flex flex-col space-y-4">
                 <div className="text-sm font-medium text-foreground/90 mb-1">Settings</div>
@@ -264,26 +283,6 @@ const DesktopPromptBox = ({
                 <CreditCounter credits={credits} bonusCredits={bonusCredits} />
               </div>
               <div className="flex items-center gap-2">
-                {prompt?.length > 0 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 rounded-full hover:bg-background/50"
-                          onClick={onClear}
-                          disabled={isImproving}
-                        >
-                          <X className="h-4 w-4 text-foreground/70" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Clear prompt</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
