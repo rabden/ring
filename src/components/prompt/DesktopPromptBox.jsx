@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Eraser, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -12,7 +11,10 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import MiniModelChooser from '@/components/settings/MiniModelChooser';
 import MiniDimensionChooser from '@/components/settings/MiniDimensionChooser';
 import ImageCountChooser from '@/components/settings/ImageCountChooser';
-import MiniSeedInput from '@/components/settings/MiniSeedInput';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import SettingSection from '@/components/settings/SettingSection';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -254,7 +256,7 @@ const DesktopPromptBox = ({
             </div>
 
             {internalSettingsActive && (
-              <div className="w-[35%] p-3 flex flex-col space-y-3">
+              <div className="w-[35%] p-3 flex flex-col space-y-3 border-l border-border/50">
                 {modelConfigs && activeModel && onModelChange && (
                   <MiniModelChooser 
                     currentModel={activeModel} 
@@ -279,18 +281,32 @@ const DesktopPromptBox = ({
                 )}
 
                 {seed !== undefined && setSeed && randomizeSeed !== undefined && setRandomizeSeed && (
-                  <MiniSeedInput
-                    seed={seed}
-                    setSeed={setSeed}
-                    randomizeSeed={randomizeSeed}
-                    setRandomizeSeed={setRandomizeSeed}
-                  />
+                  <SettingSection label="Seed" compact={true}>
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="number"
+                        value={seed}
+                        onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
+                        disabled={randomizeSeed}
+                        className="h-7 text-xs"
+                      />
+                      <div className="flex items-center space-x-1.5">
+                        <Switch
+                          id="randomizeSeedMini"
+                          checked={randomizeSeed}
+                          onCheckedChange={setRandomizeSeed}
+                          className="scale-75 data-[state=checked]:bg-accent"
+                        />
+                        <Label htmlFor="randomizeSeedMini" className="text-xs font-normal">Random</Label>
+                      </div>
+                    </div>
+                  </SettingSection>
                 )}
               </div>
             )}
           </div>
 
-          <div className="p-2">
+          <div className="p-2 border-t border-border/50">
             <div className="flex justify-between items-center">
               <div className="w-[300px]">
                 <CreditCounter credits={credits} bonusCredits={bonusCredits} />
