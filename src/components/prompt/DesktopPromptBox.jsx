@@ -56,6 +56,7 @@ const DesktopPromptBox = ({
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const { settingsActive = true, setSettingsActive } = useUserPreferences();
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
+  const [internalSettingsActive, setInternalSettingsActive] = useState(!settingsActive);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -88,6 +89,11 @@ const DesktopPromptBox = ({
     observer.observe(boxRef.current);
     return () => observer.disconnect();
   }, [onVisibilityChange]);
+
+  // Update mini settings visibility when sidebar settings change
+  useEffect(() => {
+    setInternalSettingsActive(!settingsActive);
+  }, [settingsActive]);
 
   useEffect(() => {
     if (onSettingsToggle) {
@@ -187,7 +193,7 @@ const DesktopPromptBox = ({
             {/* Left side - Textarea */}
             <div className={cn(
               "flex-1 relative transition-all duration-300",
-              settingsActive ? "w-[65%]" : "w-full"
+              internalSettingsActive ? "w-[65%]" : "w-full"
             )}>
               <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-card to-transparent pointer-events-none z-20 rounded-tl-2xl" />
               <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-card to-transparent pointer-events-none z-20" />
@@ -222,8 +228,8 @@ const DesktopPromptBox = ({
             </div>
 
             {/* Right side - Settings */}
-            {settingsActive && (
-              <div className="w-[35%] border-l border-border/80 p-3 flex flex-col space-y-4">
+            {internalSettingsActive && (
+              <div className="w-[35%] p-3 flex flex-col space-y-4">
                 <div className="text-sm font-medium text-foreground/90 mb-1">Settings</div>
                 
                 {modelConfigs && activeModel && onModelChange && (
@@ -252,7 +258,7 @@ const DesktopPromptBox = ({
             )}
           </div>
 
-          <div className="p-2 pt-0 border-t border-border/80">
+          <div className="p-2">
             <div className="flex justify-between items-center">
               <div className="w-[300px]">
                 <CreditCounter credits={credits} bonusCredits={bonusCredits} />
