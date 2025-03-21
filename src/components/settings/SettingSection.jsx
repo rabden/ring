@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -30,7 +30,7 @@ const SettingSection = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <InfoCircledIcon className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-72">
                 <p className="text-sm">{tooltip}</p>
