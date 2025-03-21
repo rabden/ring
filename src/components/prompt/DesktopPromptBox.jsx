@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -54,7 +55,6 @@ const DesktopPromptBox = ({
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const { settingsActive = true, setSettingsActive } = useUserPreferences();
-  const [showInfoContainer, setShowInfoContainer] = useState(!settingsActive);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
 
   useEffect(() => {
@@ -94,14 +94,6 @@ const DesktopPromptBox = ({
       onSettingsToggle(settingsActive);
     }
   }, [settingsActive, onSettingsToggle]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowInfoContainer(!settingsActive);
-    }, settingsActive ? 0 : 300); // Show immediately when settings close, delay when settings open
-    
-    return () => clearTimeout(timer);
-  }, [settingsActive]);
 
   const handlePromptChange = (e) => {
     if (typeof onChange === 'function') {
@@ -191,40 +183,76 @@ const DesktopPromptBox = ({
         )}
       >
         <div className="relative bg-card border border-border/80 rounded-2xl transition-all duration-300">
-          <div className="relative transition-all duration-300">
-            <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-card to-transparent pointer-events-none z-20 rounded-t-2xl" />
-            <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-card to-transparent pointer-events-none z-20 rounded-b-2xl" />
-            
-            <div className="relative">
-              {isImproving && (
-                <MeshGradient 
-                  className="absolute inset-0 animate-faster z-0 rounded-2xl" 
-                  intensity="strong"
-                  speed="fast"
-                  size={500}
-                />
-              )}
-              <textarea
-                ref={textareaRef}
-                value={prompt}
-                onChange={handlePromptChange}
-                placeholder={PROMPT_TIPS[currentTipIndex]}
-                className={cn(
-                  "w-full min-h-[300px] resize-none bg-transparent text-base focus:outline-none",
-                  "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
-                  "pt-6 pb-40 px-3",
-                  "transition-colors duration-200",
-                  isImproving && "opacity-80"
+          <div className="flex flex-row">
+            {/* Left side - Textarea */}
+            <div className={cn(
+              "flex-1 relative transition-all duration-300",
+              settingsActive ? "w-[65%]" : "w-full"
+            )}>
+              <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-card to-transparent pointer-events-none z-20 rounded-tl-2xl" />
+              <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-card to-transparent pointer-events-none z-20" />
+              
+              <div className="relative">
+                {isImproving && (
+                  <MeshGradient 
+                    className="absolute inset-0 animate-faster z-0 rounded-l-2xl" 
+                    intensity="strong"
+                    speed="fast"
+                    size={500}
+                  />
                 )}
-                style={{ 
-                  caretColor: 'currentColor',
-                }}
-                disabled={isImproving}
-              />
+                <textarea
+                  ref={textareaRef}
+                  value={prompt}
+                  onChange={handlePromptChange}
+                  placeholder={PROMPT_TIPS[currentTipIndex]}
+                  className={cn(
+                    "w-full min-h-[300px] resize-none bg-transparent text-base focus:outline-none",
+                    "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
+                    "pt-6 pb-6 px-3",
+                    "transition-colors duration-200",
+                    isImproving && "opacity-80"
+                  )}
+                  style={{ 
+                    caretColor: 'currentColor',
+                  }}
+                  disabled={isImproving}
+                />
+              </div>
             </div>
+
+            {/* Right side - Settings */}
+            {settingsActive && (
+              <div className="w-[35%] border-l border-border/80 p-3 flex flex-col space-y-4">
+                <div className="text-sm font-medium text-foreground/90 mb-1">Settings</div>
+                
+                {modelConfigs && activeModel && onModelChange && (
+                  <MiniModelChooser 
+                    currentModel={activeModel} 
+                    onModelChange={onModelChange} 
+                    modelConfigs={modelConfigs}
+                  />
+                )}
+                
+                {aspectRatio && onAspectRatioChange && (
+                  <MiniDimensionChooser
+                    currentRatio={aspectRatio}
+                    onRatioChange={onAspectRatioChange}
+                    proMode={proMode}
+                  />
+                )}
+                
+                {imageCount !== undefined && onImageCountChange && (
+                  <ImageCountChooser
+                    count={imageCount}
+                    setCount={onImageCountChange}
+                  />
+                )}
+              </div>
+            )}
           </div>
 
-          <div className="p-2 pt-0">
+          <div className="p-2 pt-0 border-t border-border/80">
             <div className="flex justify-between items-center">
               <div className="w-[300px]">
                 <CreditCounter credits={credits} bonusCredits={bonusCredits} />
@@ -328,50 +356,6 @@ const DesktopPromptBox = ({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-            </div>
-          </div>
-        </div>
-        
-        <div 
-          className={cn(
-            "relative w-[90%] h-0 mx-auto overflow-hidden transition-all duration-300 ease-in-out bg-card border border-border/80 border-t-0",
-            "rounded-b-2xl",
-            showInfoContainer ? "h-auto opacity-100 -mt-[1px]" : "h-0 opacity-0"
-          )}
-          style={{
-            clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
-          }}
-        >
-          <div className="p-3 h-full">
-            <div className="flex flex-row items-start justify-between gap-8">
-              {modelConfigs && activeModel && onModelChange && (
-                <div className="flex-1">
-                  <MiniModelChooser 
-                    currentModel={activeModel} 
-                    onModelChange={onModelChange} 
-                    modelConfigs={modelConfigs}
-                  />
-                </div>
-              )}
-              
-              {aspectRatio && onAspectRatioChange && (
-                <div className="flex-1">
-                  <MiniDimensionChooser
-                    currentRatio={aspectRatio}
-                    onRatioChange={onAspectRatioChange}
-                    proMode={proMode}
-                  />
-                </div>
-              )}
-              
-              {imageCount !== undefined && onImageCountChange && (
-                <div className="flex-1">
-                  <ImageCountChooser
-                    count={imageCount}
-                    setCount={onImageCountChange}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>

@@ -22,7 +22,7 @@ const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
       size="sm"
       onClick={() => onClick(modelKey)}
       className={cn(
-        "flex-1 h-8 rounded-full",
+        "flex-1 h-7 rounded-full text-xs",
         "transition-all duration-200",
         isActive 
           ? "bg-accent border border-border/0 hover:border-border text-primary hover:bg-accent/70" 
@@ -75,9 +75,9 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
   }, [nsfwEnabled, currentModel, modelConfigs, onModelChange, defaultModel]);
   
   return (
-    <SettingSection label="Model">
+    <SettingSection label="Model" compact={true}>
       <ScrollArea className="w-full">
-        <div className="flex gap-2 pb-1">
+        <div className="flex gap-1 pb-1">
           {quickModels.map(model => (
             <ModelButton
               key={model.key}
@@ -95,9 +95,9 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
                 <Button
                   variant="default"
                   size="sm"
-                  className="h-8 w-8 rounded-full transition-all p-0 duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
+                  className="h-7 w-7 rounded-full transition-all p-0 duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">

@@ -11,8 +11,9 @@ const ImageCountChooser = ({ count = 1, setCount }) => {
     <SettingSection 
       label="Number of Images" 
       tooltip="Generate multiple images at once. Each image costs the same number of credits."
+      compact={true}
     >
-      <div className="flex gap-2">
+      <div className="flex gap-1">
         {counts.map((value) => (
           <Button
             key={value}
@@ -20,7 +21,7 @@ const ImageCountChooser = ({ count = 1, setCount }) => {
             size="sm"
             onClick={() => setCount(value)}
             className={cn(
-              "flex-1 h-8 rounded-full",
+              "flex-1 h-7 rounded-full text-xs",
               "transition-all duration-200",
               count === value 
                 ? "bg-accent border border-border/0 hover:border-border text-primary hover:bg-accent/70" 
