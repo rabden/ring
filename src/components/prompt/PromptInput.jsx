@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { X, ArrowRight, ChevronRight, Sparkles, Loader } from "lucide-react";
+import { Eraser, ArrowRight, ChevronRight, Sparkles, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { cn } from "@/lib/utils";
@@ -37,7 +36,6 @@ const PromptInput = ({
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const videoRef = useRef(null);
 
-  // Preload the video
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.load();
@@ -125,7 +123,6 @@ const PromptInput = ({
 
   return (
     <div className="relative mb-8">
-      {/* Preloaded video */}
       <video 
         ref={videoRef}
         className="hidden"
@@ -175,7 +172,7 @@ const PromptInput = ({
             onClick={onClear}
             disabled={isImproving}
           >
-            <X className="h-4 w-4 text-foreground/70" />
+            <Eraser className="h-4 w-4 text-foreground/70" />
           </Button>
         )}
         <Button
