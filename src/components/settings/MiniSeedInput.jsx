@@ -3,7 +3,6 @@ import React from 'react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import SettingSection from './SettingSection';
 
 const MiniSeedInput = ({ seed, setSeed, randomizeSeed, setRandomizeSeed }) => {
@@ -13,7 +12,7 @@ const MiniSeedInput = ({ seed, setSeed, randomizeSeed, setRandomizeSeed }) => {
         <Input
           type="number"
           value={seed}
-          onChange={(e) => setSeed(parseInt(e.target.value))}
+          onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
           disabled={randomizeSeed}
           className="h-7 text-xs"
         />

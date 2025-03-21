@@ -159,6 +159,10 @@ const ImageGeneratorContent = ({
                 proMode={proMode}
                 imageCount={imageGeneratorProps.imageCount}
                 onImageCountChange={handleImageCountChange}
+                seed={imageGeneratorProps.seed}
+                setSeed={imageGeneratorProps.setSeed}
+                randomizeSeed={imageGeneratorProps.randomizeSeed}
+                setRandomizeSeed={imageGeneratorProps.setRandomizeSeed}
               />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">

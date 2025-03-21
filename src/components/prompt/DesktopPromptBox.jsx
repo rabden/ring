@@ -254,7 +254,7 @@ const DesktopPromptBox = ({
             </div>
 
             {internalSettingsActive && (
-              <div className="w-[35%] p-3 flex flex-col space-y-3 border-l-0">
+              <div className="w-[35%] p-3 flex flex-col space-y-3">
                 {modelConfigs && activeModel && onModelChange && (
                   <MiniModelChooser 
                     currentModel={activeModel} 
@@ -290,7 +290,7 @@ const DesktopPromptBox = ({
             )}
           </div>
 
-          <div className="p-2 border-t-0">
+          <div className="p-2">
             <div className="flex justify-between items-center">
               <div className="w-[300px]">
                 <CreditCounter credits={credits} bonusCredits={bonusCredits} />
