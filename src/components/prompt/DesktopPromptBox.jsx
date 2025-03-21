@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Eraser, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -64,6 +65,10 @@ const DesktopPromptBox = ({
   const { settingsActive = true, setSettingsActive } = useUserPreferences();
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const [internalSettingsActive, setInternalSettingsActive] = useState(!settingsActive);
+
+  // Calculate container width and textarea height based on settings visibility
+  const containerMaxWidth = internalSettingsActive ? "max-w-[950px]" : "max-w-[800px]";
+  const textareaHeight = internalSettingsActive ? "min-h-[350px]" : "min-h-[280px]";
 
   useEffect(() => {
     if (videoRef.current) {
@@ -190,7 +195,8 @@ const DesktopPromptBox = ({
       <div 
         ref={boxRef}
         className={cn(
-          "hidden md:block w-full max-w-[950px] mx-auto px-2 pb-1 mt-20 transition-all duration-300",
+          "hidden md:block w-full mx-auto px-2 pb-1 mt-20 transition-all duration-300",
+          containerMaxWidth,
           className
         )}
       >
@@ -241,10 +247,11 @@ const DesktopPromptBox = ({
                   onChange={handlePromptChange}
                   placeholder={PROMPT_TIPS[currentTipIndex]}
                   className={cn(
-                    "w-full min-h-[380px] resize-none bg-transparent text-base focus:outline-none",
+                    "w-full resize-none bg-transparent text-base focus:outline-none",
                     "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
                     "pt-6 pb-12 pl-3 pr-5",
-                    "transition-colors duration-200",
+                    "transition-all duration-300",
+                    textareaHeight,
                     isImproving && "opacity-80"
                   )}
                   style={{ 
@@ -288,6 +295,7 @@ const DesktopPromptBox = ({
                         value={seed}
                         onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
                         disabled={randomizeSeed}
+                        className="h-8"
                       />
                       <div className="flex items-center space-x-2">
                         <Switch
