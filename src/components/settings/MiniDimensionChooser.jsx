@@ -22,11 +22,11 @@ const AspectRatioButton = ({ ratio, currentRatio, onClick }) => {
       size="sm"
       onClick={() => onClick(ratio)}
       className={cn(
-        "flex-1 h-7 rounded-full text-xs py-0 px-3",
+        "flex-1 h-8 rounded-full text-xs py-0 px-3",
         "transition-all duration-200",
         isActive 
-          ? "bg-accent text-accent-foreground border-primary/20" 
-          : "bg-secondary/50 hover:bg-secondary/80 text-muted-foreground hover:text-foreground/90 border-transparent"
+          ? "bg-accent hover:bg-accent-70 text-accent-foreground border-border-80" 
+          : "bg-transparent hover:bg-background/80 text-muted-foreground hover:text-foreground/90 border-transparent"
       )}
     >
       {ratio}
@@ -88,7 +88,7 @@ const MiniDimensionChooser = ({ currentRatio, onRatioChange, proMode }) => {
                 <Button
                   variant="default"
                   size="sm"
-                  className="h-7 w-7 rounded-full transition-all p-0 duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
+                  className="h-8 w-8 rounded-full transition-all p-0 duration-200 flex items-center justify-center flex-shrink-0 bg-primary/90"
                 >
                   <MoreHorizontal className="h-3.5 w-3.5" />
                 </Button>

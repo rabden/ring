@@ -190,7 +190,7 @@ const DesktopPromptBox = ({
       <div 
         ref={boxRef}
         className={cn(
-          "hidden md:block w-full max-w-[850px] mx-auto px-2 mt-20 transition-all duration-300",
+          "hidden md:block w-full max-w-[1000px] mx-auto px-2 pb-1 mt-20 transition-all duration-300",
           className
         )}
       >
@@ -211,7 +211,7 @@ const DesktopPromptBox = ({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0 rounded-full hover:bg-background/50"
+                          className="h-8 w-8 p-0 rounded-full hover:bg-background/80"
                           onClick={onClear}
                           disabled={isImproving}
                         >
@@ -241,7 +241,7 @@ const DesktopPromptBox = ({
                   onChange={handlePromptChange}
                   placeholder={PROMPT_TIPS[currentTipIndex]}
                   className={cn(
-                    "w-full min-h-[300px] resize-none bg-transparent text-base focus:outline-none",
+                    "w-full min-h-[350px] resize-none bg-transparent text-base focus:outline-none",
                     "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
                     "pt-6 pb-6 px-3",
                     "transition-colors duration-200",
@@ -256,7 +256,7 @@ const DesktopPromptBox = ({
             </div>
 
             {internalSettingsActive && (
-              <div className="w-[35%] p-3 flex flex-col space-y-3 border-l border-border/50">
+              <div className="w-[35%] p-3 flex flex-col space-y-2">
                 {modelConfigs && activeModel && onModelChange && (
                   <MiniModelChooser 
                     currentModel={activeModel} 
@@ -288,14 +288,12 @@ const DesktopPromptBox = ({
                         value={seed}
                         onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
                         disabled={randomizeSeed}
-                        className="h-7 text-xs"
                       />
-                      <div className="flex items-center space-x-1.5">
+                      <div className="flex items-center space-x-2">
                         <Switch
                           id="randomizeSeedMini"
                           checked={randomizeSeed}
                           onCheckedChange={setRandomizeSeed}
-                          className="scale-75 data-[state=checked]:bg-accent"
                         />
                         <Label htmlFor="randomizeSeedMini" className="text-xs font-normal">Random</Label>
                       </div>
@@ -306,7 +304,7 @@ const DesktopPromptBox = ({
             )}
           </div>
 
-          <div className="p-2 border-t border-border/50">
+          <div className="px-2 pb-1 pt-0">
             <div className="flex justify-between items-center">
               <div className="w-[300px]">
                 <CreditCounter credits={credits} bonusCredits={bonusCredits} />
@@ -318,7 +316,7 @@ const DesktopPromptBox = ({
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-8 rounded-full bg-card hover:bg-background/50 transition-all duration-200"
+                        className="h-8 rounded-full bg-card hover:bg-background/80 transition-all duration-200"
                         onClick={handleImprovePrompt}
                         disabled={!prompt?.length || isImproving || !hasEnoughCreditsForImprovement}
                       >
@@ -369,7 +367,7 @@ const DesktopPromptBox = ({
                           "h-8 w-8 p-0 rounded-full transition-all duration-200",
                           settingsActive 
                             ? "bg-background hover:bg-background/80" 
-                            : "hover:bg-background/50"
+                            : "hover:bg-background/80"
                         )}
                         aria-label="Settings"
                         onClick={toggleSettings}
