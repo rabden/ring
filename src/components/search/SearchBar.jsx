@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -32,16 +31,15 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
 
   const handleSearch = () => {
     if (searchValue.trim()) {
-      // Update URL with search parameter
-      const params = new URLSearchParams(location.search);
+      // Get current hash (tab)
+      const currentHash = location.hash || '#latest';
+      
+      // Create search parameters
+      const params = new URLSearchParams();
       params.set('search', searchValue.trim());
       
-      // Preserve the current hash (tab) when updating search
-      navigate({ 
-        pathname: location.pathname,
-        search: params.toString(),
-        hash: location.hash
-      }, { replace: true });
+      // Navigate with hash first, then search params
+      navigate(`${location.pathname}${currentHash}?${params.toString()}`, { replace: true });
       
       if (onSearch) {
         onSearch(searchValue.trim());
@@ -62,14 +60,11 @@ const SearchBar = ({ onSearch, onSearchOpenChange, className }) => {
   const handleClear = () => {
     setSearchValue('');
     
-    // Remove search parameter from URL while preserving hash
-    const params = new URLSearchParams(location.search);
-    params.delete('search');
-    navigate({ 
-      pathname: location.pathname,
-      search: params.toString(),
-      hash: location.hash
-    }, { replace: true });
+    // Get current hash (tab)
+    const currentHash = location.hash || '#latest';
+    
+    // Navigate with just the hash, no search params
+    navigate(`${location.pathname}${currentHash}`, { replace: true });
     
     if (onSearch) {
       onSearch('');

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
@@ -34,11 +33,8 @@ const InspirationFilterButtons = ({ className }) => {
 
   const navigateWithSearchPreserved = (hash) => {
     // Preserve search parameters when changing tabs
-    navigate({
-      pathname: '/inspiration',
-      search: location.search,
-      hash
-    });
+    const searchParams = location.search;
+    navigate(`/inspiration${hash}${searchParams}`, { replace: true });
   };
 
   const handleFollowingClick = () => {
