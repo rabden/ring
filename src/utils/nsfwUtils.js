@@ -25,7 +25,7 @@ const NSFW_WORDS = [
   'reproductive', 'reproductive organ', 'dick', 'dicks', 'penis', 'penises', 'dildo', 'dildos', 'pussy', 'cunt',
   
   // Actions/poses
-  'pose', 'posing', 'suggestive', 'flirting', 'flirty',
+  'suggestive', 'flirting', 'flirty',
   'teasing', 'tease', 'seducing', 'seduce', 'caress', 'caressing',
   'fondling', 'fondle', 'sucking', 'suck',
   
