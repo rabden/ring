@@ -200,7 +200,7 @@ const PromptInput = ({
               "border-y border-border/5 pt-6 pb-40 px-1",
               "transition-colors duration-200",
               isImproving && "opacity-80",
-              highlightedPrompt && "opacity-0"
+              highlightedPrompt && "opacity-0" // Hide when we have highlighted content
             )}
             style={{ 
               caretColor: 'currentColor',
