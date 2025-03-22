@@ -206,7 +206,7 @@ const DesktopPromptBox = ({
               "flex-1 relative transition-all duration-300",
               internalSettingsActive ? "w-[65%]" : "w-full"
             )}>
-              <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-card to-transparent pointer-events-none z-20 rounded-tl-2xl" />
+              <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-card to-transparent pointer-events-none z-20 rounded-t-2xl" />
               <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-card to-transparent pointer-events-none z-20" />
               
               {prompt?.length > 0 && (
@@ -263,7 +263,7 @@ const DesktopPromptBox = ({
             </div>
 
             {internalSettingsActive && (
-              <div className="w-[35%] p-3 flex flex-col space-y-4 mt-3">
+              <div className="w-[35%] p-3 flex flex-col space-y-4 mt-3 rounded-2xl">
                 {modelConfigs && activeModel && onModelChange && (
                   <MiniModelChooser 
                     currentModel={activeModel} 
@@ -295,7 +295,6 @@ const DesktopPromptBox = ({
                         value={seed}
                         onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
                         disabled={randomizeSeed}
-                        className="h-8"
                       />
                       <div className="flex items-center space-x-2">
                         <Switch
@@ -313,7 +312,7 @@ const DesktopPromptBox = ({
           </div>
 
           <div className="px-2 pb-1 pt-0">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center rounded-2xl">
               <div className="w-[300px]">
                 <CreditCounter credits={credits} bonusCredits={bonusCredits} />
               </div>
