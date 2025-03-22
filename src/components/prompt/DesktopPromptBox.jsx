@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import SettingSection from '@/components/settings/SettingSection';
+import { containsNSFWContent } from '@/utils/nsfwUtils';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -56,6 +57,7 @@ const DesktopPromptBox = ({
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [highlightedPrompt, setHighlightedPrompt] = useState('');
   const boxRef = useRef(null);
   const textareaRef = useRef(null);
   const videoRef = useRef(null);
@@ -111,6 +113,47 @@ const DesktopPromptBox = ({
       onSettingsToggle(settingsActive);
     }
   }, [settingsActive, onSettingsToggle]);
+
+  // Add effect to highlight NSFW words when prompt changes
+  useEffect(() => {
+    if (prompt) {
+      highlightNsfwWords(prompt);
+    } else {
+      setHighlightedPrompt('');
+    }
+  }, [prompt]);
+
+  const highlightNsfwWords = (text) => {
+    if (!text) return '';
+    
+    const { foundWords } = containsNSFWContent(text);
+    if (foundWords.length === 0) {
+      setHighlightedPrompt('');
+      return;
+    }
+
+    // Create regex pattern to match all NSFW words (with word boundaries)
+    const wordPattern = foundWords.map(word => {
+      // For multi-word terms
+      if (word.includes(' ')) {
+        return word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+      // For single words with word boundaries
+      return `\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`;
+    }).join('|');
+
+    if (!wordPattern) {
+      setHighlightedPrompt('');
+      return;
+    }
+
+    const regex = new RegExp(wordPattern, 'gi');
+    const highlighted = text.replace(regex, match => {
+      return `<span class="bg-destructive/20 text-destructive font-medium rounded px-1">${match}</span>`;
+    });
+
+    setHighlightedPrompt(highlighted);
+  };
 
   const handlePromptChange = (e) => {
     if (typeof onChange === 'function') {
@@ -252,13 +295,28 @@ const DesktopPromptBox = ({
                     "pt-6 pb-12 pl-3 pr-5",
                     "transition-all duration-300",
                     textareaHeight,
-                    isImproving && "opacity-80"
+                    isImproving && "opacity-80",
+                    highlightedPrompt && "opacity-0" // Hide when we have highlighted content
                   )}
                   style={{ 
                     caretColor: 'currentColor',
                   }}
                   disabled={isImproving}
                 />
+                
+                {highlightedPrompt && (
+                  <div 
+                    className={cn(
+                      "absolute inset-0 z-0",
+                      "w-full resize-none bg-transparent text-base",
+                      "overflow-y-auto scrollbar-none whitespace-pre-wrap",
+                      "pt-6 pb-12 pl-3 pr-5",
+                      textareaHeight
+                    )}
+                    dangerouslySetInnerHTML={{ __html: highlightedPrompt }}
+                    onClick={() => textareaRef.current?.focus()}
+                  />
+                )}
               </div>
             </div>
 

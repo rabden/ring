@@ -146,16 +146,6 @@ const ImageGenerator = () => {
     return <div>Loading remix...</div>;
   }
 
-  useEffect(() => {
-    if (!nsfwEnabled && prompt) {
-      const { isNSFW, foundWords } = containsNSFWContent(prompt);
-      if (isNSFW) {
-        setNsfwFoundWords(foundWords);
-        setShowNSFWAlert(true);
-      }
-    }
-  }, [prompt, nsfwEnabled]);
-
   const handleGenerateImage = async () => {
     console.log('handleGenerateImage called', {prompt, session, isImproving});
     
