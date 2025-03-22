@@ -110,8 +110,19 @@ export const useImageGeneration = ({
             huggingfaceModelId: queuedModelConfig.huggingfaceId || model
           });
 
-          // Create HfInference client with API key
-          const client = new HfInference(apiKeyData.api_key);
+          // Create custom fetch function with no-cors mode
+          const customFetch = (url, options = {}) => {
+            return fetch(url, {
+              ...options,
+              mode: 'no-cors',
+              credentials: 'omit'
+            });
+          };
+
+          // Create HfInference client with API key and custom fetch
+          const client = new HfInference(apiKeyData.api_key, {
+            fetch: customFetch
+          });
           
           console.log('Making HfInference API call:', {
             model: queuedModelConfig.huggingfaceId || model,
