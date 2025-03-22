@@ -3,6 +3,7 @@ import React from 'react';
 import { improvePrompt } from '@/utils/promptImprovement';
 import { toast } from 'sonner';
 import { usePromptCredits } from './usePromptCredits';
+import { checkHuggingFaceApiKeys } from '@/integrations/supabase/supabase';
 
 export const usePromptImprovement = (userId) => {
   const [isImproving, setIsImproving] = React.useState(false);
@@ -20,6 +21,17 @@ export const usePromptImprovement = (userId) => {
     });
     
     try {
+      // Check if API keys exist before attempting to improve
+      const { valid, message, error } = await checkHuggingFaceApiKeys();
+      
+      if (!valid) {
+        toast.error(`API key error: ${error || message || 'No valid keys found'}`, { 
+          id: toastId,
+          position: 'top-center'
+        });
+        return;
+      }
+      
       // Try to improve the prompt first with streaming updates
       const result = await improvePrompt(
         prompt, 
@@ -58,7 +70,7 @@ export const usePromptImprovement = (userId) => {
       return result;
     } catch (error) {
       console.error('Error improving prompt:', error);
-      toast.error('Failed to improve prompt', { 
+      toast.error(`Failed to improve prompt: ${error.message || 'Unknown error'}`, { 
         id: toastId,
         position: 'top-center'
       });

@@ -1,9 +1,11 @@
 
 import { HfInference } from "@huggingface/inference";
 import { supabase } from '@/integrations/supabase/supabase';
+import { toast } from 'sonner';
 
 export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, onChunk) => {
   try {
+    console.log('Fetching API key from Supabase...');
     const { data: apiKeyData, error: apiKeyError } = await supabase
       .from('huggingface_api_keys')
       .select('api_key')
@@ -13,28 +15,43 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
       .single();
     
     if (apiKeyError) {
+      console.error('Failed to get API key:', apiKeyError);
       throw new Error(`Failed to get API key: ${apiKeyError.message}`);
     }
-    if (!apiKeyData) {
+    
+    if (!apiKeyData || !apiKeyData.api_key) {
+      console.error('No active API key available');
       throw new Error('No active API key available');
     }
 
+    console.log('API key retrieved successfully, updating last_used_at timestamp');
     // Update the last_used_at timestamp for the selected key
-    await supabase
+    const { error: updateError } = await supabase
       .from('huggingface_api_keys')
       .update({ last_used_at: new Date().toISOString() })
       .eq('api_key', apiKeyData.api_key);
+      
+    if (updateError) {
+      console.warn('Failed to update API key timestamp:', updateError);
+      // Continue with the request anyway
+    }
 
     // Set custom fetch options with no-cors mode
     const customFetch = (url, options = {}) => {
+      console.log('Making custom fetch request with no-cors mode');
       return fetch(url, {
         ...options,
         mode: 'no-cors',
-        credentials: 'omit'
+        credentials: 'omit',
+        headers: {
+          ...options.headers,
+          'Content-Type': 'application/json'
+        }
       });
     };
 
     // Create HfInference client with custom fetch
+    console.log('Creating HfInference client');
     const client = new HfInference(apiKeyData.api_key, {
       fetch: customFetch
     });
@@ -44,6 +61,7 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
     let improvedPrompt = "";
     
     try {
+      console.log('Starting chat completion stream');
       const stream = await client.chatCompletionStream({
         model: "meta-llama/Llama-3.2-3B-Instruct",
         messages: [
@@ -70,6 +88,7 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
           }
         }
       }
+      console.log('Stream completed successfully');
     } catch (streamError) {
       console.error('Stream error:', streamError);
       // Fallback to non-streaming request if streaming fails
@@ -92,8 +111,10 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
           top_p: 0.7
         });
         improvedPrompt = response.choices[0].message.content;
+        console.log('Fallback request successful');
       } catch (fallbackError) {
         console.error('Fallback request failed:', fallbackError);
+        toast.error('Failed to improve prompt: API error');
         // If all fails, just return the original prompt
         improvedPrompt = originalPrompt;
       }
@@ -107,6 +128,7 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
     return improvedPrompt.trim() || originalPrompt;
   } catch (error) {
     console.error('Error improving prompt:', error);
+    toast.error(`API error: ${error.message || 'Unknown error'}`);
     return originalPrompt; // Return original prompt on error
   }
 }

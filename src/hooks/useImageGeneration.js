@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -68,6 +67,7 @@ export const useImageGeneration = ({
         try {
           initRetryCount(generationId);
 
+          console.log('Fetching API key from Supabase...');
           const { data: apiKeyData, error: apiKeyError } = await supabase
             .from('huggingface_api_keys')
             .select('api_key')
@@ -77,20 +77,29 @@ export const useImageGeneration = ({
             .single();
           
           if (apiKeyError) {
+            console.error('Failed to get API key:', apiKeyError);
             setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
-            toast.error('Failed to get API key');
+            toast.error(`Failed to get API key: ${apiKeyError.message}`);
             throw new Error(`Failed to get API key: ${apiKeyError.message}`);
           }
-          if (!apiKeyData) {
+          
+          if (!apiKeyData || !apiKeyData.api_key) {
+            console.error('No active API key available');
             setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
             toast.error('No active API key available');
             throw new Error('No active API key available');
           }
 
-          await supabase
+          console.log('API key retrieved successfully, updating timestamp');
+          const { error: updateError } = await supabase
             .from('huggingface_api_keys')
             .update({ last_used_at: new Date().toISOString() })
             .eq('api_key', apiKeyData.api_key);
+            
+          if (updateError) {
+            console.warn('Failed to update API key timestamp:', updateError);
+            // Continue with the request anyway
+          }
 
           const parameters = {
             seed: actualSeed,
@@ -112,21 +121,27 @@ export const useImageGeneration = ({
 
           // Create custom fetch function with no-cors mode
           const customFetch = (url, options = {}) => {
+            console.log('Making custom fetch request with no-cors mode');
             return fetch(url, {
               ...options,
               mode: 'no-cors',
-              credentials: 'omit'
+              credentials: 'omit',
+              headers: {
+                ...options.headers,
+                'Content-Type': 'application/json'
+              }
             });
           };
 
           // Create HfInference client with API key and custom fetch
+          console.log('Creating HfInference client with API key:', apiKeyData.api_key.substring(0, 5) + '...');
           const client = new HfInference(apiKeyData.api_key, {
             fetch: customFetch
           });
           
           console.log('Making HfInference API call:', {
             model: queuedModelConfig.huggingfaceId || model,
-            inputs: modifiedPrompt,
+            inputs: modifiedPrompt.substring(0, 30) + '...',
             parameters
           });
 
@@ -207,7 +222,12 @@ export const useImageGeneration = ({
             return;
           }
           
-          toast.error('Failed to generate image');
+          if (error.message && error.message.includes('401')) {
+            toast.error('API key unauthorized. Please check your Hugging Face API key.');
+          } else {
+            toast.error(`Failed to generate image: ${error.message || 'Unknown error'}`);
+          }
+          
           setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
         }
       };
