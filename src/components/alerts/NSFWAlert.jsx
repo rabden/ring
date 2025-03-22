@@ -1,8 +1,19 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { AlertCircle } from 'lucide-react';
 
 const NSFWAlert = ({ isVisible, onClose, foundWords = [] }) => {
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 10000); // Auto-close after 10 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, onClose]);
+
   if (!isVisible) return null;
 
   return (
@@ -46,4 +57,4 @@ const NSFWAlert = ({ isVisible, onClose, foundWords = [] }) => {
   );
 };
 
-export default NSFWAlert; 
+export default NSFWAlert;

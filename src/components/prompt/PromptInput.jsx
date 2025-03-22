@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Eraser, ArrowRight, ChevronRight, Sparkles, Loader } from "lucide-react";
+import { Eraser, ChevronRight, Sparkles, Loader } from "lucide-react";
 import { toast } from "sonner";
 import { usePromptImprovement } from '@/hooks/usePromptImprovement';
 import { cn } from "@/lib/utils";
 import { MeshGradient } from '@/components/ui/mesh-gradient';
+import { containsNSFWContent } from '@/utils/nsfwUtils';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
@@ -30,11 +32,13 @@ const PromptInput = ({
   modelConfigs
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
+  const [highlightedPrompt, setHighlightedPrompt] = useState('');
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const videoRef = useRef(null);
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -49,6 +53,46 @@ const PromptInput = ({
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (prompt) {
+      highlightNsfwWords(prompt);
+    } else {
+      setHighlightedPrompt('');
+    }
+  }, [prompt]);
+
+  const highlightNsfwWords = (text) => {
+    if (!text) return '';
+    
+    const { foundWords } = containsNSFWContent(text);
+    if (foundWords.length === 0) {
+      setHighlightedPrompt('');
+      return;
+    }
+
+    // Create regex pattern to match all NSFW words (with word boundaries)
+    const wordPattern = foundWords.map(word => {
+      // For multi-word terms
+      if (word.includes(' ')) {
+        return word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+      // For single words with word boundaries
+      return `\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`;
+    }).join('|');
+
+    if (!wordPattern) {
+      setHighlightedPrompt('');
+      return;
+    }
+
+    const regex = new RegExp(wordPattern, 'gi');
+    const highlighted = text.replace(regex, match => {
+      return `<span class="bg-destructive/20 text-destructive font-medium rounded px-1">${match}</span>`;
+    });
+
+    setHighlightedPrompt(highlighted);
+  };
 
   const handleImprovePrompt = async () => {
     if (!userId) {
@@ -143,7 +187,9 @@ const PromptInput = ({
               size={500}
             />
           )}
+          
           <textarea
+            ref={textareaRef}
             value={prompt}
             onChange={onChange}
             placeholder={PROMPT_TIPS[currentTipIndex]}
@@ -153,13 +199,27 @@ const PromptInput = ({
               "placeholder:text-muted-foreground/40 overflow-y-auto scrollbar-none",
               "border-y border-border/5 pt-6 pb-40 px-1",
               "transition-colors duration-200",
-              isImproving && "opacity-80"
+              isImproving && "opacity-80",
+              highlightedPrompt && "opacity-0"
             )}
             style={{ 
               caretColor: 'currentColor',
             }}
             disabled={isImproving}
           />
+          
+          {highlightedPrompt && (
+            <div 
+              className={cn(
+                "absolute inset-0 z-0 rounded-2xl",
+                "w-full min-h-[450px] md:min-h-[350px] resize-none bg-transparent text-base",
+                "overflow-y-auto scrollbar-none whitespace-pre-wrap",
+                "border-y border-border/5 pt-6 pb-40 px-1"
+              )}
+              dangerouslySetInnerHTML={{ __html: highlightedPrompt }}
+              onClick={() => textareaRef.current?.focus()}
+            />
+          )}
         </div>
       </div>
       
