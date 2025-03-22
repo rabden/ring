@@ -3,7 +3,7 @@ import React from 'react';
 import { improvePrompt } from '@/utils/promptImprovement';
 import { toast } from 'sonner';
 import { usePromptCredits } from './usePromptCredits';
-import { checkHuggingFaceApiKeys } from '@/integrations/supabase/supabase';
+import { checkHuggingFaceApiKeys, testHuggingFaceApiKey } from '@/integrations/supabase/supabase';
 
 export const usePromptImprovement = (userId) => {
   const [isImproving, setIsImproving] = React.useState(false);

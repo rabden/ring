@@ -119,25 +119,12 @@ export const useImageGeneration = ({
             huggingfaceModelId: queuedModelConfig.huggingfaceId || model
           });
 
-          // Create custom fetch function with no-cors mode
-          const customFetch = (url, options = {}) => {
-            console.log('Making custom fetch request with no-cors mode');
-            return fetch(url, {
-              ...options,
-              mode: 'no-cors',
-              credentials: 'omit',
-              headers: {
-                ...options.headers,
-                'Content-Type': 'application/json'
-              }
-            });
-          };
+          // Log API key (masked for security)
+          console.log('Using API key:', apiKeyData.api_key.substring(0, 4) + '***' + apiKeyData.api_key.slice(-4));
 
-          // Create HfInference client with API key and custom fetch
-          console.log('Creating HfInference client with API key:', apiKeyData.api_key.substring(0, 5) + '...');
-          const client = new HfInference(apiKeyData.api_key, {
-            fetch: customFetch
-          });
+          // Create HfInference client with API key
+          console.log('Creating HfInference client');
+          const client = new HfInference(apiKeyData.api_key);
           
           console.log('Making HfInference API call:', {
             model: queuedModelConfig.huggingfaceId || model,

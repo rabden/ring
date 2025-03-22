@@ -36,25 +36,12 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
       // Continue with the request anyway
     }
 
-    // Set custom fetch options with no-cors mode
-    const customFetch = (url, options = {}) => {
-      console.log('Making custom fetch request with no-cors mode');
-      return fetch(url, {
-        ...options,
-        mode: 'no-cors',
-        credentials: 'omit',
-        headers: {
-          ...options.headers,
-          'Content-Type': 'application/json'
-        }
-      });
-    };
+    // Log API key (masked for security)
+    console.log('Using API key:', apiKeyData.api_key.substring(0, 4) + '***' + apiKeyData.api_key.slice(-4));
 
-    // Create HfInference client with custom fetch
+    // Create HfInference client with proper authorization
     console.log('Creating HfInference client');
-    const client = new HfInference(apiKeyData.api_key, {
-      fetch: customFetch
-    });
+    const client = new HfInference(apiKeyData.api_key);
     
     const modelExample = modelConfigs?.[activeModel]?.example || "a photo of a cat, high quality, detailed";
     
