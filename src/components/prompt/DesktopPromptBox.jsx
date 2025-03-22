@@ -195,7 +195,7 @@ const DesktopPromptBox = ({
       <div 
         ref={boxRef}
         className={cn(
-          "hidden md:block w-full mx-auto px-2 pb-1 mt-20 transition-all duration-300",
+          "hidden md:block w-full mx-auto px-2 pb-1 mt-20 transition-all duration-300 rounded-2xl",
           containerMaxWidth,
           className
         )}
@@ -235,7 +235,7 @@ const DesktopPromptBox = ({
               <div className="relative">
                 {isImproving && (
                   <MeshGradient 
-                    className="absolute inset-0 animate-faster z-0 rounded-l-2xl" 
+                    className="absolute inset-0 animate-faster z-0 rounded-2xl" 
                     intensity="strong"
                     speed="fast"
                     size={500}

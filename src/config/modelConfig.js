@@ -581,7 +581,7 @@ export const modelConfig = {
     name: "Anime",
     category: "NSFW",
     group: "NSFW",
-    huggingfaceId: "https://router.huggingface.co/hf-inference/models/Niggendar/malaAnimeMixNSFW_v50",
+    huggingfaceId: "Niggendar/malaAnimeMixNSFW_v50",
     qualityLimits: null,
     isPremium: false,
     promptSuffix: null,
