@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -67,7 +68,6 @@ export const useImageGeneration = ({
         try {
           initRetryCount(generationId);
 
-          console.log('Fetching API key from Supabase...');
           const { data: apiKeyData, error: apiKeyError } = await supabase
             .from('huggingface_api_keys')
             .select('api_key')
@@ -77,29 +77,20 @@ export const useImageGeneration = ({
             .single();
           
           if (apiKeyError) {
-            console.error('Failed to get API key:', apiKeyError);
             setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
-            toast.error(`Failed to get API key: ${apiKeyError.message}`);
+            toast.error('Failed to get API key');
             throw new Error(`Failed to get API key: ${apiKeyError.message}`);
           }
-          
-          if (!apiKeyData || !apiKeyData.api_key) {
-            console.error('No active API key available');
+          if (!apiKeyData) {
             setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
             toast.error('No active API key available');
             throw new Error('No active API key available');
           }
 
-          console.log('API key retrieved successfully, updating timestamp');
-          const { error: updateError } = await supabase
+          await supabase
             .from('huggingface_api_keys')
             .update({ last_used_at: new Date().toISOString() })
             .eq('api_key', apiKeyData.api_key);
-            
-          if (updateError) {
-            console.warn('Failed to update API key timestamp:', updateError);
-            // Continue with the request anyway
-          }
 
           const parameters = {
             seed: actualSeed,
@@ -119,16 +110,12 @@ export const useImageGeneration = ({
             huggingfaceModelId: queuedModelConfig.huggingfaceId || model
           });
 
-          // Log API key (masked for security)
-          console.log('Using API key:', apiKeyData.api_key.substring(0, 4) + '***' + apiKeyData.api_key.slice(-4));
-
           // Create HfInference client with API key
-          console.log('Creating HfInference client');
           const client = new HfInference(apiKeyData.api_key);
           
           console.log('Making HfInference API call:', {
             model: queuedModelConfig.huggingfaceId || model,
-            inputs: modifiedPrompt.substring(0, 30) + '...',
+            inputs: modifiedPrompt,
             parameters
           });
 
@@ -209,12 +196,7 @@ export const useImageGeneration = ({
             return;
           }
           
-          if (error.message && error.message.includes('401')) {
-            toast.error('API key unauthorized. Please check your Hugging Face API key.');
-          } else {
-            toast.error(`Failed to generate image: ${error.message || 'Unknown error'}`);
-          }
-          
+          toast.error('Failed to generate image');
           setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
         }
       };
