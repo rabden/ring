@@ -210,7 +210,7 @@ const DesktopPromptBox = ({
               <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-card to-transparent pointer-events-none z-20" />
               
               {prompt?.length > 0 && (
-                <div className="absolute top-2 right-2 z-30">
+                <div className="absolute top-1 right-1 z-30">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
