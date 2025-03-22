@@ -1,3 +1,4 @@
+
 // List of NSFW words to check against
 const NSFW_WORDS = [
   // Basic NSFW terms
@@ -79,4 +80,33 @@ export const containsNSFWContent = (prompt) => {
     isNSFW: foundNSFWWords.length > 0,
     foundWords: foundNSFWWords
   };
-}; 
+};
+
+// Helper function for the UI to highlight NSFW words in HTML
+export const highlightNSFWWords = (text) => {
+  if (!text) return { html: '', isNSFW: false };
+  
+  const { foundWords, isNSFW } = containsNSFWContent(text);
+  if (!isNSFW || foundWords.length === 0) {
+    return { html: text, isNSFW: false };
+  }
+
+  // Create regex pattern to match all NSFW words
+  const wordPattern = foundWords.map(word => {
+    if (word.includes(' ')) {
+      return escapeRegExp(word);
+    }
+    return `\\b${escapeRegExp(word)}\\b`;
+  }).join('|');
+  
+  if (!wordPattern) {
+    return { html: text, isNSFW: false };
+  }
+
+  const regex = new RegExp(wordPattern, 'gi');
+  const html = text.replace(regex, match => {
+    return `<span class="bg-destructive/20 text-destructive font-medium rounded px-1">${match}</span>`;
+  });
+
+  return { html, isNSFW: true };
+};

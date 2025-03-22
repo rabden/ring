@@ -1,13 +1,24 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { AlertCircle } from 'lucide-react';
 
 const NSFWAlert = ({ isVisible, onClose, foundWords = [] }) => {
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 10000); // Auto-close after 10 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, onClose]);
+
   if (!isVisible) return null;
 
   return (
     <div className={cn(
-      "fixed top-0 left-0 right-0 z-60",
+      "fixed top-0 left-0 right-0 z-[100]", // Increased z-index to be higher than other components
       "animate-in fade-in-0 slide-in-from-top duration-300"
     )}>
       <div className={cn(
@@ -46,4 +57,4 @@ const NSFWAlert = ({ isVisible, onClose, foundWords = [] }) => {
   );
 };
 
-export default NSFWAlert; 
+export default NSFWAlert;

@@ -17,6 +17,7 @@ import ImageGeneratorContent from '@/components/ImageGeneratorContent';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 import NSFWAlert from '@/components/alerts/NSFWAlert';
+import { containsNSFWContent } from '@/utils/nsfwUtils';
 
 const ImageGenerator = () => {
   const [searchParams] = useSearchParams();
@@ -85,75 +86,6 @@ const ImageGenerator = () => {
     }
   });
 
-  const handleGenerateImage = async () => {
-    console.log('handleGenerateImage called', {prompt, session, isImproving});
-    
-    if (!prompt.trim()) {
-      toast.error('Please enter a prompt');
-      return;
-    }
-    if (!session) {
-      toast.error('Please sign in to generate images');
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      let finalPrompt = prompt;
-      
-      if (isImproving) {
-        const improved = await improveCurrentPrompt(prompt, model, modelConfigs);
-        if (!improved) {
-          setIsGenerating(false);
-          return;
-        }
-        finalPrompt = improved;
-        setPrompt(improved);
-      }
-
-      console.log('Calling generateImage with:', {isPrivate, finalPrompt});
-      await generateImage(isPrivate, finalPrompt);
-    } catch (error) {
-      toast.error('Failed to generate image');
-      console.error('Generation error:', error);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleAspectRatioChange = (newRatio) => {
-    setAspectRatio(newRatio);
-  };
-
-  const {
-    handleImageClick,
-    handleModelChange,
-    handlePromptKeyDown,
-    handleRemix,
-    handleDownload,
-    handleDiscard,
-    handleViewDetails,
-  } = useImageHandlers({
-    generateImage: handleGenerateImage,
-    setSelectedImage,
-    setFullScreenViewOpen,
-    setModel,
-    setWidth,
-    setHeight,
-    setPrompt,
-    setSeed,
-    setRandomizeSeed,
-    setQuality,
-    setAspectRatio,
-    setUseAspectRatio,
-    aspectRatios: [],
-    session,
-    queryClient,
-    activeView,
-    setDetailsDialogOpen,
-    setActiveView,
-  });
-
   useEffect(() => {
     const hash = window.location.hash;
     if (hash === '#imagegenerate') {
@@ -213,6 +145,84 @@ const ImageGenerator = () => {
   if (isRemixLoading) {
     return <div>Loading remix...</div>;
   }
+
+  const handleGenerateImage = async () => {
+    console.log('handleGenerateImage called', {prompt, session, isImproving});
+    
+    if (!prompt.trim()) {
+      toast.error('Please enter a prompt');
+      return;
+    }
+    if (!session) {
+      toast.error('Please sign in to generate images');
+      return;
+    }
+
+    if (!nsfwEnabled) {
+      const { isNSFW, foundWords } = containsNSFWContent(prompt);
+      if (isNSFW) {
+        setNsfwFoundWords(foundWords);
+        setShowNSFWAlert(true);
+        return;
+      }
+    }
+
+    setIsGenerating(true);
+    try {
+      let finalPrompt = prompt;
+      
+      if (isImproving) {
+        const improved = await improveCurrentPrompt(prompt, model, modelConfigs);
+        if (!improved) {
+          setIsGenerating(false);
+          return;
+        }
+        finalPrompt = improved;
+        setPrompt(improved);
+      }
+
+      console.log('Calling generateImage with:', {isPrivate, finalPrompt});
+      await generateImage(isPrivate, finalPrompt);
+    } catch (error) {
+      toast.error('Failed to generate image');
+      console.error('Generation error:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleAspectRatioChange = (newRatio) => {
+    setAspectRatio(newRatio);
+  };
+
+  const {
+    handleImageClick,
+    handleModelChange,
+    handlePromptKeyDown,
+    handleRemix,
+    handleDownload,
+    handleDiscard,
+    handleViewDetails,
+  } = useImageHandlers({
+    generateImage: handleGenerateImage,
+    setSelectedImage,
+    setFullScreenViewOpen,
+    setModel,
+    setWidth,
+    setHeight,
+    setPrompt,
+    setSeed,
+    setRandomizeSeed,
+    setQuality,
+    setAspectRatio,
+    setUseAspectRatio,
+    aspectRatios: [],
+    session,
+    queryClient,
+    activeView,
+    setDetailsDialogOpen,
+    setActiveView,
+  });
 
   return (
     <>
