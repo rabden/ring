@@ -7,12 +7,12 @@ const NSFWAlert = ({ isVisible, onClose, foundWords = [] }) => {
 
   return (
     <div className={cn(
-      "fixed top-0 left-0 right-0 z-50",
+      "fixed top-0 left-0 right-0 z-60",
       "animate-in fade-in-0 slide-in-from-top duration-300"
     )}>
       <div className={cn(
         "flex items-start justify-between",
-        "max-w-[95%] w-full mx-auto my-4 md:max-w-[600px]",
+        "max-w-[98%] w-full mx-auto my-4 md:max-w-[600px]",
         "px-4 py-3 rounded-lg",
         "bg-destructive/10 border border-destructive/20",
         "shadow-lg backdrop-blur-sm"
