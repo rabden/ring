@@ -126,19 +126,10 @@ export const useLikes = (userId) => {
           }
         }
         
-        // Make sure both values are correctly typed before sending to the database
-        if (!Array.isArray(updatedLikedBy)) {
-          updatedLikedBy = [];
-        }
-        
-        if (typeof updatedLikeCount !== 'number') {
-          updatedLikeCount = 0;
-        }
-        
-        // Critical fix: When removing the last like, we need to ensure liked_by is an empty array, not null
-        // and like_count is explicitly set to 0, not null
+        // We now have database triggers that ensure liked_by is an array and like_count matches,
+        // but we'll still be explicit here to prevent any issues
         const updateData = {
-          liked_by: updatedLikedBy.length === 0 ? [] : updatedLikedBy,
+          liked_by: updatedLikedBy,
           like_count: updatedLikeCount
         };
         
