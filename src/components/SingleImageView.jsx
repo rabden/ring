@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -10,12 +10,15 @@ import MobileImageView from '@/components/MobileImageView';
 import FullScreenImageView from '@/components/FullScreenImageView';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
+import { handleImageDiscard } from '@/utils/discardUtils';
+import { toast } from 'sonner';
 
 const SingleImageView = () => {
   const { imageId } = useParams();
   const navigate = useNavigate();
   const { session } = useSupabaseAuth();
   const isMobile = useMediaQuery('(max-width: 768px)');
+  const queryClient = useQueryClient();
 
   const { data: image, isLoading } = useQuery({
     queryKey: ['singleImage', imageId],
@@ -31,10 +34,38 @@ const SingleImageView = () => {
     },
   });
 
+  // Fetch user profile to check if admin
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+      return data;
+    },
+    enabled: !!session?.user?.id
+  });
+
+  const isAdmin = userProfile?.is_admin || false;
+
   const handleDownload = async () => {
     if (!image) return;
     const imageUrl = supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl;
     await downloadImage(imageUrl, image.prompt);
+  };
+
+  const handleDiscard = async (reason) => {
+    try {
+      await handleImageDiscard(image, queryClient, isAdmin, reason);
+      toast.success('Image deleted successfully');
+      navigate(-1);
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      toast.error('Failed to delete image');
+    }
   };
 
   if (isLoading) {
@@ -77,6 +108,7 @@ const SingleImageView = () => {
       image={image}
       onClose={() => navigate(-1)}
       onDownload={handleDownload}
+      onDiscard={handleDiscard}
       isOwner={image.user_id === session?.user?.id}
       setActiveTab={() => {}}
       setStyle={() => {}}
@@ -88,7 +120,7 @@ const SingleImageView = () => {
       isOpen={true}
       onClose={() => navigate(-1)}
       onDownload={handleDownload}
-      onDiscard={() => {}}
+      onDiscard={handleDiscard}
       isOwner={image.user_id === session?.user?.id}
       setStyle={() => {}}
       setActiveTab={() => {}}
