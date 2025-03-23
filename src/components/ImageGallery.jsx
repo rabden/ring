@@ -1,3 +1,4 @@
+
 import React, { useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import Masonry from 'react-masonry-css';
@@ -8,6 +9,9 @@ import NoResults from './NoResults';
 import { useGalleryImages } from '@/hooks/useGalleryImages';
 import { cn } from '@/lib/utils';
 import { format, isToday, isYesterday, isThisWeek, isThisMonth, parseISO, subWeeks, isAfter } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/supabase';
+import { useAuth } from '@/integrations/supabase/hooks/useAuth';
 
 const getBreakpointColumns = () => ({
   default: 4,
@@ -88,6 +92,24 @@ const ImageGallery = ({
   const breakpointColumnsObj = getBreakpointColumns();
   const location = useLocation();
   const activeView = location.pathname === '/inspiration' ? 'inspiration' : 'myImages';
+  const { user } = useAuth();
+  
+  // Fetch user profile to check if admin
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id
+  });
+
+  const isAdmin = userProfile?.is_admin || false;
   
   const { 
     images,
@@ -193,6 +215,7 @@ const ImageGallery = ({
                     onToggleLike={toggleLike}
                     setStyle={setStyle}
                     style={style}
+                    isAdmin={isAdmin}
                   />
                 </div>
               ))}
@@ -235,6 +258,7 @@ const ImageGallery = ({
               onToggleLike={toggleLike}
               setStyle={setStyle}
               style={style}
+              isAdmin={isAdmin}
             />
           </div>
         ))}

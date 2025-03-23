@@ -15,6 +15,10 @@ import MobileProfileMenu from '@/components/MobileProfileMenu';
 import GeneratingImagesDropdown from '@/components/GeneratingImagesDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProUser } from '@/hooks/useProUser';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/supabase';
+import { handleImageDiscard } from '@/utils/discardUtils';
+import { toast } from 'sonner';
 
 const Inspiration = () => {
   const { session } = useSupabaseAuth();
@@ -35,7 +39,22 @@ const Inspiration = () => {
   const [activeTab, setActiveTab] = useState('images');
   const { isPro } = useProUser();
 
-  // Sync activeTab with URL hash and update filters based on hash
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+      return data;
+    },
+    enabled: !!session?.user?.id
+  });
+
+  const isAdmin = userProfile?.is_admin || false;
+
   useEffect(() => {
     const hash = location.hash.replace('#', '');
     switch (hash) {
@@ -59,7 +78,6 @@ const Inspiration = () => {
         break;
       default:
         setActiveTab('images');
-        // If no hash, default to latest
         if (!hash) {
           setShowFollowing(false);
           setShowTop(false);
@@ -95,9 +113,29 @@ const Inspiration = () => {
     document.body.removeChild(a);
   };
 
+  const handleDiscard = async (imageId, reason) => {
+    try {
+      const { data: image } = await supabase
+        .from('user_images')
+        .select('*')
+        .eq('id', imageId)
+        .single();
+
+      if (!image) {
+        toast.error('Image not found');
+        return;
+      }
+
+      await handleImageDiscard(image, null, isAdmin, reason);
+      toast.success('Image deleted successfully');
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      toast.error('Failed to delete image');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Desktop Header */}
       <DesktopHeader
         user={session?.user}
         credits={credits}
@@ -127,7 +165,6 @@ const Inspiration = () => {
         }
       />
 
-      {/* Mobile Header */}
       <MobileHeader
         activeFilters={activeFilters}
         onFilterChange={(type, value) => setActiveFilters(prev => ({ ...prev, [type]: value }))}
@@ -148,7 +185,6 @@ const Inspiration = () => {
         onLatestChange={setShowLatest}
       />
 
-      {/* Main Content */}
       <main className="pt-16 md:pt-20 px-1 md:px-6 pb-20 md:pb-6">
         <ImageGallery
           userId={session?.user?.id}
@@ -156,6 +192,7 @@ const Inspiration = () => {
           onDownload={handleDownload}
           onRemix={handleRemix}
           onViewDetails={handleViewDetails}
+          onDiscard={handleDiscard}
           nsfwEnabled={nsfwEnabled}
           activeFilters={activeFilters}
           searchQuery={searchQuery}
@@ -168,7 +205,6 @@ const Inspiration = () => {
         />
       </main>
 
-      {/* Mobile Navigation */}
       <BottomNavbar 
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -189,7 +225,6 @@ const Inspiration = () => {
         setNsfwEnabled={setNsfwEnabled}
       />
 
-      {/* Dialogs */}
       <ImageDetailsDialog
         open={detailsDialogOpen}
         onOpenChange={setDetailsDialogOpen}
