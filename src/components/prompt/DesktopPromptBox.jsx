@@ -208,6 +208,11 @@ const DesktopPromptBox = ({
       return;
     }
     
+    if (!hasEnoughCredits) {
+      toast.error('Not enough credits');
+      return;
+    }
+    
     if (typeof onSubmit !== 'function') {
       console.error('onSubmit is not a function', onSubmit);
       toast.error('Generation functionality is not properly configured');

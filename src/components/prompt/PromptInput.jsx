@@ -71,6 +71,12 @@ const PromptInput = ({
   const highlightNsfwWords = (text) => {
     if (!text) return '';
     
+    // Skip highlighting if NSFW is enabled
+    if (nsfwEnabled) {
+      setHighlightedPrompt('');
+      return;
+    }
+    
     const { foundWords } = containsNSFWContent(text);
     if (foundWords.length === 0) {
       setHighlightedPrompt('');
