@@ -1,6 +1,5 @@
 
 import { supabase } from './supabase';
-import { isNsfwModel } from '../utils/modelUtils';
 
 export const deleteImageFromStorage = async (storagePath) => {
   if (!storagePath) {
@@ -39,7 +38,7 @@ export const deleteImageCompletely = async (imageId) => {
   // First, fetch the image record to get the storage path
   const { data: imageRecord, error: fetchError } = await supabase
     .from('user_images')
-    .select('storage_path, model')
+    .select('storage_path')
     .eq('id', imageId)
     .single();
 
@@ -49,11 +48,6 @@ export const deleteImageCompletely = async (imageId) => {
 
   if (!imageRecord?.storage_path) {
     throw new Error('Image record or storage path not found');
-  }
-
-  // Check if this is an NSFW model image - we might want to handle these differently
-  if (isNsfwModel(imageRecord.model)) {
-    console.log('Note: Deleting an image created with NSFW model:', imageRecord.model);
   }
 
   // Delete the image from storage first
@@ -71,7 +65,7 @@ export const adminDeleteImage = async (imageId, reason) => {
   // First, fetch the image record to get user info and storage path
   const { data: imageRecord, error: fetchError } = await supabase
     .from('user_images')
-    .select('storage_path, user_id, prompt, model')
+    .select('storage_path, user_id, prompt')
     .eq('id', imageId)
     .single();
 
@@ -81,13 +75,6 @@ export const adminDeleteImage = async (imageId, reason) => {
 
   if (!imageRecord?.storage_path) {
     throw new Error('Image record or storage path not found');
-  }
-
-  // Check if this is an NSFW model image - these are allowed to contain adult content
-  if (isNsfwModel(imageRecord.model)) {
-    console.log('Warning: Attempting to delete an image created with NSFW model:', imageRecord.model);
-    // You could throw an error here if you want to prevent deletion of NSFW model images
-    // throw new Error('This image was created with an NSFW model and is allowed to contain adult content.');
   }
 
   // Delete the image from storage first

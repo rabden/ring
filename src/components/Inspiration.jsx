@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -5,8 +6,6 @@ import { useFollows } from '@/hooks/useFollows';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
-import { useModelConfigs } from '@/hooks/useModelConfigs';
-import { isNsfwModel } from '@/utils/modelUtils';
 import ImageGallery from '@/components/ImageGallery';
 import DesktopHeader from '@/components/header/DesktopHeader';
 import MobileHeader from '@/components/header/MobileHeader';
@@ -43,7 +42,6 @@ const Inspiration = () => {
   const { isPro } = useProUser();
   const [selectedImageForDelete, setSelectedImageForDelete] = useState(null);
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
-  const { nsfwModelKeys } = useModelConfigs();
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
@@ -61,6 +59,7 @@ const Inspiration = () => {
 
   const isAdmin = userProfile?.is_admin || false;
 
+  // Fetch image owner name for admin dialog
   const { data: imageOwner } = useQuery({
     queryKey: ['imageOwner', selectedImageForDelete?.user_id],
     queryFn: async () => {
@@ -149,10 +148,12 @@ const Inspiration = () => {
           return;
         }
 
+        // Delete from storage
         await supabase.storage
           .from('user-images')
           .remove([image.storage_path]);
 
+        // Delete record
         await supabase
           .from('user_images')
           .delete()
@@ -166,11 +167,6 @@ const Inspiration = () => {
   };
 
   const handleAdminDelete = (image) => {
-    if (isNsfwModel(image.model)) {
-      toast.info('This image was created with an NSFW model and is allowed to contain adult content.');
-      return;
-    }
-    
     setSelectedImageForDelete(image);
     setIsAdminDialogOpen(true);
   };
@@ -280,6 +276,7 @@ const Inspiration = () => {
         image={selectedImage}
       />
       
+      {/* Admin discard confirmation dialog */}
       <AdminDiscardDialog
         open={isAdminDialogOpen}
         onOpenChange={setIsAdminDialogOpen}
