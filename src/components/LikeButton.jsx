@@ -10,6 +10,8 @@ const LikeButton = ({ isLiked, onToggle, className, onLike, isLoading }) => {
   const handleClick = (e) => {
     e.stopPropagation();
     
+    if (isLoading) return; // Prevent multiple clicks during loading
+    
     // Only trigger animation when liking, not unliking
     if (!isLiked) {
       onLike?.();
@@ -40,6 +42,9 @@ const LikeButton = ({ isLiked, onToggle, className, onLike, isLoading }) => {
           isLoading && "opacity-50"
         )} 
       />
+      {isLoading && (
+        <span className="sr-only">Loading</span>
+      )}
     </Button>
   );
 };

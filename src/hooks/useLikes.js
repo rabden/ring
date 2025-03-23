@@ -59,21 +59,25 @@ export const useLikes = (userId) => {
         // Get current image data to check if already liked
         const { data: imageData, error: getError } = await supabase
           .from('user_images')
-          .select('liked_by, user_id, storage_path')
+          .select('liked_by, user_id, storage_path, like_count')
           .eq('id', imageId)
           .single();
         
         if (getError) throw getError;
         
-        const isLiked = imageData.liked_by && imageData.liked_by.includes(userId);
+        const currentLikedBy = imageData.liked_by || [];
+        const isLiked = currentLikedBy.includes(userId);
         let updatedLikedBy;
+        let updatedLikeCount = imageData.like_count || 0;
         
         if (isLiked) {
           // Remove user from liked_by array
-          updatedLikedBy = (imageData.liked_by || []).filter(id => id !== userId);
+          updatedLikedBy = currentLikedBy.filter(id => id !== userId);
+          updatedLikeCount = Math.max(0, updatedLikeCount - 1);
         } else {
           // Add user to liked_by array
-          updatedLikedBy = [...(imageData.liked_by || []), userId];
+          updatedLikedBy = [...currentLikedBy, userId];
+          updatedLikeCount = updatedLikeCount + 1;
           
           // Only create notification if this is a new like (not an unlike)
           if (imageData.user_id && imageData.user_id !== userId) {
@@ -100,15 +104,18 @@ export const useLikes = (userId) => {
           }
         }
         
-        // Update the liked_by array
+        // Update the liked_by array and like_count
         const { error } = await supabase
           .from('user_images')
-          .update({ liked_by: updatedLikedBy })
+          .update({ 
+            liked_by: updatedLikedBy,
+            like_count: updatedLikeCount
+          })
           .eq('id', imageId);
           
         if (error) throw error;
         
-        return { imageId, liked: !isLiked };
+        return { imageId, liked: !isLiked, likeCount: updatedLikeCount };
       } catch (error) {
         console.error("Error in toggleLike:", error);
         toast.error("Failed to update like status");
@@ -118,6 +125,23 @@ export const useLikes = (userId) => {
     onSuccess: (result) => {
       if (result) {
         queryClient.invalidateQueries(['likes', userId]);
+        
+        // Update the image in the cache to reflect the new like status
+        queryClient.setQueryData(['galleryImages'], (oldData) => {
+          if (!oldData) return oldData;
+          
+          return {
+            ...oldData,
+            pages: oldData.pages.map(page => ({
+              ...page,
+              data: page.data.map(image => 
+                image.id === result.imageId 
+                  ? { ...image, like_count: result.likeCount } 
+                  : image
+              )
+            }))
+          };
+        });
       }
     },
     onError: (error) => {
