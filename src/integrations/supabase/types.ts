@@ -86,6 +86,7 @@ export type Database = {
           is_pro: boolean | null
           is_pro_request: boolean | null
           last_refill_time: string | null
+          like_count: number
           updated_at: string | null
         }
         Insert: {
@@ -101,6 +102,7 @@ export type Database = {
           is_pro?: boolean | null
           is_pro_request?: boolean | null
           last_refill_time?: string | null
+          like_count?: number
           updated_at?: string | null
         }
         Update: {
@@ -116,6 +118,7 @@ export type Database = {
           is_pro?: boolean | null
           is_pro_request?: boolean | null
           last_refill_time?: string | null
+          like_count?: number
           updated_at?: string | null
         }
         Relationships: []
