@@ -34,7 +34,7 @@ const MobileProfileMenu = ({ user, credits, bonusCredits, activeTab }) => {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, like_count')
         .eq('id', user.id)
         .single();
       
