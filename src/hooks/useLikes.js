@@ -135,18 +135,18 @@ export const useLikes = (userId) => {
           updatedLikeCount = 0;
         }
         
-        // Update the liked_by array and like_count
-        console.log(`Updating image ${imageId} with new liked_by and like_count:`, { 
-          liked_by: updatedLikedBy,
+        // Critical fix: When removing the last like, we need to ensure liked_by is an empty array, not null
+        // and like_count is explicitly set to 0, not null
+        const updateData = {
+          liked_by: updatedLikedBy.length === 0 ? [] : updatedLikedBy,
           like_count: updatedLikeCount
-        });
+        };
+        
+        console.log(`Updating image ${imageId} with new data:`, updateData);
         
         const { error } = await supabase
           .from('user_images')
-          .update({ 
-            liked_by: updatedLikedBy,
-            like_count: updatedLikeCount
-          })
+          .update(updateData)
           .eq('id', imageId);
           
         if (error) {
