@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -17,8 +18,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useProUser } from '@/hooks/useProUser';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { handleImageDiscard } from '@/utils/discardUtils';
+import { adminDeleteImage } from '@/integrations/supabase/imageUtils';
 import { toast } from 'sonner';
+import AdminDiscardDialog from '@/components/admin/AdminDiscardDialog';
 
 const Inspiration = () => {
   const { session } = useSupabaseAuth();
@@ -38,6 +40,8 @@ const Inspiration = () => {
   const isHeaderVisible = useScrollDirection();
   const [activeTab, setActiveTab] = useState('images');
   const { isPro } = useProUser();
+  const [selectedImageForDelete, setSelectedImageForDelete] = useState(null);
+  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
@@ -54,6 +58,21 @@ const Inspiration = () => {
   });
 
   const isAdmin = userProfile?.is_admin || false;
+
+  // Fetch image owner name for admin dialog
+  const { data: imageOwner } = useQuery({
+    queryKey: ['imageOwner', selectedImageForDelete?.user_id],
+    queryFn: async () => {
+      if (!selectedImageForDelete?.user_id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('id', selectedImageForDelete.user_id)
+        .single();
+      return data;
+    },
+    enabled: !!selectedImageForDelete?.user_id && isAdmin
+  });
 
   useEffect(() => {
     const hash = location.hash.replace('#', '');
@@ -113,25 +132,49 @@ const Inspiration = () => {
     document.body.removeChild(a);
   };
 
-  const handleDiscard = async (imageId, reason) => {
+  const handleDiscard = async (imageId, reason = null, isAdminAction = false) => {
     try {
-      const { data: image } = await supabase
-        .from('user_images')
-        .select('*')
-        .eq('id', imageId)
-        .single();
+      if (isAdminAction) {
+        await adminDeleteImage(imageId, reason);
+      } else {
+        const { data: image } = await supabase
+          .from('user_images')
+          .select('*')
+          .eq('id', imageId)
+          .single();
 
-      if (!image) {
-        toast.error('Image not found');
-        return;
+        if (!image) {
+          toast.error('Image not found');
+          return;
+        }
+
+        // Delete from storage
+        await supabase.storage
+          .from('user-images')
+          .remove([image.storage_path]);
+
+        // Delete record
+        await supabase
+          .from('user_images')
+          .delete()
+          .eq('id', imageId);
       }
-
-      await handleImageDiscard(image, null, isAdmin, reason);
       toast.success('Image deleted successfully');
     } catch (error) {
       console.error('Error deleting image:', error);
       toast.error('Failed to delete image');
     }
+  };
+
+  const handleAdminDelete = (image) => {
+    setSelectedImageForDelete(image);
+    setIsAdminDialogOpen(true);
+  };
+
+  const confirmAdminDelete = (reason) => {
+    handleDiscard(selectedImageForDelete.id, reason, true);
+    setIsAdminDialogOpen(false);
+    setSelectedImageForDelete(null);
   };
 
   return (
@@ -193,6 +236,7 @@ const Inspiration = () => {
           onRemix={handleRemix}
           onViewDetails={handleViewDetails}
           onDiscard={handleDiscard}
+          onAdminDelete={handleAdminDelete}
           nsfwEnabled={nsfwEnabled}
           activeFilters={activeFilters}
           searchQuery={searchQuery}
@@ -202,6 +246,7 @@ const Inspiration = () => {
           showLatest={showLatest}
           following={following}
           className="px-0"
+          isAdmin={isAdmin}
         />
       </main>
 
@@ -229,6 +274,14 @@ const Inspiration = () => {
         open={detailsDialogOpen}
         onOpenChange={setDetailsDialogOpen}
         image={selectedImage}
+      />
+      
+      {/* Admin discard confirmation dialog */}
+      <AdminDiscardDialog
+        open={isAdminDialogOpen}
+        onOpenChange={setIsAdminDialogOpen}
+        onConfirm={confirmAdminDelete}
+        imageOwnerName={imageOwner?.display_name}
       />
     </div>
   );
