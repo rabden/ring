@@ -88,12 +88,14 @@ export const useImageHandlers = ({
       setAspectRatio(image.aspect_ratio);
       setUseAspectRatio(true);
     }
-    setActiveView('input');
+    
+    // Instead of directly setting the activeView, we'll use the navigate function
+    // which will trigger the appropriate effect in ImageGenerator
     navigate('/#imagegenerate');
   }, [
     session, setIsRemixMode, setPrompt, setSeed, setRandomizeSeed, 
     setWidth, setHeight, setModel, modelConfigs, setQuality, 
-    setAspectRatio, setUseAspectRatio, setActiveView, navigate
+    setAspectRatio, setUseAspectRatio, navigate
   ]);
 
   const handleDownload = useCallback(async (imageUrl, prompt) => {

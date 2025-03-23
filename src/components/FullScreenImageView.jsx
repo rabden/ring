@@ -86,7 +86,10 @@ const FullScreenImageView = ({
       toast.error('Please sign in to remix images');
       return;
     }
-    navigate(`/?remix=${image.id}#myimages`, { replace: true });
+    
+    if (image) {
+      handleRemix(image);
+    }
   };
 
   const detailItems = image ? [
@@ -284,7 +287,7 @@ const FullScreenImageView = ({
                         </Button>
                       )}
                       <Button 
-                        onClick={onDownload} 
+                        onClick={() => onDownload(image.url, image.prompt)} 
                         variant="ghost" 
                         size="sm"
                         className={cn(

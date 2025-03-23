@@ -34,6 +34,7 @@ const ImageGenerator = () => {
   const [isPrivate, setIsPrivate] = useState(false);
   const [showPrivate, setShowPrivate] = useState(false);
   const [negativePrompt, setNegativePrompt] = useState("");
+  const [remixProcessed, setRemixProcessed] = useState(false);
 
   const queryClient = useQueryClient();
   const isHeaderVisible = useScrollDirection();
@@ -184,6 +185,7 @@ const ImageGenerator = () => {
     }
   }, [window.location.hash]);
 
+  // Use a separate useEffect to handle remix ID to avoid loops
   const { data: remixImage, isLoading: isRemixLoading } = useQuery({
     queryKey: ['remixImage', remixId],
     queryFn: async () => {
@@ -196,11 +198,13 @@ const ImageGenerator = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!remixId,
+    enabled: !!remixId && !remixProcessed,
   });
 
   useEffect(() => {
-    if (remixImage) {
+    if (remixImage && !remixProcessed) {
+      // Mark as processed to prevent multiple applications
+      setRemixProcessed(true);
       setIsRemixMode(true);
       
       setPrompt(remixImage.prompt);
@@ -210,6 +214,7 @@ const ImageGenerator = () => {
       setHeight(remixImage.height);
       setModel(remixImage.model);
       setQuality(remixImage.quality);
+      
       if (remixImage.aspect_ratio) {
         setAspectRatio(remixImage.aspect_ratio);
         setUseAspectRatio(true);
@@ -217,11 +222,17 @@ const ImageGenerator = () => {
       
       setActiveTab('input');
       
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete('remix');
-      window.history.replaceState({}, '', `${window.location.pathname}${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`);
+      // Clean up URL without causing a refresh or state update
+      if (window.history.replaceState) {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+      }
     }
-  }, [remixImage, searchParams, setActiveTab, setAspectRatio, setHeight, setIsRemixMode, setModel, setPrompt, setQuality, setRandomizeSeed, setSeed, setUseAspectRatio, setWidth]);
+  }, [
+    remixImage, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
+    setIsRemixMode, setModel, setPrompt, setQuality, setRandomizeSeed, 
+    setSeed, setUseAspectRatio, setWidth
+  ]);
   
   useEffect(() => {
     return () => {
@@ -229,7 +240,7 @@ const ImageGenerator = () => {
     };
   }, [setIsRemixMode]);
 
-  if (isRemixLoading) {
+  if (isRemixLoading && !remixProcessed) {
     return <div>Loading remix...</div>;
   }
 
