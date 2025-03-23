@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
@@ -9,14 +10,14 @@ export const useLikes = (userId) => {
   useEffect(() => {
     if (!userId) return;
 
-    // Subscribe to changes in user_image_likes table
+    // Subscribe to changes in user_images table
     const subscription = supabase
       .channel('likes_channel')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'user_image_likes',
-        filter: `user_id=eq.${userId}`,
+        table: 'user_images',
+        filter: `liked_by cs.{${userId}}`,
       }, () => {
         // Invalidate and refetch when changes occur
         queryClient.invalidateQueries(['likes', userId]);
@@ -33,12 +34,12 @@ export const useLikes = (userId) => {
     queryFn: async () => {
       if (!userId) return [];
       const { data, error } = await supabase
-        .from('user_image_likes')
-        .select('image_id')
-        .eq('user_id', userId);
+        .from('user_images')
+        .select('id')
+        .filter('liked_by', 'cs', `{${userId}}`);
       
       if (error) throw error;
-      return data.map(like => like.image_id);
+      return data.map(image => image.id);
     },
     enabled: !!userId
   });
@@ -48,65 +49,63 @@ export const useLikes = (userId) => {
       const isLiked = userLikes?.includes(imageId);
       
       if (isLiked) {
+        // Remove userId from liked_by array
+        const { data: imageData, error: getError } = await supabase
+          .from('user_images')
+          .select('liked_by')
+          .eq('id', imageId)
+          .single();
+        
+        if (getError) throw getError;
+        
+        const updatedLikedBy = (imageData.liked_by || []).filter(id => id !== userId);
+        
         const { error } = await supabase
-          .from('user_image_likes')
-          .delete()
-          .eq('user_id', userId)
-          .eq('image_id', imageId);
+          .from('user_images')
+          .update({ liked_by: updatedLikedBy })
+          .eq('id', imageId);
+          
         if (error) throw error;
       } else {
-        // First check if the like already exists
-        const { data: existingLike } = await supabase
-          .from('user_image_likes')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('image_id', imageId)
-          .maybeSingle();
+        // Get the image details
+        const { data: imageData, error: imageError } = await supabase
+          .from('user_images')
+          .select('*')
+          .eq('id', imageId)
+          .single();
+        
+        if (imageError) throw imageError;
 
-        // Only proceed with insert if like doesn't exist
-        if (!existingLike) {
-          // Get the image details
-          const { data: imageData, error: imageError } = await supabase
-            .from('user_images')
-            .select('*')
-            .eq('id', imageId)
-            .single();
+        // Add userId to liked_by array
+        const updatedLikedBy = [...(imageData.liked_by || []), userId];
+        
+        const { error } = await supabase
+          .from('user_images')
+          .update({ liked_by: updatedLikedBy })
+          .eq('id', imageId);
           
-          if (imageError) throw imageError;
+        if (error) throw error;
 
-          // Get current user's profile
-          const { data: userProfile } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('id', userId)
-            .single();
+        // Get current user's profile
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('display_name, avatar_url')
+          .eq('id', userId)
+          .single();
 
-          // Insert the like
-          const { error } = await supabase
-            .from('user_image_likes')
-            .insert([{ 
-              user_id: userId, 
-              image_id: imageId,
-              created_by: imageData.user_id 
-            }]);
-          if (error && error.code !== '23505') throw error; // Ignore duplicate key errors
-
-          // Create notification for the image owner
-          if (!error) {
-            const { error: notificationError } = await supabase
-              .from('notifications')
-              .insert([{
-                user_id: imageData.user_id,
-                title: 'New Like',
-                message: `${userProfile?.display_name || 'Someone'} liked your image`,
-                image_url: supabase.storage.from('user-images').getPublicUrl(imageData.storage_path).data.publicUrl,
-                link: `/profile/${userId}`,
-                link_names: 'View Profile'
-              }]);
-            
-            if (notificationError) throw notificationError;
-          }
-        }
+        // Create notification for the image owner
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert([{
+            user_id: imageData.user_id,
+            title: 'New Like',
+            message: `${userProfile?.display_name || 'Someone'} liked your image`,
+            image_url: supabase.storage.from('user-images').getPublicUrl(imageData.storage_path).data.publicUrl,
+            link: `/profile/${userId}`,
+            link_names: 'View Profile'
+          }]);
+        
+        if (notificationError) throw notificationError;
       }
     },
     onSuccess: () => {
