@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -20,6 +21,7 @@ import NSFWAlert from '@/components/alerts/NSFWAlert';
 import { containsNSFWContent } from '@/utils/nsfwUtils';
 
 const ImageGenerator = () => {
+  // Always initialize all state and hooks at the top level
   const [searchParams] = useSearchParams();
   const remixId = searchParams.get('remix');
   const { session } = useSupabaseAuth();
@@ -27,20 +29,24 @@ const ImageGenerator = () => {
   const [activeTab, setActiveTab] = useState('images');
   const [showNSFWAlert, setShowNSFWAlert] = useState(false);
   const [nsfwFoundWords, setNsfwFoundWords] = useState([]);
+  const [activeFilters, setActiveFilters] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [showPrivate, setShowPrivate] = useState(false);
+  const [negativePrompt, setNegativePrompt] = useState("");
 
+  const queryClient = useQueryClient();
+  const isHeaderVisible = useScrollDirection();
+  const { nsfwEnabled, setNsfwEnabled, setIsRemixMode } = useUserPreferences();
+  const { generatingImages, setGeneratingImages } = useGeneratingImages();
+  const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
+  const { data: isPro } = useProUser(session?.user?.id);
+  const { data: modelConfigs } = useModelConfigs();
+  
   const {
     isImproving,
     improveCurrentPrompt
   } = usePromptImprovement(session?.user?.id);
-
-  const [activeFilters, setActiveFilters] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isPrivate, setIsPrivate] = useState(false);
-  const isHeaderVisible = useScrollDirection();
-  const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
-  const { data: isPro } = useProUser(session?.user?.id);
-  const { data: modelConfigs } = useModelConfigs();
-  const queryClient = useQueryClient();
 
   const {
     prompt, setPrompt, seed, setSeed, randomizeSeed, setRandomizeSeed,
@@ -53,11 +59,6 @@ const ImageGenerator = () => {
     activeView, setActiveView,
     imageCount, setImageCount
   } = useImageGeneratorState();
-
-  const { nsfwEnabled, setNsfwEnabled, setIsRemixMode } = useUserPreferences();
-  const { generatingImages, setGeneratingImages } = useGeneratingImages();
-  const [showPrivate, setShowPrivate] = useState(false);
-  const [negativePrompt, setNegativePrompt] = useState("");
 
   const defaultModel = useMemo(() => {
     return nsfwEnabled ? 'nsfwMaster' : 'flux';
@@ -85,6 +86,92 @@ const ImageGenerator = () => {
       setShowNSFWAlert(true);
     }
   });
+
+  // Define handleGenerateImage with useCallback to prevent unnecessary re-renders
+  const handleGenerateImage = useCallback(async () => {
+    console.log('handleGenerateImage called', {prompt, session, isImproving});
+    
+    if (!prompt.trim()) {
+      toast.error('Please enter a prompt');
+      return;
+    }
+    if (!session) {
+      toast.error('Please sign in to generate images');
+      return;
+    }
+
+    if (!nsfwEnabled) {
+      const { isNSFW, foundWords } = containsNSFWContent(prompt);
+      if (isNSFW) {
+        setNsfwFoundWords(foundWords);
+        setShowNSFWAlert(true);
+        return;
+      }
+    }
+
+    setIsGenerating(true);
+    try {
+      let finalPrompt = prompt;
+      
+      if (isImproving) {
+        const improved = await improveCurrentPrompt(prompt, model, modelConfigs);
+        if (!improved) {
+          setIsGenerating(false);
+          return;
+        }
+        finalPrompt = improved;
+        setPrompt(improved);
+      }
+
+      console.log('Calling generateImage with:', {isPrivate, finalPrompt});
+      await generateImage(isPrivate, finalPrompt);
+    } catch (error) {
+      toast.error('Failed to generate image');
+      console.error('Generation error:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [
+    prompt, session, isImproving, nsfwEnabled, generateImage, 
+    isPrivate, improveCurrentPrompt, model, modelConfigs, setPrompt
+  ]);
+
+  const handleAspectRatioChange = useCallback((newRatio) => {
+    setAspectRatio(newRatio);
+  }, [setAspectRatio]);
+
+  // Define imageHandlers object - ensure this is always created regardless of conditions
+  const imageHandlers = useImageHandlers({
+    generateImage: handleGenerateImage,
+    setSelectedImage,
+    setFullScreenViewOpen,
+    setModel,
+    setPrompt,
+    setSeed,
+    setRandomizeSeed,
+    setWidth,
+    setHeight,
+    setQuality,
+    quality,
+    setAspectRatio,
+    setUseAspectRatio,
+    aspectRatios: [],
+    session,
+    queryClient,
+    activeView,
+    setDetailsDialogOpen,
+    setActiveView,
+  });
+
+  // Extract all handlers from the imageHandlers object
+  const {
+    handleImageClick,
+    handleModelChange,
+    handleRemix,
+    handleDownload,
+    handleDiscard,
+    handleViewDetails,
+  } = imageHandlers;
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -134,95 +221,17 @@ const ImageGenerator = () => {
       newSearchParams.delete('remix');
       window.history.replaceState({}, '', `${window.location.pathname}${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`);
     }
-  }, [remixImage]);
+  }, [remixImage, searchParams, setActiveTab, setAspectRatio, setHeight, setIsRemixMode, setModel, setPrompt, setQuality, setRandomizeSeed, setSeed, setUseAspectRatio, setWidth]);
   
   useEffect(() => {
     return () => {
       setIsRemixMode(false);
     };
-  }, []);
+  }, [setIsRemixMode]);
 
   if (isRemixLoading) {
     return <div>Loading remix...</div>;
   }
-
-  const handleGenerateImage = async () => {
-    console.log('handleGenerateImage called', {prompt, session, isImproving});
-    
-    if (!prompt.trim()) {
-      toast.error('Please enter a prompt');
-      return;
-    }
-    if (!session) {
-      toast.error('Please sign in to generate images');
-      return;
-    }
-
-    if (!nsfwEnabled) {
-      const { isNSFW, foundWords } = containsNSFWContent(prompt);
-      if (isNSFW) {
-        setNsfwFoundWords(foundWords);
-        setShowNSFWAlert(true);
-        return;
-      }
-    }
-
-    setIsGenerating(true);
-    try {
-      let finalPrompt = prompt;
-      
-      if (isImproving) {
-        const improved = await improveCurrentPrompt(prompt, model, modelConfigs);
-        if (!improved) {
-          setIsGenerating(false);
-          return;
-        }
-        finalPrompt = improved;
-        setPrompt(improved);
-      }
-
-      console.log('Calling generateImage with:', {isPrivate, finalPrompt});
-      await generateImage(isPrivate, finalPrompt);
-    } catch (error) {
-      toast.error('Failed to generate image');
-      console.error('Generation error:', error);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleAspectRatioChange = (newRatio) => {
-    setAspectRatio(newRatio);
-  };
-
-  const {
-    handleImageClick,
-    handleModelChange,
-    handlePromptKeyDown,
-    handleRemix,
-    handleDownload,
-    handleDiscard,
-    handleViewDetails,
-  } = useImageHandlers({
-    generateImage: handleGenerateImage,
-    setSelectedImage,
-    setFullScreenViewOpen,
-    setModel,
-    setWidth,
-    setHeight,
-    setPrompt,
-    setSeed,
-    setRandomizeSeed,
-    setQuality,
-    setAspectRatio,
-    setUseAspectRatio,
-    aspectRatios: [],
-    session,
-    queryClient,
-    activeView,
-    setDetailsDialogOpen,
-    setActiveView,
-  });
 
   return (
     <>

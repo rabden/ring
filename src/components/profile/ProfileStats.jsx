@@ -13,9 +13,9 @@ const StatItem = ({ icon: Icon, label, value }) => (
 const ProfileStats = ({ followersCount, followingCount, totalLikes }) => {
   return (
     <div className="flex gap-4 justify-center">
-      <StatItem icon={Users} label="followers" value={followersCount} />
-      <StatItem icon={UserPlus} label="following" value={followingCount} />
-      <StatItem icon={Heart} label="likes" value={totalLikes} />
+      <StatItem icon={Users} label="followers" value={followersCount || 0} />
+      <StatItem icon={UserPlus} label="following" value={followingCount || 0} />
+      <StatItem icon={Heart} label="likes" value={totalLikes || 0} />
     </div>
   );
 };
