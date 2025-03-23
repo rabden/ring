@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -57,7 +58,7 @@ const PublicProfile = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*, is_pro')
+        .select('*, is_pro, like_count')
         .eq('id', userId)
         .single();
       
@@ -70,16 +71,12 @@ const PublicProfile = () => {
   const { data: stats, isLoading: isStatsLoading } = useQuery({
     queryKey: ['userStats', userId],
     queryFn: async () => {
-      const [imagesResult, likesResult, followersResult, followingResult] = await Promise.all([
+      const [imagesResult, followersResult, followingResult] = await Promise.all([
         supabase
           .from('user_images')
           .select('*', { count: 'exact' })
           .eq('user_id', userId)
           .eq('is_private', false),
-        supabase
-          .from('user_image_likes')
-          .select('*', { count: 'exact' })
-          .eq('created_by', userId),
         supabase
           .from('user_follows')
           .select('*', { count: 'exact' })
@@ -92,7 +89,7 @@ const PublicProfile = () => {
 
       return {
         totalImages: imagesResult.count || 0,
-        totalLikes: likesResult.count || 0,
+        // We don't need to calculate totalLikes anymore
         followers: followersResult.count || 0,
         following: followingResult.count || 0
       };
@@ -131,6 +128,9 @@ const PublicProfile = () => {
       </motion.div>
     );
   }
+
+  // Use the profile.like_count field directly
+  const totalLikes = profile.like_count || 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -203,7 +203,7 @@ const PublicProfile = () => {
                       <span className="text-xs text-muted-foreground/80">Images</span>
                     </div>
                     <div className="text-center">
-                      <span className="block text-base sm:text-lg font-medium text-foreground">{stats.totalLikes}</span>
+                      <span className="block text-base sm:text-lg font-medium text-foreground">{totalLikes}</span>
                       <span className="text-xs text-muted-foreground/80">Likes</span>
                     </div>
                     <div className="text-center">

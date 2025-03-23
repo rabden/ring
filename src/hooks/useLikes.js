@@ -1,6 +1,8 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 export const useLikes = (userId) => {
   const queryClient = useQueryClient();
@@ -9,17 +11,19 @@ export const useLikes = (userId) => {
   useEffect(() => {
     if (!userId) return;
 
-    // Subscribe to changes in user_image_likes table
+    // Subscribe to changes in user_images table
     const subscription = supabase
       .channel('likes_channel')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'user_image_likes',
-        filter: `user_id=eq.${userId}`,
+        table: 'user_images',
+        filter: `liked_by cs.{${userId}}`,
       }, () => {
         // Invalidate and refetch when changes occur
-        queryClient.invalidateQueries(['likes', userId]);
+        queryClient.invalidateQueries({
+          queryKey: ['likes', userId]
+        });
       })
       .subscribe();
 
@@ -28,71 +32,85 @@ export const useLikes = (userId) => {
     };
   }, [userId, queryClient]);
 
-  const { data: userLikes } = useQuery({
+  const { data: userLikes = [] } = useQuery({
     queryKey: ['likes', userId],
     queryFn: async () => {
       if (!userId) return [];
       const { data, error } = await supabase
-        .from('user_image_likes')
-        .select('image_id')
-        .eq('user_id', userId);
+        .from('user_images')
+        .select('id')
+        .filter('liked_by', 'cs', `{${userId}}`);
       
-      if (error) throw error;
-      return data.map(like => like.image_id);
+      if (error) {
+        console.error("Error fetching likes:", error);
+        return [];
+      }
+      return data.map(image => image.id);
     },
     enabled: !!userId
   });
 
   const toggleLike = useMutation({
     mutationFn: async (imageId) => {
-      const isLiked = userLikes?.includes(imageId);
+      if (!userId) {
+        toast.error('Please sign in to like images');
+        return null;
+      }
       
-      if (isLiked) {
-        const { error } = await supabase
-          .from('user_image_likes')
-          .delete()
-          .eq('user_id', userId)
-          .eq('image_id', imageId);
-        if (error) throw error;
-      } else {
-        // First check if the like already exists
-        const { data: existingLike } = await supabase
-          .from('user_image_likes')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('image_id', imageId)
-          .maybeSingle();
-
-        // Only proceed with insert if like doesn't exist
-        if (!existingLike) {
-          // Get the image details
-          const { data: imageData, error: imageError } = await supabase
-            .from('user_images')
-            .select('*')
-            .eq('id', imageId)
-            .single();
+      console.log(`Attempting to toggle like for image ${imageId} by user ${userId}`);
+      
+      try {
+        // Get current image data to check if already liked
+        const { data: imageData, error: getError } = await supabase
+          .from('user_images')
+          .select('liked_by, user_id, storage_path, like_count')
+          .eq('id', imageId)
+          .single();
+        
+        if (getError) {
+          console.error("Error fetching image data:", getError);
+          throw getError;
+        }
+        
+        console.log("Image data fetched:", imageData);
+        
+        // Ensure we have valid arrays and numbers
+        const currentLikedBy = Array.isArray(imageData.liked_by) ? imageData.liked_by : [];
+        const isLiked = currentLikedBy.includes(userId);
+        
+        // Make sure like_count is a number (not null)
+        let updatedLikeCount = typeof imageData.like_count === 'number' ? imageData.like_count : 0;
+        let updatedLikedBy;
+        
+        console.log(`Current like status: ${isLiked ? 'Liked' : 'Not liked'}`);
+        console.log(`Current liked_by array:`, currentLikedBy);
+        console.log(`Current like_count:`, updatedLikeCount);
+        
+        if (isLiked) {
+          // Remove user from liked_by array
+          updatedLikedBy = currentLikedBy.filter(id => id !== userId);
+          updatedLikeCount = Math.max(0, updatedLikeCount - 1);
+          console.log(`Removing user ${userId} from liked_by`);
+          console.log(`Updated liked_by array:`, updatedLikedBy);
+          console.log(`Updated like_count:`, updatedLikeCount);
+        } else {
+          // Add user to liked_by array
+          updatedLikedBy = [...currentLikedBy, userId];
+          updatedLikeCount = updatedLikeCount + 1;
+          console.log(`Adding user ${userId} to liked_by`);
+          console.log(`Updated liked_by array:`, updatedLikedBy);
+          console.log(`Updated like_count:`, updatedLikeCount);
           
-          if (imageError) throw imageError;
+          // Only create notification if this is a new like (not an unlike)
+          if (imageData.user_id && imageData.user_id !== userId) {
+            // Get current user's profile
+            const { data: userProfile } = await supabase
+              .from('profiles')
+              .select('display_name, avatar_url')
+              .eq('id', userId)
+              .single();
 
-          // Get current user's profile
-          const { data: userProfile } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('id', userId)
-            .single();
-
-          // Insert the like
-          const { error } = await supabase
-            .from('user_image_likes')
-            .insert([{ 
-              user_id: userId, 
-              image_id: imageId,
-              created_by: imageData.user_id 
-            }]);
-          if (error && error.code !== '23505') throw error; // Ignore duplicate key errors
-
-          // Create notification for the image owner
-          if (!error) {
+            // Create notification for the image owner
             const { error: notificationError } = await supabase
               .from('notifications')
               .insert([{
@@ -104,18 +122,70 @@ export const useLikes = (userId) => {
                 link_names: 'View Profile'
               }]);
             
-            if (notificationError) throw notificationError;
+            if (notificationError) console.error("Failed to create notification:", notificationError);
           }
         }
+        
+        // We now have database triggers that ensure liked_by is an array and like_count matches,
+        // but we'll still be explicit here to prevent any issues
+        const updateData = {
+          liked_by: updatedLikedBy,
+          like_count: updatedLikeCount
+        };
+        
+        console.log(`Updating image ${imageId} with new data:`, updateData);
+        
+        const { error } = await supabase
+          .from('user_images')
+          .update(updateData)
+          .eq('id', imageId);
+          
+        if (error) {
+          console.error("Error updating like status:", error);
+          throw error;
+        }
+        
+        console.log(`Like status updated successfully`);
+        return { imageId, liked: !isLiked, likeCount: updatedLikeCount };
+      } catch (error) {
+        console.error("Error in toggleLike:", error);
+        toast.error("Failed to update like status");
+        throw error;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['likes', userId]);
+    onSuccess: (result) => {
+      if (result) {
+        console.log(`Like toggle success:`, result);
+        queryClient.invalidateQueries({
+          queryKey: ['likes', userId]
+        });
+        
+        // Update the image in the cache to reflect the new like status
+        queryClient.setQueryData(['galleryImages'], (oldData) => {
+          if (!oldData) return oldData;
+          
+          return {
+            ...oldData,
+            pages: oldData.pages.map(page => ({
+              ...page,
+              data: page.data.map(image => 
+                image.id === result.imageId 
+                  ? { ...image, like_count: result.likeCount } 
+                  : image
+              )
+            }))
+          };
+        });
+      }
+    },
+    onError: (error) => {
+      console.error("Error toggling like:", error);
     }
   });
 
   return {
-    userLikes: userLikes || [],
-    toggleLike: toggleLike.mutate
+    userLikes,
+    toggleLike: toggleLike.mutate,
+    isLoading: toggleLike.isLoading
   };
 };

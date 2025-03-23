@@ -37,7 +37,7 @@ const ProfileMenu = ({
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, like_count')
         .eq('id', user.id)
         .single();
       
@@ -76,21 +76,6 @@ const ProfileMenu = ({
     enabled: !!user?.id
   });
 
-  const { data: totalLikes = 0 } = useQuery({
-    queryKey: ['totalLikes', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return 0;
-      const { count, error } = await supabase
-        .from('user_image_likes')
-        .select('*', { count: 'exact' })
-        .eq('created_by', user.id);
-      
-      if (error) throw error;
-      return count || 0;
-    },
-    enabled: !!user?.id
-  });
-
   const onAvatarUpload = async (event) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -105,6 +90,7 @@ const ProfileMenu = ({
   if (!user) return null;
 
   const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || '';
+  const totalLikes = profile?.like_count || 0;
 
   return (
     <>

@@ -1,3 +1,5 @@
+
+import { useCallback } from 'react'
 import { deleteImageCompletely } from '@/integrations/supabase/imageUtils'
 import { useModelConfigs } from '@/hooks/useModelConfigs'
 import { useProUser } from '@/hooks/useProUser'
@@ -28,21 +30,23 @@ export const useImageHandlers = ({
   setDetailsDialogOpen,
   setActiveView,
 }) => {
+  // Always initialize hooks at the top level, never conditionally
   const navigate = useNavigate();
   const { data: modelConfigs } = useModelConfigs();
   const { data: isPro = false } = useProUser(session?.user?.id);
   const { setIsRemixMode } = useUserPreferences();
 
-  const handleGenerateImage = async () => {
+  // Convert all handler functions to useCallback to prevent unnecessary re-renders
+  const handleGenerateImage = useCallback(async () => {
     await generateImage()
-  }
+  }, [generateImage]);
 
-  const handleImageClick = (image) => {
+  const handleImageClick = useCallback((image) => {
     setSelectedImage(image)
     setFullScreenViewOpen(true)
-  }
+  }, [setSelectedImage, setFullScreenViewOpen]);
 
-  const handleModelChange = (newModel) => {
+  const handleModelChange = useCallback((newModel) => {
     const modelConfig = modelConfigs?.[newModel];
     if (modelConfig?.qualityLimits) {
       // If current quality is not in the allowed qualities for this model, set to HD
@@ -51,9 +55,9 @@ export const useImageHandlers = ({
       }
     }
     setModel(newModel);
-  }
+  }, [modelConfigs, quality, setQuality, setModel]);
 
-  const handleRemix = (image) => {
+  const handleRemix = useCallback((image) => {
     if (!session) {
       return;
     }
@@ -84,20 +88,26 @@ export const useImageHandlers = ({
       setAspectRatio(image.aspect_ratio);
       setUseAspectRatio(true);
     }
-    setActiveView('input');
+    
+    // Instead of directly setting the activeView, we'll use the navigate function
+    // which will trigger the appropriate effect in ImageGenerator
     navigate('/#imagegenerate');
-  }
+  }, [
+    session, setIsRemixMode, setPrompt, setSeed, setRandomizeSeed, 
+    setWidth, setHeight, setModel, modelConfigs, setQuality, 
+    setAspectRatio, setUseAspectRatio, navigate
+  ]);
 
-  const handleDownload = async (imageUrl, prompt) => {
+  const handleDownload = useCallback(async (imageUrl, prompt) => {
     const a = document.createElement('a');
     a.href = imageUrl;
     a.download = `${prompt}.png`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }
+  }, []);
 
-  const handleDiscard = async (imageId) => {
+  const handleDiscard = useCallback(async (imageId) => {
     if (!imageId) {
       return;
     }
@@ -107,12 +117,12 @@ export const useImageHandlers = ({
     } catch (error) {
       console.error('Error deleting image:', error);
     }
-  }
+  }, [queryClient]);
 
-  const handleViewDetails = (image) => {
+  const handleViewDetails = useCallback((image) => {
     setSelectedImage(image);
     setDetailsDialogOpen(true);
-  }
+  }, [setSelectedImage, setDetailsDialogOpen]);
 
   return {
     handleGenerateImage,

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Eraser, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -53,7 +52,8 @@ const DesktopPromptBox = ({
   seed,
   setSeed,
   randomizeSeed,
-  setRandomizeSeed
+  setRandomizeSeed,
+  nsfwEnabled
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -68,7 +68,6 @@ const DesktopPromptBox = ({
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const [internalSettingsActive, setInternalSettingsActive] = useState(!settingsActive);
 
-  // Calculate container width and textarea height based on settings visibility
   const containerMaxWidth = internalSettingsActive ? "max-w-[950px]" : "max-w-[800px]";
   const textareaHeight = internalSettingsActive ? "min-h-[350px]" : "min-h-[280px]";
 
@@ -114,17 +113,23 @@ const DesktopPromptBox = ({
     }
   }, [settingsActive, onSettingsToggle]);
 
-  // Add effect to highlight NSFW words when prompt changes
   useEffect(() => {
     if (prompt) {
-      highlightNsfwWords(prompt);
+      if (!nsfwEnabled) {
+        highlightNsfwWords(prompt);
+      } else {
+        setHighlightedPrompt('');
+      }
     } else {
       setHighlightedPrompt('');
     }
-  }, [prompt]);
+  }, [prompt, nsfwEnabled]);
 
   const highlightNsfwWords = (text) => {
-    if (!text) return '';
+    if (!text || nsfwEnabled) {
+      setHighlightedPrompt('');
+      return;
+    }
     
     const { foundWords } = containsNSFWContent(text);
     if (foundWords.length === 0) {
@@ -132,13 +137,10 @@ const DesktopPromptBox = ({
       return;
     }
 
-    // Create regex pattern to match all NSFW words (with word boundaries)
     const wordPattern = foundWords.map(word => {
-      // For multi-word terms
       if (word.includes(' ')) {
         return word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       }
-      // For single words with word boundaries
       return `\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`;
     }).join('|');
 
@@ -287,7 +289,7 @@ const DesktopPromptBox = ({
                 <textarea
                   ref={textareaRef}
                   value={prompt}
-                  onChange={handlePromptChange}
+                  onChange={onChange}
                   placeholder={PROMPT_TIPS[currentTipIndex]}
                   className={cn(
                     "w-full resize-none bg-transparent text-base focus:outline-none",
@@ -296,7 +298,7 @@ const DesktopPromptBox = ({
                     "transition-all duration-300",
                     textareaHeight,
                     isImproving && "opacity-80",
-                    highlightedPrompt && "opacity-0" // Hide when we have highlighted content
+                    highlightedPrompt && "opacity-0"
                   )}
                   style={{ 
                     caretColor: 'currentColor',

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useQuery } from '@tanstack/react-query';
@@ -199,7 +198,7 @@ const UserProfile = () => {
       if (!session?.user?.id) return null;
       
       try {
-        const [followersResult, followingResult, likesResult, profileResult, imagesResult] = await Promise.all([
+        const [followersResult, followingResult, profileResult, imagesResult] = await Promise.all([
           supabase
             .from('user_follows')
             .select('*', { count: 'exact' })
@@ -209,12 +208,8 @@ const UserProfile = () => {
             .select('*', { count: 'exact' })
             .eq('follower_id', session.user.id),
           supabase
-            .from('user_image_likes')
-            .select('*', { count: 'exact' })
-            .eq('created_by', session.user.id),
-          supabase
             .from('profiles')
-            .select('credit_count, bonus_credits, followers_count, following_count')
+            .select('credit_count, bonus_credits, followers_count, following_count, like_count')
             .eq('id', session.user.id)
             .single(),
           supabase
@@ -226,7 +221,7 @@ const UserProfile = () => {
         return {
           followers: profileResult.data?.followers_count || 0,
           following: profileResult.data?.following_count || 0,
-          likes: likesResult.count || 0,
+          likes: profileResult.data?.like_count || 0,
           credits: profileResult.data?.credit_count || 0,
           bonusCredits: profileResult.data?.bonus_credits || 0,
           totalImages: imagesResult.count || 0
@@ -343,7 +338,6 @@ const UserProfile = () => {
         animate={{ opacity: 1 }}
         className="container max-w-5xl mx-auto py-6 px-1 space-y-4"
       >
-        {/* Header - Updated with gradient text */}
         <div className="flex items-center justify-between gap-4 mb-6">
           <Link 
             to="/" 
@@ -484,7 +478,6 @@ const UserProfile = () => {
           </SettingsCard>
         </div>
 
-        {/* Followers and Following Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <UserSection 
             title="Followers"
@@ -498,7 +491,6 @@ const UserProfile = () => {
           />
         </div>
 
-        {/* Private Images */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -568,3 +560,4 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
+

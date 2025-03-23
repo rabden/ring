@@ -1,16 +1,14 @@
 
-import { useModelConfigs } from '@/hooks/useModelConfigs';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 
 export const useImageRemix = (session, onRemix, onClose) => {
   const navigate = useNavigate();
-  const isMobile = useMediaQuery('(max-width: 768px)');
   const { setIsRemixMode } = useUserPreferences();
 
-  const handleRemix = (image) => {
+  const handleRemix = useCallback((image) => {
     if (!session) {
       toast.error('Please sign in to remix images');
       return;
@@ -27,10 +25,9 @@ export const useImageRemix = (session, onRemix, onClose) => {
       onClose();
     }
 
-    // Navigate with remix parameter before the hash
-    const hash = isMobile ? '#imagegenerate' : '#myimages';
-    navigate(`/?remix=${image.id}${hash}`, { replace: true });
-  };
+    // Use query parameter instead of hash to avoid infinite loop with useEffect reactions
+    navigate(`/?remix=${image.id}`, { replace: true });
+  }, [session, onRemix, onClose, navigate, setIsRemixMode]);
 
   return { handleRemix };
 };

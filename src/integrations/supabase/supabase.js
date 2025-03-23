@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
@@ -39,5 +40,12 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     storageKey: 'sb-auth-token',
     flowType: 'pkce',
     debug: import.meta.env.DEV // Enable debug logs in development
+  },
+  realtime: {
+    // Configure realtime to work properly with our tables 
+    // that have been enabled for real-time updates
+    params: {
+      eventsPerSecond: 10
+    }
   }
 });

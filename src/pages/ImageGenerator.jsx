@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -27,20 +27,25 @@ const ImageGenerator = () => {
   const [activeTab, setActiveTab] = useState('images');
   const [showNSFWAlert, setShowNSFWAlert] = useState(false);
   const [nsfwFoundWords, setNsfwFoundWords] = useState([]);
+  const [activeFilters, setActiveFilters] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [showPrivate, setShowPrivate] = useState(false);
+  const [negativePrompt, setNegativePrompt] = useState("");
+  const [remixProcessed, setRemixProcessed] = useState(false);
 
+  const queryClient = useQueryClient();
+  const isHeaderVisible = useScrollDirection();
+  const { nsfwEnabled, setNsfwEnabled, setIsRemixMode } = useUserPreferences();
+  const { generatingImages, setGeneratingImages } = useGeneratingImages();
+  const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
+  const { data: isPro } = useProUser(session?.user?.id);
+  const { data: modelConfigs } = useModelConfigs();
+  
   const {
     isImproving,
     improveCurrentPrompt
   } = usePromptImprovement(session?.user?.id);
-
-  const [activeFilters, setActiveFilters] = useState({});
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isPrivate, setIsPrivate] = useState(false);
-  const isHeaderVisible = useScrollDirection();
-  const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
-  const { data: isPro } = useProUser(session?.user?.id);
-  const { data: modelConfigs } = useModelConfigs();
-  const queryClient = useQueryClient();
 
   const {
     prompt, setPrompt, seed, setSeed, randomizeSeed, setRandomizeSeed,
@@ -53,11 +58,6 @@ const ImageGenerator = () => {
     activeView, setActiveView,
     imageCount, setImageCount
   } = useImageGeneratorState();
-
-  const { nsfwEnabled, setNsfwEnabled, setIsRemixMode } = useUserPreferences();
-  const { generatingImages, setGeneratingImages } = useGeneratingImages();
-  const [showPrivate, setShowPrivate] = useState(false);
-  const [negativePrompt, setNegativePrompt] = useState("");
 
   const defaultModel = useMemo(() => {
     return nsfwEnabled ? 'nsfwMaster' : 'flux';
@@ -86,67 +86,7 @@ const ImageGenerator = () => {
     }
   });
 
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (hash === '#imagegenerate') {
-      setActiveTab('input');
-    } else if (hash === '#notifications') {
-      setActiveTab('notifications');
-    } else {
-      setActiveTab('images');
-    }
-  }, [window.location.hash]);
-
-  const { data: remixImage, isLoading: isRemixLoading } = useQuery({
-    queryKey: ['remixImage', remixId],
-    queryFn: async () => {
-      if (!remixId) return null;
-      const { data, error } = await supabase
-        .from('user_images')
-        .select('*')
-        .eq('id', remixId)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!remixId,
-  });
-
-  useEffect(() => {
-    if (remixImage) {
-      setIsRemixMode(true);
-      
-      setPrompt(remixImage.prompt);
-      setSeed(remixImage.seed);
-      setRandomizeSeed(false);
-      setWidth(remixImage.width);
-      setHeight(remixImage.height);
-      setModel(remixImage.model);
-      setQuality(remixImage.quality);
-      if (remixImage.aspect_ratio) {
-        setAspectRatio(remixImage.aspect_ratio);
-        setUseAspectRatio(true);
-      }
-      
-      setActiveTab('input');
-      
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete('remix');
-      window.history.replaceState({}, '', `${window.location.pathname}${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`);
-    }
-  }, [remixImage]);
-  
-  useEffect(() => {
-    return () => {
-      setIsRemixMode(false);
-    };
-  }, []);
-
-  if (isRemixLoading) {
-    return <div>Loading remix...</div>;
-  }
-
-  const handleGenerateImage = async () => {
+  const handleGenerateImage = useCallback(async () => {
     console.log('handleGenerateImage called', {prompt, session, isImproving});
     
     if (!prompt.trim()) {
@@ -189,31 +129,27 @@ const ImageGenerator = () => {
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [
+    prompt, session, isImproving, nsfwEnabled, generateImage, 
+    isPrivate, improveCurrentPrompt, model, modelConfigs, setPrompt
+  ]);
 
-  const handleAspectRatioChange = (newRatio) => {
+  const handleAspectRatioChange = useCallback((newRatio) => {
     setAspectRatio(newRatio);
-  };
+  }, [setAspectRatio]);
 
-  const {
-    handleImageClick,
-    handleModelChange,
-    handlePromptKeyDown,
-    handleRemix,
-    handleDownload,
-    handleDiscard,
-    handleViewDetails,
-  } = useImageHandlers({
+  const imageHandlers = useImageHandlers({
     generateImage: handleGenerateImage,
     setSelectedImage,
     setFullScreenViewOpen,
     setModel,
-    setWidth,
-    setHeight,
     setPrompt,
     setSeed,
     setRandomizeSeed,
+    setWidth,
+    setHeight,
     setQuality,
+    quality,
     setAspectRatio,
     setUseAspectRatio,
     aspectRatios: [],
@@ -223,6 +159,82 @@ const ImageGenerator = () => {
     setDetailsDialogOpen,
     setActiveView,
   });
+
+  const {
+    handleImageClick,
+    handleModelChange,
+    handleRemix,
+    handleDownload,
+    handleDiscard,
+    handleViewDetails,
+  } = imageHandlers;
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === '#imagegenerate') {
+      setActiveTab('input');
+    } else if (hash === '#notifications') {
+      setActiveTab('notifications');
+    } else {
+      setActiveTab('images');
+    }
+  }, [window.location.hash]);
+
+  const { data: remixImage, isLoading: isRemixLoading } = useQuery({
+    queryKey: ['remixImage', remixId],
+    queryFn: async () => {
+      if (!remixId) return null;
+      const { data, error } = await supabase
+        .from('user_images')
+        .select('*')
+        .eq('id', remixId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!remixId && !remixProcessed,
+  });
+
+  useEffect(() => {
+    if (remixImage && !remixProcessed) {
+      setRemixProcessed(true);
+      setIsRemixMode(true);
+      
+      setPrompt(remixImage.prompt);
+      setSeed(remixImage.seed);
+      setRandomizeSeed(false);
+      setWidth(remixImage.width);
+      setHeight(remixImage.height);
+      setModel(remixImage.model);
+      setQuality(remixImage.quality);
+      
+      if (remixImage.aspect_ratio) {
+        setAspectRatio(remixImage.aspect_ratio);
+        setUseAspectRatio(true);
+      }
+      
+      setActiveTab('input');
+      
+      if (window.history.replaceState) {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+      }
+    }
+  }, [
+    remixImage, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
+    setIsRemixMode, setModel, setPrompt, setQuality, setRandomizeSeed, 
+    setSeed, setUseAspectRatio, setWidth
+  ]);
+  
+  useEffect(() => {
+    return () => {
+      setIsRemixMode(false);
+    };
+  }, [setIsRemixMode]);
+
+  if (isRemixLoading && !remixProcessed) {
+    return <div>Loading remix...</div>;
+  }
 
   return (
     <>

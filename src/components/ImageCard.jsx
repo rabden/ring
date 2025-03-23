@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import ImageStatusIndicators from './ImageStatusIndicators';
@@ -30,18 +31,8 @@ const ImageCard = ({
   const isMobileDevice = useMediaQuery('(max-width: 768px)');
   const navigate = useNavigate();
 
-  const { data: likeCount = 0 } = useQuery({
-    queryKey: ['imageLikes', image.id],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('user_image_likes')
-        .select('*', { count: 'exact' })
-        .eq('image_id', image.id);
-      
-      if (error) throw error;
-      return count || 0;
-    },
-  });
+  // Use the like_count property directly from the image object
+  const likeCount = image.like_count || 0;
 
   const handleImageClick = (e) => {
     e.preventDefault();
@@ -102,6 +93,7 @@ const ImageCard = ({
               image={image}
               onImageClick={handleImageClick}
               onDoubleClick={handleDoubleClick}
+              isAnimating={isAnimating}
             />
             <ImageCardBadges
               modelName={modelName}

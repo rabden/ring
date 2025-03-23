@@ -86,6 +86,7 @@ export type Database = {
           is_pro: boolean | null
           is_pro_request: boolean | null
           last_refill_time: string | null
+          like_count: number
           updated_at: string | null
         }
         Insert: {
@@ -101,6 +102,7 @@ export type Database = {
           is_pro?: boolean | null
           is_pro_request?: boolean | null
           last_refill_time?: string | null
+          like_count?: number
           updated_at?: string | null
         }
         Update: {
@@ -116,6 +118,7 @@ export type Database = {
           is_pro?: boolean | null
           is_pro_request?: boolean | null
           last_refill_time?: string | null
+          like_count?: number
           updated_at?: string | null
         }
         Relationships: []
@@ -156,38 +159,6 @@ export type Database = {
           },
         ]
       }
-      user_image_likes: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          id: string
-          image_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          image_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          image_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_image_likes_image_id_fkey"
-            columns: ["image_id"]
-            isOneToOne: false
-            referencedRelation: "user_images"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_images: {
         Row: {
           aspect_ratio: string
@@ -198,6 +169,7 @@ export type Database = {
           is_private: boolean
           is_trending: boolean
           like_count: number
+          liked_by: string[] | null
           model: string
           negative_prompt: string | null
           prompt: string
@@ -216,6 +188,7 @@ export type Database = {
           is_private?: boolean
           is_trending?: boolean
           like_count?: number
+          liked_by?: string[] | null
           model: string
           negative_prompt?: string | null
           prompt: string
@@ -234,6 +207,7 @@ export type Database = {
           is_private?: boolean
           is_trending?: boolean
           like_count?: number
+          liked_by?: string[] | null
           model?: string
           negative_prompt?: string | null
           prompt?: string

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
@@ -59,18 +58,7 @@ const FullScreenImageView = ({
     enabled: !!image?.user_id
   });
 
-  const { data: likeCount = 0 } = useQuery({
-    queryKey: ['likes', image?.id],
-    queryFn: async () => {
-      if (!image?.id) return 0;
-      const { count } = await supabase
-        .from('user_image_likes')
-        .select('*', { count: 'exact' })
-        .eq('image_id', image.id);
-      return count || 0;
-    },
-    enabled: !!image?.id
-  });
+  const likeCount = image?.like_count || 0;
 
   const handleCopyPrompt = async () => {
     await navigator.clipboard.writeText(image.user_prompt || image.prompt);
@@ -98,7 +86,10 @@ const FullScreenImageView = ({
       toast.error('Please sign in to remix images');
       return;
     }
-    navigate(`/?remix=${image.id}#myimages`, { replace: true });
+    
+    if (image) {
+      handleRemix(image);
+    }
   };
 
   const detailItems = image ? [
@@ -150,7 +141,6 @@ const FullScreenImageView = ({
     };
   }, []);
 
-  // Handle ESC key press for closing the image view
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -167,7 +157,6 @@ const FullScreenImageView = ({
     };
   }, [isOpen, onClose]);
 
-  // Handle body scroll lock
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -298,7 +287,7 @@ const FullScreenImageView = ({
                         </Button>
                       )}
                       <Button 
-                        onClick={onDownload} 
+                        onClick={() => onDownload(image.url, image.prompt)} 
                         variant="ghost" 
                         size="sm"
                         className={cn(

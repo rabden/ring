@@ -28,6 +28,22 @@ const MobileProfileMenu = ({ user, credits, bonusCredits, activeTab }) => {
 
   useRealtimeProfile(user?.id);
 
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*, like_count')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) return null;
+      return data;
+    },
+    enabled: !!user?.id
+  });
+
   const { data: followCounts = { followers: 0, following: 0 } } = useQuery({
     queryKey: ['followCounts', user?.id],
     queryFn: async () => {
@@ -48,21 +64,6 @@ const MobileProfileMenu = ({ user, credits, bonusCredits, activeTab }) => {
         followers: followersResult.count || 0,
         following: followingResult.count || 0
       };
-    },
-    enabled: !!user?.id
-  });
-
-  const { data: totalLikes = 0 } = useQuery({
-    queryKey: ['totalLikes', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return 0;
-      const { count, error } = await supabase
-        .from('user_image_likes')
-        .select('*', { count: 'exact' })
-        .eq('created_by', user.id);
-      
-      if (error) throw error;
-      return count || 0;
     },
     enabled: !!user?.id
   });
@@ -108,6 +109,8 @@ const MobileProfileMenu = ({ user, credits, bonusCredits, activeTab }) => {
   };
 
   if (activeTab !== 'profile') return null;
+
+  const totalLikes = profile?.like_count || 0;
 
   return (
     <div className="fixed inset-0 z-50 bg-background md:hidden">
