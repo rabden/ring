@@ -93,6 +93,7 @@ const ImageCard = ({
               image={image}
               onImageClick={handleImageClick}
               onDoubleClick={handleDoubleClick}
+              isAnimating={isAnimating}
             />
             <ImageCardBadges
               modelName={modelName}

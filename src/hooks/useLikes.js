@@ -46,46 +46,27 @@ export const useLikes = (userId) => {
 
   const toggleLike = useMutation({
     mutationFn: async (imageId) => {
-      const isLiked = userLikes?.includes(imageId);
+      if (!userId) return;
+      
+      // Get current image data to check if already liked
+      const { data: imageData, error: getError } = await supabase
+        .from('user_images')
+        .select('liked_by, user_id')
+        .eq('id', imageId)
+        .single();
+      
+      if (getError) throw getError;
+      
+      const isLiked = imageData.liked_by && imageData.liked_by.includes(userId);
+      let updatedLikedBy;
       
       if (isLiked) {
-        // Remove userId from liked_by array
-        const { data: imageData, error: getError } = await supabase
-          .from('user_images')
-          .select('liked_by')
-          .eq('id', imageId)
-          .single();
-        
-        if (getError) throw getError;
-        
-        const updatedLikedBy = (imageData.liked_by || []).filter(id => id !== userId);
-        
-        const { error } = await supabase
-          .from('user_images')
-          .update({ liked_by: updatedLikedBy })
-          .eq('id', imageId);
-          
-        if (error) throw error;
+        // Remove user from liked_by array
+        updatedLikedBy = (imageData.liked_by || []).filter(id => id !== userId);
       } else {
-        // Get the image details
-        const { data: imageData, error: imageError } = await supabase
-          .from('user_images')
-          .select('*')
-          .eq('id', imageId)
-          .single();
+        // Add user to liked_by array
+        updatedLikedBy = [...(imageData.liked_by || []), userId];
         
-        if (imageError) throw imageError;
-
-        // Add userId to liked_by array
-        const updatedLikedBy = [...(imageData.liked_by || []), userId];
-        
-        const { error } = await supabase
-          .from('user_images')
-          .update({ liked_by: updatedLikedBy })
-          .eq('id', imageId);
-          
-        if (error) throw error;
-
         // Get current user's profile
         const { data: userProfile } = await supabase
           .from('profiles')
@@ -105,11 +86,26 @@ export const useLikes = (userId) => {
             link_names: 'View Profile'
           }]);
         
-        if (notificationError) throw notificationError;
+        if (notificationError) console.error("Failed to create notification:", notificationError);
+      }
+      
+      // Update the liked_by array
+      const { error } = await supabase
+        .from('user_images')
+        .update({ liked_by: updatedLikedBy })
+        .eq('id', imageId);
+        
+      if (error) throw error;
+      
+      return { imageId, liked: !isLiked };
+    },
+    onSuccess: (result) => {
+      if (result) {
+        queryClient.invalidateQueries(['likes', userId]);
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['likes', userId]);
+    onError: (error) => {
+      console.error("Error toggling like:", error);
     }
   });
 
