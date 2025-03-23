@@ -74,10 +74,13 @@ export const useLikes = (userId) => {
         
         console.log("Image data fetched:", imageData);
         
-        const currentLikedBy = imageData.liked_by || [];
+        // Ensure we have valid arrays and numbers
+        const currentLikedBy = Array.isArray(imageData.liked_by) ? imageData.liked_by : [];
         const isLiked = currentLikedBy.includes(userId);
+        
+        // Make sure like_count is a number (not null)
+        let updatedLikeCount = typeof imageData.like_count === 'number' ? imageData.like_count : 0;
         let updatedLikedBy;
-        let updatedLikeCount = imageData.like_count || 0;
         
         console.log(`Current like status: ${isLiked ? 'Liked' : 'Not liked'}`);
         console.log(`Current liked_by array:`, currentLikedBy);
@@ -123,8 +126,21 @@ export const useLikes = (userId) => {
           }
         }
         
+        // Make sure both values are correctly typed before sending to the database
+        if (!Array.isArray(updatedLikedBy)) {
+          updatedLikedBy = [];
+        }
+        
+        if (typeof updatedLikeCount !== 'number') {
+          updatedLikeCount = 0;
+        }
+        
         // Update the liked_by array and like_count
-        console.log(`Updating image ${imageId} with new liked_by and like_count`);
+        console.log(`Updating image ${imageId} with new liked_by and like_count:`, { 
+          liked_by: updatedLikedBy,
+          like_count: updatedLikeCount
+        });
+        
         const { error } = await supabase
           .from('user_images')
           .update({ 
