@@ -126,7 +126,10 @@ const DesktopPromptBox = ({
   }, [prompt, nsfwEnabled]);
 
   const highlightNsfwWords = (text) => {
-    if (!text) return '';
+    if (!text || nsfwEnabled) {
+      setHighlightedPrompt('');
+      return;
+    }
     
     const { foundWords } = containsNSFWContent(text);
     if (foundWords.length === 0) {

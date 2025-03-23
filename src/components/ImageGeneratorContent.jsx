@@ -163,6 +163,7 @@ const ImageGeneratorContent = ({
                 setSeed={imageGeneratorProps.setSeed}
                 randomizeSeed={imageGeneratorProps.randomizeSeed}
                 setRandomizeSeed={imageGeneratorProps.setRandomizeSeed}
+                nsfwEnabled={nsfwEnabled}
               />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
