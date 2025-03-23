@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Eraser, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -69,7 +68,6 @@ const DesktopPromptBox = ({
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const [internalSettingsActive, setInternalSettingsActive] = useState(!settingsActive);
 
-  // Calculate container width and textarea height based on settings visibility
   const containerMaxWidth = internalSettingsActive ? "max-w-[950px]" : "max-w-[800px]";
   const textareaHeight = internalSettingsActive ? "min-h-[350px]" : "min-h-[280px]";
 
@@ -115,10 +113,8 @@ const DesktopPromptBox = ({
     }
   }, [settingsActive, onSettingsToggle]);
 
-  // Add effect to highlight NSFW words when prompt changes
   useEffect(() => {
     if (prompt) {
-      // Only highlight NSFW words when NSFW mode is disabled
       if (!nsfwEnabled) {
         highlightNsfwWords(prompt);
       } else {
@@ -138,13 +134,10 @@ const DesktopPromptBox = ({
       return;
     }
 
-    // Create regex pattern to match all NSFW words (with word boundaries)
     const wordPattern = foundWords.map(word => {
-      // For multi-word terms
       if (word.includes(' ')) {
         return word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       }
-      // For single words with word boundaries
       return `\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`;
     }).join('|');
 
@@ -302,7 +295,7 @@ const DesktopPromptBox = ({
                     "transition-all duration-300",
                     textareaHeight,
                     isImproving && "opacity-80",
-                    highlightedPrompt && "opacity-0" // Hide when we have highlighted content
+                    highlightedPrompt && "opacity-0"
                   )}
                   style={{ 
                     caretColor: 'currentColor',
