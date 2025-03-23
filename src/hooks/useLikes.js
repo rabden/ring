@@ -21,7 +21,9 @@ export const useLikes = (userId) => {
         filter: `liked_by cs.{${userId}}`,
       }, () => {
         // Invalidate and refetch when changes occur
-        queryClient.invalidateQueries(['likes', userId]);
+        queryClient.invalidateQueries({
+          queryKey: ['likes', userId]
+        });
       })
       .subscribe();
 
@@ -55,6 +57,8 @@ export const useLikes = (userId) => {
         return null;
       }
       
+      console.log(`Attempting to toggle like for image ${imageId} by user ${userId}`);
+      
       try {
         // Get current image data to check if already liked
         const { data: imageData, error: getError } = await supabase
@@ -63,21 +67,36 @@ export const useLikes = (userId) => {
           .eq('id', imageId)
           .single();
         
-        if (getError) throw getError;
+        if (getError) {
+          console.error("Error fetching image data:", getError);
+          throw getError;
+        }
+        
+        console.log("Image data fetched:", imageData);
         
         const currentLikedBy = imageData.liked_by || [];
         const isLiked = currentLikedBy.includes(userId);
         let updatedLikedBy;
         let updatedLikeCount = imageData.like_count || 0;
         
+        console.log(`Current like status: ${isLiked ? 'Liked' : 'Not liked'}`);
+        console.log(`Current liked_by array:`, currentLikedBy);
+        console.log(`Current like_count:`, updatedLikeCount);
+        
         if (isLiked) {
           // Remove user from liked_by array
           updatedLikedBy = currentLikedBy.filter(id => id !== userId);
           updatedLikeCount = Math.max(0, updatedLikeCount - 1);
+          console.log(`Removing user ${userId} from liked_by`);
+          console.log(`Updated liked_by array:`, updatedLikedBy);
+          console.log(`Updated like_count:`, updatedLikeCount);
         } else {
           // Add user to liked_by array
           updatedLikedBy = [...currentLikedBy, userId];
           updatedLikeCount = updatedLikeCount + 1;
+          console.log(`Adding user ${userId} to liked_by`);
+          console.log(`Updated liked_by array:`, updatedLikedBy);
+          console.log(`Updated like_count:`, updatedLikeCount);
           
           // Only create notification if this is a new like (not an unlike)
           if (imageData.user_id && imageData.user_id !== userId) {
@@ -105,6 +124,7 @@ export const useLikes = (userId) => {
         }
         
         // Update the liked_by array and like_count
+        console.log(`Updating image ${imageId} with new liked_by and like_count`);
         const { error } = await supabase
           .from('user_images')
           .update({ 
@@ -113,8 +133,12 @@ export const useLikes = (userId) => {
           })
           .eq('id', imageId);
           
-        if (error) throw error;
+        if (error) {
+          console.error("Error updating like status:", error);
+          throw error;
+        }
         
+        console.log(`Like status updated successfully`);
         return { imageId, liked: !isLiked, likeCount: updatedLikeCount };
       } catch (error) {
         console.error("Error in toggleLike:", error);
@@ -124,7 +148,10 @@ export const useLikes = (userId) => {
     },
     onSuccess: (result) => {
       if (result) {
-        queryClient.invalidateQueries(['likes', userId]);
+        console.log(`Like toggle success:`, result);
+        queryClient.invalidateQueries({
+          queryKey: ['likes', userId]
+        });
         
         // Update the image in the cache to reflect the new like status
         queryClient.setQueryData(['galleryImages'], (oldData) => {
