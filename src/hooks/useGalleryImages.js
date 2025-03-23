@@ -2,8 +2,7 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect, useState } from 'react';
 import { startOfMonth, startOfWeek } from 'date-fns';
-
-const NSFW_MODELS = ['nsfwMaster', 'animeNsfw', 'animeNsfwfast', 'deepthroat'];
+import { getNsfwModelKeys } from '@/utils/modelUtils';
 
 export const useGalleryImages = ({
   userId,
@@ -20,6 +19,7 @@ export const useGalleryImages = ({
 }) => {
   const queryClient = useQueryClient();
   const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth <= 768 ? 50 : 200);
+  const NSFW_MODELS = getNsfwModelKeys();
 
   useEffect(() => {
     const handleResize = () => {

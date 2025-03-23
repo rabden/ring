@@ -1,7 +1,6 @@
 
 import { useMemo } from 'react';
-
-const NSFW_MODELS = ['nsfwMaster', 'animeNsfw'];
+import { getNsfwModelKeys } from '@/utils/modelUtils';
 
 export const useImageFilter = () => {
   const filterImages = useMemo(() => (images, {
@@ -16,6 +15,8 @@ export const useImageFilter = () => {
     showTop,
     following = []
   }) => {
+    const NSFW_MODELS = getNsfwModelKeys();
+    
     let filteredData = images.filter(img => {
       const isNsfw = NSFW_MODELS.includes(img.model);
       
