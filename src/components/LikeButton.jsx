@@ -19,7 +19,7 @@ const LikeButton = ({ isLiked, onToggle, className, onLike }) => {
     setTempState(!isLiked);
     setTimeout(() => {
       setTempState(null);
-    }, 5000);
+    }, 500);
   };
 
   // Use temporary state if available, otherwise use database state
