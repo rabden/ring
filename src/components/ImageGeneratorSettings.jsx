@@ -128,6 +128,7 @@ const ImageGeneratorSettings = ({
           setSeed={setSeed}
           randomizeSeed={randomizeSeed}
           setRandomizeSeed={setRandomizeSeed}
+          nsfwEnabled={nsfwEnabled}
         />
       </div>
 

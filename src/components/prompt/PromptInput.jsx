@@ -29,7 +29,8 @@ const PromptInput = ({
   bonusCredits,
   userId,
   activeModel,
-  modelConfigs
+  modelConfigs,
+  nsfwEnabled
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [highlightedPrompt, setHighlightedPrompt] = useState('');
@@ -56,11 +57,16 @@ const PromptInput = ({
 
   useEffect(() => {
     if (prompt) {
-      highlightNsfwWords(prompt);
+      // Only highlight NSFW words when NSFW mode is disabled
+      if (!nsfwEnabled) {
+        highlightNsfwWords(prompt);
+      } else {
+        setHighlightedPrompt('');
+      }
     } else {
       setHighlightedPrompt('');
     }
-  }, [prompt]);
+  }, [prompt, nsfwEnabled]);
 
   const highlightNsfwWords = (text) => {
     if (!text) return '';

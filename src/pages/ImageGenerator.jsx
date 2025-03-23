@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -21,7 +20,6 @@ import NSFWAlert from '@/components/alerts/NSFWAlert';
 import { containsNSFWContent } from '@/utils/nsfwUtils';
 
 const ImageGenerator = () => {
-  // Always initialize all state and hooks at the top level
   const [searchParams] = useSearchParams();
   const remixId = searchParams.get('remix');
   const { session } = useSupabaseAuth();
@@ -88,7 +86,6 @@ const ImageGenerator = () => {
     }
   });
 
-  // Define handleGenerateImage with useCallback to prevent unnecessary re-renders
   const handleGenerateImage = useCallback(async () => {
     console.log('handleGenerateImage called', {prompt, session, isImproving});
     
@@ -141,7 +138,6 @@ const ImageGenerator = () => {
     setAspectRatio(newRatio);
   }, [setAspectRatio]);
 
-  // Define imageHandlers object - ensure this is always created regardless of conditions
   const imageHandlers = useImageHandlers({
     generateImage: handleGenerateImage,
     setSelectedImage,
@@ -164,7 +160,6 @@ const ImageGenerator = () => {
     setActiveView,
   });
 
-  // Extract all handlers from the imageHandlers object
   const {
     handleImageClick,
     handleModelChange,
@@ -185,7 +180,6 @@ const ImageGenerator = () => {
     }
   }, [window.location.hash]);
 
-  // Use a separate useEffect to handle remix ID to avoid loops
   const { data: remixImage, isLoading: isRemixLoading } = useQuery({
     queryKey: ['remixImage', remixId],
     queryFn: async () => {
@@ -203,7 +197,6 @@ const ImageGenerator = () => {
 
   useEffect(() => {
     if (remixImage && !remixProcessed) {
-      // Mark as processed to prevent multiple applications
       setRemixProcessed(true);
       setIsRemixMode(true);
       
@@ -222,7 +215,6 @@ const ImageGenerator = () => {
       
       setActiveTab('input');
       
-      // Clean up URL without causing a refresh or state update
       if (window.history.replaceState) {
         const newUrl = window.location.pathname;
         window.history.replaceState({ path: newUrl }, '', newUrl);

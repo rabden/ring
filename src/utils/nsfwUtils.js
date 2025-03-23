@@ -83,8 +83,13 @@ export const containsNSFWContent = (prompt) => {
 };
 
 // Helper function for the UI to highlight NSFW words in HTML
-export const highlightNSFWWords = (text) => {
+export const highlightNSFWWords = (text, nsfwEnabled = false) => {
   if (!text) return { html: '', isNSFW: false };
+  
+  // If NSFW mode is enabled, don't highlight anything
+  if (nsfwEnabled) {
+    return { html: text, isNSFW: false };
+  }
   
   const { foundWords, isNSFW } = containsNSFWContent(text);
   if (!isNSFW || foundWords.length === 0) {

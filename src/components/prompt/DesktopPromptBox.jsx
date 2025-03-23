@@ -53,7 +53,8 @@ const DesktopPromptBox = ({
   seed,
   setSeed,
   randomizeSeed,
-  setRandomizeSeed
+  setRandomizeSeed,
+  nsfwEnabled
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -117,11 +118,16 @@ const DesktopPromptBox = ({
   // Add effect to highlight NSFW words when prompt changes
   useEffect(() => {
     if (prompt) {
-      highlightNsfwWords(prompt);
+      // Only highlight NSFW words when NSFW mode is disabled
+      if (!nsfwEnabled) {
+        highlightNsfwWords(prompt);
+      } else {
+        setHighlightedPrompt('');
+      }
     } else {
       setHighlightedPrompt('');
     }
-  }, [prompt]);
+  }, [prompt, nsfwEnabled]);
 
   const highlightNsfwWords = (text) => {
     if (!text) return '';
@@ -287,7 +293,7 @@ const DesktopPromptBox = ({
                 <textarea
                   ref={textareaRef}
                   value={prompt}
-                  onChange={handlePromptChange}
+                  onChange={onChange}
                   placeholder={PROMPT_TIPS[currentTipIndex]}
                   className={cn(
                     "w-full resize-none bg-transparent text-base focus:outline-none",
