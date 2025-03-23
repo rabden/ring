@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const LikeButton = ({ isLiked, onToggle, className, onLike }) => {
+const LikeButton = ({ isLiked, onToggle, className, onLike, isLoading }) => {
   const [tempState, setTempState] = useState(null);
 
   const handleClick = (e) => {
@@ -31,11 +31,13 @@ const LikeButton = ({ isLiked, onToggle, className, onLike }) => {
       size="icon"
       className={cn("h-6 w-6 p-0", className)}
       onClick={handleClick}
+      disabled={isLoading}
     >
       <Heart 
         className={cn(
           "h-4 w-4",
-          showAsLiked ? "fill-red-500 text-red-500" : "text-foreground"
+          showAsLiked ? "fill-red-500 text-red-500" : "text-foreground",
+          isLoading && "opacity-50"
         )} 
       />
     </Button>
