@@ -1,9 +1,10 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, Trash2, RefreshCw, ArrowLeft, Copy, Share2, Check, Wand2, RotateCw } from "lucide-react";
+import { Download, Trash2, RefreshCw, ArrowLeft, Copy, Share2, Check, Wand2, RotateCw, Shield } from "lucide-react";
 import { useModelConfigs } from '@/hooks/useModelConfigs';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useLikes } from '@/hooks/useLikes';
@@ -20,6 +21,7 @@ import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from 'framer-motion';
+import AdminDiscardDialog from './admin/AdminDiscardDialog';
 
 const MobileImageView = ({ 
   image, 
@@ -37,6 +39,7 @@ const MobileImageView = ({
   const [shareIcon, setShareIcon] = useState('share');
   const [isAnimating, setIsAnimating] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { handleRemix } = useImageRemix(session, onRemix, onClose, isPro);
   const queryClient = useQueryClient();
@@ -47,6 +50,24 @@ const MobileImageView = ({
   const [imageStyle, setImageStyle] = useState({});
   const imageRef = useRef(null);
   const containerRef = useRef(null);
+
+  // Fetch user profile to check if admin
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+      return data;
+    },
+    enabled: !!session?.user?.id
+  });
+
+  const isAdmin = userProfile?.is_admin || false;
+  const showAdminDelete = isAdmin && !isOwner;
 
   const getImageUrl = () => {
     if (!image?.storage_path) return null;
@@ -90,13 +111,31 @@ const MobileImageView = ({
 
   const handleDiscardImage = async () => {
     try {
-      await handleImageDiscard(image, queryClient);
+      if (isAdmin && !isOwner) {
+        // If admin is deleting someone else's image, show confirmation dialog
+        setIsAdminDialogOpen(true);
+      } else {
+        // Regular discard for own images
+        await handleImageDiscard(image, queryClient);
+        onClose();
+        if (onDiscard) {
+          onDiscard(image.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error in handleDiscard:', error);
+    }
+  };
+
+  const handleAdminDiscard = async (reason) => {
+    try {
+      await handleImageDiscard(image, queryClient, true, reason);
       onClose();
       if (onDiscard) {
         onDiscard(image.id);
       }
     } catch (error) {
-      console.error('Error in handleDiscard:', error);
+      console.error('Error in handleAdminDiscard:', error);
     }
   };
 
@@ -198,187 +237,206 @@ const MobileImageView = ({
   ];
 
   return (
-    <div className={cn(
-      "min-h-screen",
-      "bg-background/95 backdrop-blur-[2px]",
-      "transition-all duration-300"
-    )}>
-      {!isFullscreen && (
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onClose} 
+    <>
+      <div className={cn(
+        "min-h-screen",
+        "bg-background/95 backdrop-blur-[2px]",
+        "transition-all duration-300"
+      )}>
+        {!isFullscreen && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onClose} 
+            className={cn(
+              "fixed top-4 left-4 z-[60]",
+              "h-8 w-8 p-0 rounded-lg",
+              "bg-background/80 backdrop-blur-[2px]",
+              "hover:bg-background/90",
+              "transition-all duration-200"
+            )}
+          >
+            <ArrowLeft className="h-5 w-5 text-foreground/70" />
+          </Button>
+        )}
+
+        <ScrollArea 
+          ref={containerRef}
           className={cn(
-            "fixed top-4 left-4 z-[60]",
-            "h-8 w-8 p-0 rounded-lg",
-            "bg-background/80 backdrop-blur-[2px]",
-            "hover:bg-background/90",
-            "transition-all duration-200"
+            isMobile ? "h-[100dvh]" : "h-screen",
+            isFullscreen ? "overflow-hidden" : ""
           )}
         >
-          <ArrowLeft className="h-5 w-5 text-foreground/70" />
-        </Button>
-      )}
+          <div className={cn(
+            !isFullscreen && ["space-y-6 pb-6"]
+          )}>
+            {image && (
+              <div 
+                className={cn(
+                  "relative",
+                  isFullscreen && "fixed inset-0 z-50 bg-black/95",
+                  "transition-all duration-300",
+                  isFullscreen && "m-0 p-0"
+                )}
+                onClick={handleImageClick}
+              >
+                {isFullscreen && isLandscape && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleRotate}
+                    className={cn(
+                      "absolute top-4 right-4 z-[70]",
+                      "h-8 w-8 p-0 rounded-lg",
+                      "bg-background/80 backdrop-blur-[2px]",
+                      "hover:bg-background/90",
+                      "transition-all duration-200"
+                    )}
+                  >
+                    <RotateCw className={cn(
+                      "h-4 w-4 text-foreground/70",
+                      "transition-transform duration-300",
+                      isRotated && "rotate-90"
+                    )} />
+                  </Button>
+                )}
 
-      <ScrollArea 
-        ref={containerRef}
-        className={cn(
-          isMobile ? "h-[100dvh]" : "h-screen",
-          isFullscreen ? "overflow-hidden" : ""
-        )}
-      >
-        <div className={cn(
-          !isFullscreen && ["space-y-6 pb-6"]
-        )}>
-          {image && (
-            <div 
-              className={cn(
-                "relative",
-                isFullscreen && "fixed inset-0 z-50 bg-black/95",
-                "transition-all duration-300",
-                isFullscreen && "m-0 p-0"
-              )}
-              onClick={handleImageClick}
-            >
-              {isFullscreen && isLandscape && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRotate}
-                  className={cn(
-                    "absolute top-4 right-4 z-[70]",
-                    "h-8 w-8 p-0 rounded-lg",
-                    "bg-background/80 backdrop-blur-[2px]",
-                    "hover:bg-background/90",
-                    "transition-all duration-200"
-                  )}
-                >
-                  <RotateCw className={cn(
-                    "h-4 w-4 text-foreground/70",
-                    "transition-transform duration-300",
-                    isRotated && "rotate-90"
-                  )} />
-                </Button>
-              )}
-
-              <div className={cn(
-                "w-full h-full flex items-center justify-center",
-                isFullscreen && "min-h-screen",
-                isFullscreen && "m-0 p-0"
-              )}>
-                <img
-                  ref={imageRef}
-                  src={supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl}
-                  alt={image.prompt || 'Generated image'}
-                  className={cn(
-                    "object-contain transition-all duration-300",
-                    !isFullscreen && "w-full h-auto",
-                    isFullscreen && !isRotated && "max-h-[100vh] max-w-[100vw]",
-                    isFullscreen && isRotated && isLandscape && [
-                      "rotate-90",
-                      "max-h-[100vw]",
-                      "max-w-[100vh]",
-                    ],
-                    isFullscreen ? "cursor-zoom-out" : "cursor-zoom-in",
-                    isFullscreen && "m-0 p-0"
-                  )}
-                  onDoubleClick={(e) => {
-                    e.stopPropagation();
-                    if (!isFullscreen) {
-                      handleDoubleClick(e);
-                    }
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <HeartAnimation isAnimating={isAnimating} />
+                <div className={cn(
+                  "w-full h-full flex items-center justify-center",
+                  isFullscreen && "min-h-screen",
+                  isFullscreen && "m-0 p-0"
+                )}>
+                  <img
+                    ref={imageRef}
+                    src={supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl}
+                    alt={image.prompt || 'Generated image'}
+                    className={cn(
+                      "object-contain transition-all duration-300",
+                      !isFullscreen && "w-full h-auto",
+                      isFullscreen && !isRotated && "max-h-[100vh] max-w-[100vw]",
+                      isFullscreen && isRotated && isLandscape && [
+                        "rotate-90",
+                        "max-h-[100vw]",
+                        "max-w-[100vh]",
+                      ],
+                      isFullscreen ? "cursor-zoom-out" : "cursor-zoom-in",
+                      isFullscreen && "m-0 p-0"
+                    )}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      if (!isFullscreen) {
+                        handleDoubleClick(e);
+                      }
+                    }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <HeartAnimation isAnimating={isAnimating} />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <AnimatePresence>
-            {!isFullscreen && (
-              <motion.div
-                initial={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="px-3 space-y-4"
-              >
-                {session && (
-                  <>
-                    <ImageOwnerHeader 
-                      owner={owner}
-                      image={image}
-                      isOwner={isOwner}
-                      userLikes={userLikes}
-                      toggleLike={toggleLike}
-                      likeCount={likeCount}
-                      onLike={handleLike}
-                    />
-                    
-                    <div className="flex gap-1.5">
-                      {isOwner && (
+            <AnimatePresence>
+              {!isFullscreen && (
+                <motion.div
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="px-3 space-y-4"
+                >
+                  {session && (
+                    <>
+                      <ImageOwnerHeader 
+                        owner={owner}
+                        image={image}
+                        isOwner={isOwner}
+                        userLikes={userLikes}
+                        toggleLike={toggleLike}
+                        likeCount={likeCount}
+                        onLike={handleLike}
+                      />
+                      
+                      <div className="flex gap-1.5">
+                        {(isOwner || showAdminDelete) && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={handleDiscardImage}
+                            className={cn(
+                              "flex-1 h-9 rounded-lg text-xs",
+                              "bg-destructive/0 hover:bg-destructive/50",
+                              "text-destructive/90 hover:text-destructive",
+                              "transition-all duration-200"
+                            )}
+                          >
+                            {showAdminDelete ? (
+                              <>
+                                <Shield className="mr-1.5 h-3.5 w-3.5" />
+                                <span>Admin Delete</span>
+                              </>
+                            ) : (
+                              <>
+                                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                                <span>Discard</span>
+                              </>
+                            )}
+                          </Button>
+                        )}
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={handleDiscardImage}
+                          onClick={onDownload}
                           className={cn(
                             "flex-1 h-9 rounded-lg text-xs",
-                            "bg-destructive/0 hover:bg-destructive/50",
-                            "text-destructive/90 hover:text-destructive",
+                            "bg-muted/0 hover:bg-accent/30",
                             "transition-all duration-200"
                           )}
                         >
-                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                          <span>Discard</span>
+                          <Download className="mr-1.5 h-3.5 w-3.5 text-foreground/70" />
+                          <span>Download</span>
                         </Button>
-                      )}
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={onDownload}
-                        className={cn(
-                          "flex-1 h-9 rounded-lg text-xs",
-                          "bg-muted/0 hover:bg-accent/30",
-                          "transition-all duration-200"
-                        )}
-                      >
-                        <Download className="mr-1.5 h-3.5 w-3.5 text-foreground/70" />
-                        <span>Download</span>
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={handleRemixClick}
-                        className={cn(
-                          "flex-1 h-9 rounded-lg text-xs",
-                          "bg-muted/0 hover:bg-accent/30",
-                          "transition-all duration-200"
-                        )}
-                      >
-                        <RefreshCw className="mr-1.5 h-3.5 w-3.5 text-foreground/70" />
-                        <span>Remix</span>
-                      </Button>
-                    </div>
-                  </>
-                )}
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={handleRemixClick}
+                          className={cn(
+                            "flex-1 h-9 rounded-lg text-xs",
+                            "bg-muted/0 hover:bg-accent/30",
+                            "transition-all duration-200"
+                          )}
+                        >
+                          <RefreshCw className="mr-1.5 h-3.5 w-3.5 text-foreground/70" />
+                          <span>Remix</span>
+                        </Button>
+                      </div>
+                    </>
+                  )}
 
-                <ImagePromptSection 
-                  prompt={image.user_prompt || image.prompt}
-                  negative_prompt={image.negative_prompt}
-                  copyIcon={copyIcon}
-                  shareIcon={shareIcon}
-                  onCopyPrompt={handleCopyPrompt}
-                  onShare={handleShare}
-                />
+                  <ImagePromptSection 
+                    prompt={image.user_prompt || image.prompt}
+                    negative_prompt={image.negative_prompt}
+                    copyIcon={copyIcon}
+                    shareIcon={shareIcon}
+                    onCopyPrompt={handleCopyPrompt}
+                    onShare={handleShare}
+                  />
 
-                <ImageDetailsSection detailItems={detailItems} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </ScrollArea>
-    </div>
+                  <ImageDetailsSection detailItems={detailItems} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* Admin discard confirmation dialog */}
+      <AdminDiscardDialog
+        open={isAdminDialogOpen}
+        onOpenChange={setIsAdminDialogOpen}
+        onConfirm={handleAdminDiscard}
+        imageOwnerName={owner?.display_name}
+      />
+    </>
   );
 };
 

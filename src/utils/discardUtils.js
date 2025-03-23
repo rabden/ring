@@ -1,13 +1,30 @@
+
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
+import { adminDeleteImage } from '@/integrations/supabase/imageUtils';
 
-export const handleImageDiscard = async (image, queryClient) => {
+export const handleImageDiscard = async (image, queryClient, isAdmin = false, adminReason = '') => {
   if (!image?.id) {
     toast.error('Invalid image data');
     return;
   }
 
   try {
+    // If an admin is deleting another user's image
+    if (isAdmin && image.user_id !== null) {
+      await adminDeleteImage(image.id, adminReason);
+      
+      if (queryClient) {
+        queryClient.invalidateQueries({ queryKey: ['galleryImages'] });
+        queryClient.invalidateQueries({ queryKey: ['userImages'] });
+        queryClient.invalidateQueries({ queryKey: ['singleImage', image.id] });
+      }
+      
+      toast.success('Image deleted successfully');
+      return;
+    }
+
+    // Regular user deleting their own image - proceed with original logic
     // 1. First fetch the storage_path
     const { data: imageData, error: fetchError } = await supabase
       .from('user_images')
@@ -89,6 +106,8 @@ export const handleImageDiscard = async (image, queryClient) => {
     // 4. Invalidate queries to refresh the UI
     if (queryClient) {
       queryClient.invalidateQueries({ queryKey: ['galleryImages'] });
+      queryClient.invalidateQueries({ queryKey: ['userImages'] });
+      queryClient.invalidateQueries({ queryKey: ['singleImage', image.id] });
     }
 
     toast.success('Image deleted successfully');

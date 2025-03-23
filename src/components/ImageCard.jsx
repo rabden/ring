@@ -15,6 +15,7 @@ import ImageCardBadges from './image-card/ImageCardBadges';
 import { useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import HeartAnimation from './animations/HeartAnimation';
+import { useAuth } from '@/integrations/supabase/hooks/useAuth';
 
 const ImageCard = ({ 
   image, 
@@ -27,9 +28,28 @@ const ImageCard = ({
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isAdminDiscardDialogOpen, setIsAdminDiscardDialogOpen] = useState(false);
   const { data: modelConfigs } = useModelConfigs();
   const isMobileDevice = useMediaQuery('(max-width: 768px)');
   const navigate = useNavigate();
+  const { session, user } = useAuth();
+
+  // Fetch user profile to check if admin
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id
+  });
+
+  const isAdmin = userProfile?.is_admin || false;
 
   // Use the like_count property directly from the image object
   const likeCount = image.like_count || 0;
@@ -67,6 +87,17 @@ const ImageCard = ({
       onDiscard(image.id);
     } catch (error) {
       console.error('Error in handleDiscard:', error);
+      setIsDeleted(false);
+    }
+  };
+
+  const handleAdminDiscard = async (imageToDiscard, reason) => {
+    try {
+      setIsDeleted(true);
+      await handleImageDiscard(imageToDiscard, null, true, reason);
+      onDiscard(imageToDiscard.id);
+    } catch (error) {
+      console.error('Error in handleAdminDiscard:', error);
       setIsDeleted(false);
     }
   };
@@ -124,7 +155,9 @@ const ImageCard = ({
             onViewDetails={() => setDetailsDialogOpen(true)}
             onDownload={handleDownload}
             onDiscard={handleDiscard}
+            onAdminDiscard={handleAdminDiscard}
             userId={userId}
+            isAdmin={isAdmin}
           />
         </div>
       </div>
