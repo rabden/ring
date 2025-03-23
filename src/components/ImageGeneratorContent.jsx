@@ -62,6 +62,22 @@ const ImageGeneratorContent = ({
   } = useFollows(session?.user?.id);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Calculate if user has enough credits based on current quality and image count
+  const calculateHasEnoughCredits = () => {
+    if (!imageGeneratorProps || !imageGeneratorProps.quality) return false;
+    
+    const creditCost = {
+      "HD": 1,
+      "HD+": 2,
+      "4K": 3
+    }[imageGeneratorProps.quality] * (imageGeneratorProps.imageCount || 1);
+    
+    const totalCredits = (credits || 0) + (bonusCredits || 0);
+    return totalCredits >= creditCost;
+  };
+
+  const hasEnoughCredits = calculateHasEnoughCredits();
+
   const handleModelChange = (newModel) => {
     if (imageGeneratorProps && imageGeneratorProps.onModelChange) {
       imageGeneratorProps.onModelChange(newModel);
@@ -144,7 +160,7 @@ const ImageGeneratorContent = ({
                 prompt={imageGeneratorProps.prompt} 
                 onChange={e => imageGeneratorProps.setPrompt(e.target.value)} 
                 onSubmit={imageGeneratorProps.generateImage} 
-                hasEnoughCredits={true} 
+                hasEnoughCredits={hasEnoughCredits} 
                 onClear={() => imageGeneratorProps.setPrompt('')} 
                 credits={credits} 
                 bonusCredits={bonusCredits} 
