@@ -10,15 +10,3 @@ export const getNsfwModelKeys = () => {
     .filter(([_, config]) => config.category === "NSFW")
     .map(([key]) => key);
 };
-
-/**
- * Check if a model is categorized as NSFW
- * @param {string} modelKey - The model key to check
- * @returns {boolean} True if the model is NSFW, false otherwise
- */
-export const isNsfwModel = (modelKey) => {
-  if (!modelKey) return false;
-  
-  const nsfwModels = getNsfwModelKeys();
-  return nsfwModels.includes(modelKey);
-};

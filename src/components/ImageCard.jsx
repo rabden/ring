@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import ImageStatusIndicators from './ImageStatusIndicators';
@@ -23,14 +24,32 @@ const ImageCard = ({
   isMobile,
   isLiked,
   onToggleLike = () => {},
-  isAdmin = false,
 }) => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isAdminDiscardDialogOpen, setIsAdminDiscardDialogOpen] = useState(false);
   const { data: modelConfigs } = useModelConfigs();
   const isMobileDevice = useMediaQuery('(max-width: 768px)');
   const navigate = useNavigate();
+  const { session, user } = useAuth();
+
+  // Fetch user profile to check if admin
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id
+  });
+
+  const isAdmin = userProfile?.is_admin || false;
 
   // Use the like_count property directly from the image object
   const likeCount = image.like_count || 0;
