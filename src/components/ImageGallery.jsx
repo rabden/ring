@@ -1,4 +1,3 @@
-
 import React, { useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import Masonry from 'react-masonry-css';
@@ -114,10 +113,10 @@ const ImageGallery = ({
         .single();
       return data;
     },
-    enabled: !!session?.user?.id
+    enabled: !!session?.user?.id && isAdmin === undefined
   });
 
-  const isAdmin = userProfile?.is_admin || false;
+  const effectiveIsAdmin = isAdmin !== undefined ? isAdmin : (userProfile?.is_admin || false);
 
   const { 
     images,
@@ -222,7 +221,7 @@ const ImageGallery = ({
                     onToggleLike={toggleLike}
                     setStyle={setStyle}
                     style={style}
-                    isAdmin={isAdmin}
+                    isAdmin={effectiveIsAdmin}
                   />
                 </div>
               ))}
@@ -263,7 +262,7 @@ const ImageGallery = ({
               onToggleLike={toggleLike}
               setStyle={setStyle}
               style={style}
-              isAdmin={isAdmin}
+              isAdmin={effectiveIsAdmin}
             />
           </div>
         ))}
