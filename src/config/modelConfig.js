@@ -547,3 +547,4 @@ export const modelConfig = {
     huggingfaceId: "gokaygokay/Flux-Game-Assets-LoRA-v2",
     qualityLimits: null,
     isPremium: false,
+    promptSuffix
