@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Eraser, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -113,47 +114,14 @@ const DesktopPromptBox = ({
   }, [settingsActive, onSettingsToggle]);
 
   useEffect(() => {
-    if (prompt) {
-      if (!nsfwEnabled) {
-        highlightNsfwWords(prompt);
-      } else {
-        setHighlightedPrompt('');
-      }
-    } else {
-      setHighlightedPrompt('');
-    }
+    // We no longer need to highlight NSFW words since we've removed NSFW functionality
+    setHighlightedPrompt('');
   }, [prompt, nsfwEnabled]);
 
-  const highlightNsfwWords = (text) => {
-    if (!text || nsfwEnabled) {
-      setHighlightedPrompt('');
-      return;
-    }
-    
-    const { foundWords } = containsNSFWContent(text);
-    if (foundWords.length === 0) {
-      setHighlightedPrompt('');
-      return;
-    }
-
-    const wordPattern = foundWords.map(word => {
-      if (word.includes(' ')) {
-        return word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      }
-      return `\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`;
-    }).join('|');
-
-    if (!wordPattern) {
-      setHighlightedPrompt('');
-      return;
-    }
-
-    const regex = new RegExp(wordPattern, 'gi');
-    const highlighted = text.replace(regex, match => {
-      return `<span class="bg-destructive/20 text-destructive font-medium rounded px-1">${match}</span>`;
-    });
-
-    setHighlightedPrompt(highlighted);
+  // Simplified function that doesn't rely on containsNSFWContent
+  const highlightNsfwWords = () => {
+    // This function is now a no-op since we've removed NSFW highlighting
+    setHighlightedPrompt('');
   };
 
   const handlePromptChange = (e) => {
@@ -301,8 +269,7 @@ const DesktopPromptBox = ({
                     "pt-6 pb-12 pl-3 pr-5",
                     "transition-all duration-300",
                     textareaHeight,
-                    isImproving && "opacity-80",
-                    highlightedPrompt && "opacity-0"
+                    isImproving && "opacity-80"
                   )}
                   style={{ 
                     caretColor: 'currentColor',
@@ -310,19 +277,7 @@ const DesktopPromptBox = ({
                   disabled={isImproving}
                 />
                 
-                {highlightedPrompt && (
-                  <div 
-                    className={cn(
-                      "absolute inset-0 z-0",
-                      "w-full resize-none bg-transparent text-base",
-                      "overflow-y-auto scrollbar-none whitespace-pre-wrap",
-                      "pt-6 pb-12 pl-3 pr-5",
-                      textareaHeight
-                    )}
-                    dangerouslySetInnerHTML={{ __html: highlightedPrompt }}
-                    onClick={() => textareaRef.current?.focus()}
-                  />
-                )}
+                {/* Remove the highlighted content section since we've removed NSFW functionality */}
               </div>
             </div>
 
