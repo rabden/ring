@@ -14,6 +14,9 @@ import ImageDetailsSection from './image-view/ImageDetailsSection';
 import AdminDiscardDialog from './admin/AdminDiscardDialog';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { format } from 'date-fns';
+import { useModelConfigs } from '@/hooks/useModelConfigs';
 
 const ImageCardActions = ({ 
   image, 
@@ -35,6 +38,7 @@ const ImageCardActions = ({
   const [copyIcon, setCopyIcon] = useState('copy');
   const [shareIcon, setShareIcon] = useState('share');
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
+  const { data: modelConfigs } = useModelConfigs();
 
   const isOwner = image?.user_id === userId;
   const showAdminDelete = isAdmin && !isOwner;
