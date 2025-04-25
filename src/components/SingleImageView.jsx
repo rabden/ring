@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -12,6 +11,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import { handleImageDiscard } from '@/utils/discardUtils';
 import { toast } from 'sonner';
+import { useImageRemix } from '@/hooks/useImageRemix';
 
 const SingleImageView = () => {
   const { imageId } = useParams();
@@ -34,7 +34,8 @@ const SingleImageView = () => {
     },
   });
 
-  // Fetch user profile to check if admin
+  const { handleRemix } = useImageRemix(session);
+
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
     queryFn: async () => {
@@ -109,6 +110,7 @@ const SingleImageView = () => {
       onClose={() => navigate(-1)}
       onDownload={handleDownload}
       onDiscard={handleDiscard}
+      onRemix={() => handleRemix(image)}
       isOwner={image.user_id === session?.user?.id}
       setActiveTab={() => {}}
       setStyle={() => {}}
@@ -121,6 +123,7 @@ const SingleImageView = () => {
       onClose={() => navigate(-1)}
       onDownload={handleDownload}
       onDiscard={handleDiscard}
+      onRemix={() => handleRemix(image)}
       isOwner={image.user_id === session?.user?.id}
       setStyle={() => {}}
       setActiveTab={() => {}}

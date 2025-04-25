@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
@@ -25,7 +24,6 @@ import AdminDiscardDialog from './admin/AdminDiscardDialog';
 
 const MobileImageView = ({ 
   image, 
-  isOpen, 
   onClose,
   onDownload,
   onDiscard,
@@ -51,7 +49,6 @@ const MobileImageView = ({
   const imageRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Fetch user profile to check if admin
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
     queryFn: async () => {
@@ -112,10 +109,8 @@ const MobileImageView = ({
   const handleDiscardImage = async () => {
     try {
       if (isAdmin && !isOwner) {
-        // If admin is deleting someone else's image, show confirmation dialog
         setIsAdminDialogOpen(true);
       } else {
-        // Regular discard for own images
         await handleImageDiscard(image, queryClient);
         onClose();
         if (onDiscard) {
@@ -160,20 +155,23 @@ const MobileImageView = ({
       toast.error('Please sign in to remix images');
       return;
     }
-    navigate(`/?remix=${image.id}#imagegenerate`, { replace: true });
+    
+    if (onRemix && image) {
+      onRemix(image);
+    }
   };
 
   const isLandscape = image?.width > image?.height;
 
   const handleImageClick = () => {
     if (!isFullscreen) {
-      setIsRotated(false); // Reset rotation when entering fullscreen
+      setIsRotated(false);
     }
     setIsFullscreen(!isFullscreen);
   };
 
   const handleRotate = (e) => {
-    e.stopPropagation(); // Prevent fullscreen toggle
+    e.stopPropagation();
     setIsRotated(!isRotated);
   };
 
@@ -185,15 +183,12 @@ const MobileImageView = ({
       const isLandscape = image.width > image.height;
 
       if (isLandscape) {
-        // For landscape images
         const aspectRatio = image.width / image.height;
         const rotatedAspectRatio = 1 / aspectRatio;
         
-        // Calculate dimensions that will fit the screen after rotation
         let width = viewportHeight;
         let height = viewportHeight * rotatedAspectRatio;
         
-        // If the height would overflow the width, scale down
         if (height > viewportWidth) {
           const scale = viewportWidth / height;
           width *= scale;
@@ -206,7 +201,6 @@ const MobileImageView = ({
           height: `${width}px`,
         });
       } else {
-        // For portrait/square images
         const aspectRatio = image.width / image.height;
         let width = viewportWidth;
         let height = viewportWidth / aspectRatio;
@@ -223,7 +217,7 @@ const MobileImageView = ({
         });
       }
     } else {
-      setImageStyle({}); // Reset styles when not fullscreen
+      setImageStyle({});
     }
   }, [isFullscreen, image.width, image.height]);
 
@@ -429,7 +423,6 @@ const MobileImageView = ({
         </ScrollArea>
       </div>
 
-      {/* Admin discard confirmation dialog */}
       <AdminDiscardDialog
         open={isAdminDialogOpen}
         onOpenChange={setIsAdminDialogOpen}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
@@ -47,7 +46,6 @@ const FullScreenImageView = ({
 
   const { handleRemix } = useImageRemix(session, onRemix, onClose);
 
-  // Fetch user profile to check if admin
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
     queryFn: async () => {
@@ -96,10 +94,8 @@ const FullScreenImageView = ({
   const handleDiscard = async () => {
     try {
       if (isAdmin && !isOwner) {
-        // If admin is deleting someone else's image, show confirmation dialog
         setIsAdminDialogOpen(true);
       } else {
-        // Regular discard for own images
         await handleImageDiscard(image, queryClient);
         onClose();
       }
@@ -123,8 +119,8 @@ const FullScreenImageView = ({
       return;
     }
     
-    if (image) {
-      handleRemix(image);
+    if (onRemix && image) {
+      onRemix(image);
     }
   };
 
@@ -162,7 +158,6 @@ const FullScreenImageView = ({
       if (e.clientX >= threshold) {
         setShowSidebarButton(true);
       } else {
-        // Add small delay before hiding to prevent flickering
         clearTimeout(timeout);
         timeout = setTimeout(() => {
           setShowSidebarButton(false);
@@ -379,7 +374,6 @@ const FullScreenImageView = ({
         </div>
       </div>
 
-      {/* Admin discard confirmation dialog */}
       <AdminDiscardDialog
         open={isAdminDialogOpen}
         onOpenChange={setIsAdminDialogOpen}
