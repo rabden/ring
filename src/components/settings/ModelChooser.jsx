@@ -260,7 +260,7 @@ const MobileModelGrid = ({ filteredModels, model, setModel, proMode, className, 
   );
 };
 
-const ModelChooser = ({ model, setModel, proMode, modelConfigs }) => {
+const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   
@@ -270,30 +270,37 @@ const ModelChooser = ({ model, setModel, proMode, modelConfigs }) => {
     const allModels = Object.entries(modelConfigs);
     
     return allModels.filter(([_, config]) => {
+      if (nsfwEnabled) {
+        return config.category === "NSFW";
+      }
       return config.category === "General";
     });
-  }, [modelConfigs]);
+  }, [nsfwEnabled, modelConfigs]);
 
   const defaultModel = useMemo(() => {
-    return 'flux';
-  }, []);
+    return nsfwEnabled ? 'nsfwMaster' : 'flux';
+  }, [nsfwEnabled]);
 
   const handleModelSelection = useCallback((newModel) => {
     const modelData = modelConfigs?.[newModel];
     if (!modelData) return;
 
-    if (modelData.category === "General") {
+    const isCorrectCategory = nsfwEnabled 
+      ? modelData.category === "NSFW"
+      : modelData.category === "General";
+
+    if (isCorrectCategory) {
       setModel(newModel);
       setIsDrawerOpen(false);
     }
-  }, [setModel, modelConfigs]);
+  }, [nsfwEnabled, setModel, modelConfigs]);
 
   useEffect(() => {
     const currentModel = modelConfigs?.[model];
-    if (!currentModel || currentModel.category !== "General") {
+    if (!currentModel || currentModel.category !== (nsfwEnabled ? "NSFW" : "General")) {
       setModel(defaultModel);
     }
-  }, [model, defaultModel, setModel, modelConfigs]);
+  }, [nsfwEnabled, model, defaultModel, setModel, modelConfigs]);
 
   const currentModel = modelConfigs?.[model];
   if (!currentModel) return null;

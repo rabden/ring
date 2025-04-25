@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useRealtimeProfile } from '@/hooks/useRealtimeProfile';
 import { handleAvatarUpload } from '@/utils/profileUtils';
 import { useQueryClient } from '@tanstack/react-query';
-import { LogOut, ChevronRight, Repeat } from 'lucide-react';
+import { LogOut, ChevronRight, Repeat, MousePointerClick } from 'lucide-react';
 import ProfileAvatar from './profile/ProfileAvatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CreditCounter from '@/components/ui/credit-counter';
@@ -20,7 +20,9 @@ const ProfileMenu = ({
   user, 
   credits, 
   bonusCredits, 
-  isMobile
+  isMobile,
+  nsfwEnabled,
+  setNsfwEnabled 
 }) => {
   const { logout } = useSupabaseAuth();
   const [showImageDialog, setShowImageDialog] = useState(false);
@@ -177,7 +179,24 @@ const ProfileMenu = ({
               </div>
             </div>
 
-            <div className="flex justify-end items-center pt-2">
+            <div className="flex justify-between items-center pt-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setNsfwEnabled(!nsfwEnabled)}
+                className={cn(
+                  "h-8 rounded-lg text-xs",
+                  "transition-all duration-200",
+                  nsfwEnabled ? (
+                    "bg-destructive/10 hover:bg-destructive/20 text-destructive/90 hover:text-destructive"
+                  ) : (
+                    "bg-card hover:bg-background/80 text-primary/90 hover:text-primary"
+                  )
+                )}
+              >
+                <MousePointerClick className="w-4 h-4 mr-1" />
+                {nsfwEnabled ? 'Unsafe' : 'Safe'}
+              </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 

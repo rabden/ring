@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Check, Circle, MoreHorizontal } from "lucide-react";
@@ -36,20 +37,32 @@ const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
 const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
   const { nsfwEnabled } = useUserPreferences();
   
-  const quickModels = [
-    { key: 'flux', name: 'Normal' },
-    { key: 'turbo', name: 'Fast' },
-    { key: 'Illustration', name: 'Design' }
-  ];
+  // Define the quick access models based on NSFW setting
+  const quickModels = nsfwEnabled 
+    ? [
+        { key: 'nsfwMaster', name: 'Normal' },
+        { key: 'animeNsfw', name: 'Anime' },
+        { key: 'deepthroat', name: 'Blowjob' }
+      ]
+    : [
+        { key: 'flux', name: 'Normal' },
+        { key: 'turbo', name: 'Fast' },
+        { key: 'Illustration', name: 'Design' }
+      ];
   
-  const defaultModel = 'flux';
+  // Default model based on NSFW state
+  const defaultModel = nsfwEnabled ? 'nsfwMaster' : 'flux';
   
+  // Check if current model is not in our quick models
   const isCustomModel = !quickModels.some(model => model.key === currentModel);
   
+  // Get the current model name for the dropdown button
   const currentModelName = modelConfigs?.[currentModel]?.name || 'Custom';
   
+  // Get the current custom model for the dropdown (when a custom model is selected)
   const currentCustomModel = isCustomModel ? { key: currentModel, name: currentModelName } : null;
   
+  // Effect to update model when NSFW state changes
   useEffect(() => {
     const currentModelConfig = modelConfigs?.[currentModel];
     const isCorrectCategory = nsfwEnabled 
@@ -75,6 +88,7 @@ const MiniModelChooser = ({ currentModel, onModelChange, modelConfigs }) => {
             />
           ))}
           
+          {/* Only show the more icon when a custom model is selected */}
           {isCustomModel && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
