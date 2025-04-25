@@ -70,7 +70,6 @@ const ImageGallery = ({
   onRemix, 
   onViewDetails, 
   generatingImages = [], 
-  nsfwEnabled,
   activeFilters = {},
   searchQuery = '',
   showPrivate,
@@ -99,7 +98,6 @@ const ImageGallery = ({
   } = useGalleryImages({
     userId: profileUserId || userId,
     activeView,
-    nsfwEnabled,
     showPrivate,
     activeFilters,
     searchQuery,

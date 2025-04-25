@@ -3,13 +3,11 @@ import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useFollows } from '@/hooks/useFollows';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
-import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 import ImageGallery from '@/components/ImageGallery';
 import DesktopHeader from '@/components/header/DesktopHeader';
 import MobileHeader from '@/components/header/MobileHeader';
 import ImageDetailsDialog from '@/components/ImageDetailsDialog';
-import FullScreenImageView from '@/components/FullScreenImageView';
 import BottomNavbar from '@/components/BottomNavbar';
 import MobileNotificationsMenu from '@/components/MobileNotificationsMenu';
 import MobileProfileMenu from '@/components/MobileProfileMenu';
@@ -25,10 +23,8 @@ const Inspiration = () => {
   const location = useLocation();
   const [selectedImage, setSelectedImage] = useState(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [fullScreenViewOpen, setFullScreenViewOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState({});
-  const { nsfwEnabled, setNsfwEnabled } = useUserPreferences();
   const { generatingImages } = useGeneratingImages();
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTop, setShowTop] = useState(false);
@@ -129,8 +125,6 @@ const Inspiration = () => {
         credits={credits}
         bonusCredits={bonusCredits}
         onSearch={setSearchQuery}
-        nsfwEnabled={nsfwEnabled}
-        setNsfwEnabled={setNsfwEnabled}
         activeFilters={activeFilters}
         onFilterChange={(type, value) => setActiveFilters(prev => ({ ...prev, [type]: value }))}
         onRemoveFilter={(type) => {
@@ -163,8 +157,6 @@ const Inspiration = () => {
         }}
         onSearch={setSearchQuery}
         isVisible={isHeaderVisible}
-        nsfwEnabled={nsfwEnabled}
-        onToggleNsfw={() => setNsfwEnabled(!nsfwEnabled)}
         showFollowing={showFollowing}
         showTop={showTop}
         showLatest={showLatest}
@@ -180,7 +172,6 @@ const Inspiration = () => {
           onDownload={handleDownload}
           onRemix={handleRemix}
           onViewDetails={handleViewDetails}
-          nsfwEnabled={nsfwEnabled}
           activeFilters={activeFilters}
           searchQuery={searchQuery}
           showPrivate={false}
@@ -200,8 +191,6 @@ const Inspiration = () => {
         credits={credits}
         bonusCredits={bonusCredits}
         generatingImages={generatingImages}
-        nsfwEnabled={nsfwEnabled}
-        setNsfwEnabled={setNsfwEnabled}
       />
       <MobileNotificationsMenu activeTab={activeTab} />
       <MobileProfileMenu 
@@ -209,8 +198,6 @@ const Inspiration = () => {
         credits={credits}
         bonusCredits={bonusCredits}
         activeTab={activeTab}
-        nsfwEnabled={nsfwEnabled}
-        setNsfwEnabled={setNsfwEnabled}
       />
 
       <ImageDetailsDialog
