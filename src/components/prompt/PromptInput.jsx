@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Eraser, ChevronRight, Sparkles, Loader } from "lucide-react";
@@ -28,11 +27,9 @@ const PromptInput = ({
   bonusCredits,
   userId,
   activeModel,
-  modelConfigs,
-  nsfwEnabled
+  modelConfigs
 }) => {
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
-  const [highlightedPrompt, setHighlightedPrompt] = useState('');
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
@@ -53,11 +50,6 @@ const PromptInput = ({
 
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    // We no longer need to call highlightNsfwWords since we've removed NSFW functionality
-    setHighlightedPrompt('');
-  }, [prompt, nsfwEnabled]);
 
   const handleImprovePrompt = async () => {
     if (!userId) {
@@ -171,8 +163,6 @@ const PromptInput = ({
             }}
             disabled={isImproving}
           />
-          
-          {/* Remove the highlighted content since we've removed NSFW functionality */}
         </div>
       </div>
       

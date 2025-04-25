@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Eraser, ChevronRight, Sparkles, Loader, Settings } from 'lucide-react';
@@ -52,8 +51,7 @@ const DesktopPromptBox = ({
   seed,
   setSeed,
   randomizeSeed,
-  setRandomizeSeed,
-  nsfwEnabled
+  setRandomizeSeed
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -114,15 +112,8 @@ const DesktopPromptBox = ({
   }, [settingsActive, onSettingsToggle]);
 
   useEffect(() => {
-    // We no longer need to highlight NSFW words since we've removed NSFW functionality
     setHighlightedPrompt('');
-  }, [prompt, nsfwEnabled]);
-
-  // Simplified function that doesn't rely on containsNSFWContent
-  const highlightNsfwWords = () => {
-    // This function is now a no-op since we've removed NSFW highlighting
-    setHighlightedPrompt('');
-  };
+  }, [prompt]);
 
   const handlePromptChange = (e) => {
     if (typeof onChange === 'function') {
@@ -276,8 +267,6 @@ const DesktopPromptBox = ({
                   }}
                   disabled={isImproving}
                 />
-                
-                {/* Remove the highlighted content section since we've removed NSFW functionality */}
               </div>
             </div>
 
