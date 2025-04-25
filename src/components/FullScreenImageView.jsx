@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,6 @@ const FullScreenImageView = ({
   onDownload,
   onDiscard,
   onRemix,
-  isOwner,
   setStyle,
   setActiveTab
 }) => {
@@ -61,6 +61,7 @@ const FullScreenImageView = ({
   });
 
   const isAdmin = userProfile?.is_admin || false;
+  const isOwner = image?.user_id === session?.user?.id;
   const showAdminDelete = isAdmin && !isOwner;
 
   const { data: owner } = useQuery({

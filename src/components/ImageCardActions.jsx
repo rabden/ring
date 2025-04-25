@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Download, Trash2, Wand2, Info, Shield } from "lucide-react";
@@ -29,8 +28,7 @@ const ImageCardActions = ({
   onDownload = () => {},
   onDiscard = () => {},
   onAdminDiscard = () => {},
-  userId,
-  isAdmin = false
+  userId
 }) => {
   const { session } = useSupabaseAuth();
   const navigate = useNavigate();
@@ -41,20 +39,23 @@ const ImageCardActions = ({
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const { data: modelConfigs } = useModelConfigs();
 
-  // Fetch owner name for the admin dialog
-  const { data: owner } = useQuery({
-    queryKey: ['user', image?.user_id],
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
     queryFn: async () => {
-      if (!image?.user_id) return null;
+      if (!session?.user?.id) return null;
       const { data } = await supabase
         .from('profiles')
-        .select('display_name')
-        .eq('id', image.user_id)
+        .select('is_admin')
+        .eq('id', session.user.id)
         .single();
       return data;
     },
-    enabled: !!image?.user_id && isAdmin && image?.user_id !== userId
+    enabled: !!session?.user?.id
   });
+
+  const isAdmin = userProfile?.is_admin || false;
+  const isOwner = image?.user_id === userId;
+  const showAdminDelete = isAdmin && !isOwner;
 
   const handleViewDetails = (e) => {
     e.preventDefault();
@@ -71,11 +72,9 @@ const ImageCardActions = ({
     e.stopPropagation();
     if (!image?.id) return;
     
-    // If it's an admin and not their own image, show confirmation dialog
     if (isAdmin && image.user_id !== userId) {
       setIsAdminDialogOpen(true);
     } else {
-      // Regular discard for own images
       onDiscard(image);
     }
     
@@ -128,9 +127,6 @@ const ImageCardActions = ({
     { label: 'Aspect Ratio', value: image.aspect_ratio },
     { label: 'Created', value: format(new Date(image.created_at), 'MMM d, yyyy h:mm a') }
   ];
-
-  // Check if we can show admin delete button (user is admin AND this is not their own image)
-  const showAdminDelete = isAdmin && image.user_id !== userId;
 
   return (
     <>
@@ -281,7 +277,6 @@ const ImageCardActions = ({
                 <>
                   <DropdownMenuSeparator className="my-2 bg-border/80" />
                   
-                  {/* Show delete buttons based on permissions */}
                   {image.user_id === userId && (
                     <DropdownMenuItem 
                       onClick={handleDiscard}
@@ -298,7 +293,6 @@ const ImageCardActions = ({
                     </DropdownMenuItem>
                   )}
                   
-                  {/* Admin delete option */}
                   {showAdminDelete && (
                     <DropdownMenuItem 
                       onClick={handleDiscard}
@@ -348,12 +342,11 @@ const ImageCardActions = ({
         )}
       </div>
 
-      {/* Admin discard confirmation dialog */}
       <AdminDiscardDialog
         open={isAdminDialogOpen}
         onOpenChange={setIsAdminDialogOpen}
         onConfirm={handleAdminDiscard}
-        imageOwnerName={owner?.display_name}
+        imageOwnerName={userProfile?.display_name}
       />
     </>
   );

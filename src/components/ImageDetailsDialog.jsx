@@ -15,12 +15,32 @@ import AdminDiscardDialog from './admin/AdminDiscardDialog'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/supabase'
 import { toast } from 'sonner'
+import { useSupabaseAuth } from '@/integrations/supabase/auth'
 
-const ImageDetailsDialog = ({ open, onOpenChange, image, isAdmin, onDiscard }) => {
+const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
   const { data: modelConfigs } = useModelConfigs();
   const [copyIcon, setCopyIcon] = useState('copy');
   const [shareIcon, setShareIcon] = useState('share');
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
+  const { session } = useSupabaseAuth();
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+      return data;
+    },
+    enabled: !!session?.user?.id
+  });
+
+  const isAdmin = userProfile?.is_admin || false;
+  const isOwner = image?.user_id === session?.user?.id;
+  const showAdminDelete = isAdmin && !isOwner;
 
   if (!image) return null;
 
@@ -56,7 +76,7 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, isAdmin, onDiscard }) =
         .single();
       return data;
     },
-    enabled: !!image?.user_id && isAdmin
+    enabled: !!image?.user_id
   });
 
   const handleAdminDiscard = (reason) => {
@@ -89,6 +109,15 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, isAdmin, onDiscard }) =
               />
 
               <ImageDetailsSection detailItems={detailItems} />
+              
+              {(isOwner || showAdminDelete) && (
+                <button
+                  onClick={() => setIsAdminDialogOpen(true)}
+                  className="text-red-500 hover:text-red-600"
+                >
+                  {showAdminDelete ? 'Admin Delete' : 'Delete'}
+                </button>
+              )}
             </div>
           </ScrollArea>
         </DialogContent>

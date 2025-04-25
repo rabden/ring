@@ -125,7 +125,7 @@ const Inspiration = () => {
   const handleDiscard = async (reason) => {
     try {
       if (selectedImage) {
-        await handleImageDiscard(selectedImage, queryClient, isAdmin, reason);
+        await handleImageDiscard(selectedImage, queryClient, reason);
         setFullScreenViewOpen(false);
         setSelectedImage(null);
         toast.success('Image deleted successfully');
@@ -203,7 +203,6 @@ const Inspiration = () => {
           showLatest={showLatest}
           following={following}
           className="px-0"
-          isAdmin={isAdmin}
         />
       </main>
 
@@ -231,7 +230,6 @@ const Inspiration = () => {
         open={detailsDialogOpen}
         onOpenChange={setDetailsDialogOpen}
         image={selectedImage}
-        isAdmin={isAdmin}
         onDiscard={handleDiscard}
       />
 
@@ -243,8 +241,6 @@ const Inspiration = () => {
           onDownload={handleDownload}
           onDiscard={handleDiscard}
           onRemix={handleRemix}
-          isOwner={selectedImage?.user_id === session?.user?.id}
-          isAdmin={isAdmin}
         />
       )}
     </div>
