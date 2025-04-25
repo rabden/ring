@@ -26,11 +26,6 @@ export const UserPreferencesProvider = ({ children }) => {
     localStorage.setItem('settingsActive', JSON.stringify(settingsActive));
   }, [settingsActive]);
 
-  // Remove any existing NSFW setting from localStorage
-  useEffect(() => {
-    localStorage.removeItem('nsfwEnabled');
-  }, []);
-
   const value = {
     aspectRatio,
     setAspectRatio,
