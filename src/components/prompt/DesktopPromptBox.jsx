@@ -15,17 +15,16 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import SettingSection from '@/components/settings/SettingSection';
-import { containsNSFWContent } from '@/utils/nsfwUtils';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
-  "Tips: Use FLux.1 Dev model for precise results",
-  "Tips: Use different models for different results",
-  "Tips: Try click the HD badge to improve quality to HD+",
-  "Tips: Use the 'Improve' button to enhance your prompt",
-  "Tips: Play with the slider to change the aspect ratio",
-  "Tips: Explore Inspiration page for more ideas",
-  "Tips: Use Stable Diffusion 3.5 large for more vibrant results",
+  "Tips: Use FLux.1 Dev model for precise results", 
+  "Tips: Use different models for different results", 
+  "Tips: Try click the HD badge to improve quality to HD+", 
+  "Tips: Use the 'Improve' button to enhance your prompt", 
+  "Tips: Play with the slider to change the aspect ratio", 
+  "Tips: Explore Inspiration page for more ideas", 
+  "Tips: Use Stable Diffusion 3.5 large for more vibrant results", 
   "Always improve prompt for better results",
 ];
 

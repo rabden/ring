@@ -24,7 +24,7 @@ export const modelConfig = {
     isPremium: false,
     promptSuffix: null,
     tagline: "Fastest generation with good quality",
-    image: "https://i.ibb.co.com/3C2N2LJ/1734417062623.jpg",
+    image: "https://i.ibb.co/3C2N2LJ/1734417062623.jpg",
     example: "the prompt should be clear, should describe the users base prompt in best way and add extra elements to it for maximizing performance, you can add word tags that might enhance the image result or effect its styles",
     steps: 4,
     use_guidance: false,
@@ -158,7 +158,7 @@ export const modelConfig = {
     isPremium: false,
     promptSuffix: null,
     tagline: "If your idea lacks creativity then this is for you",
-    image: "https://i.ibb.co.com/7dF5kfrw/image.png",
+    image: "https://i.ibb.co/comF5kfrw/image.png",
     example: "Start with 'Logo' Then describe the logo to appear in the image, if given information than state whats the logo for it maximizes performance",
     steps: 28,
     use_guidance: false,
@@ -192,7 +192,7 @@ export const modelConfig = {
     isPremium: false,
     promptSuffix: ", dalle",
     tagline: "Open AI Dall-E 3",
-    image: "https://i.ibb.co.com/18gFNNS/images-example-kz79mj1mz.jpg",
+    image: "https://i.ibb.co/18gFNNS/images-example-kz79mj1mz.jpg",
     example: "the prompt should be clear, should describe the users base prompt in best way and add extra elements to it for maximizing performance, you can add word tags that might enhance the image result or effect its styles",
     steps: 28,
     use_guidance: false,
@@ -217,7 +217,7 @@ export const modelConfig = {
     use_negative_prompt: false,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   },
-    fantasy: {
+  fantasy: {
     name: "Fantasy",
     category: "General",
     group: "Style Models",
@@ -294,7 +294,7 @@ export const modelConfig = {
     isPremium: false,
     promptSuffix: " ``",
     tagline: "Anime XL, Unreal Anime style images",
-    image: "https://i.ibb.co.com/zWmjSkcy/image.png",
+    image: "https://i.ibb.co/zWmjSkcy/image.png",
     example: "make sure the prompt excels in making Anime style images, add any word tags that might enhance or indicate to Anime styles.",
     steps: 28,
     use_guidance: false,
@@ -546,4 +546,6 @@ export const modelConfig = {
     group: "Design",
     huggingfaceId: "gokaygokay/Flux-Game-Assets-LoRA-v2",
     qualityLimits: null,
-    isPremium: false,
+    isPremium: false
+  }
+}
