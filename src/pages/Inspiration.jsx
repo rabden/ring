@@ -17,6 +17,9 @@ import GeneratingImagesDropdown from '@/components/GeneratingImagesDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProUser } from '@/hooks/useProUser';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { handleImageDiscard } from '@/utils/discardUtils';
 
 const Inspiration = () => {
   const { session } = useSupabaseAuth();
@@ -38,6 +41,7 @@ const Inspiration = () => {
   const [activeTab, setActiveTab] = useState('images');
   const { isPro } = useProUser();
   const { isAdmin } = useIsAdmin();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const hash = location.hash.replace('#', '');
@@ -187,6 +191,7 @@ const Inspiration = () => {
           showLatest={showLatest}
           following={following}
           className="px-0"
+          isAdmin={isAdmin}
         />
       </main>
 
@@ -214,7 +219,6 @@ const Inspiration = () => {
         open={detailsDialogOpen}
         onOpenChange={setDetailsDialogOpen}
         image={selectedImage}
-        onDiscard={handleDiscard}
       />
 
       {selectedImage && (
@@ -225,6 +229,8 @@ const Inspiration = () => {
           onDownload={handleDownload}
           onDiscard={handleDiscard}
           onRemix={handleRemix}
+          isOwner={selectedImage?.user_id === session?.user?.id}
+          isAdmin={isAdmin}
         />
       )}
     </div>
