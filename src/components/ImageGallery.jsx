@@ -81,7 +81,8 @@ const ImageGallery = ({
   showFollowing,
   showTop,
   showLatest,
-  following
+  following,
+  isAdmin = false
 }) => {
   const { userLikes, toggleLike } = useLikes(userId);
   const isMobile = window.innerWidth <= 768;
@@ -150,7 +151,6 @@ const ImageGallery = ({
     return <NoResults />;
   }
 
-  // Use date grouping for My Images view
   if (activeView === 'myImages' && !profileUserId) {
     const groupedImages = groupImagesByDate(images);
     const nonEmptyGroups = Object.entries(groupedImages)
@@ -193,6 +193,7 @@ const ImageGallery = ({
                     onToggleLike={toggleLike}
                     setStyle={setStyle}
                     style={style}
+                    isAdmin={isAdmin}
                   />
                 </div>
               ))}
@@ -208,7 +209,6 @@ const ImageGallery = ({
     );
   }
 
-  // Regular masonry grid for other views (inspiration)
   return (
     <div className={cn("w-full h-full md:px-0 md:pt-0 pt-0 px-0.5", className)}>
       <Masonry
@@ -228,13 +228,13 @@ const ImageGallery = ({
               onDiscard={onDiscard}
               onRemix={onRemix}
               onViewDetails={onViewDetails}
-              onMoreClick={handleMobileMoreClick}
               userId={userId}
               isMobile={isMobile}
               isLiked={userLikes.includes(image.id)}
               onToggleLike={toggleLike}
               setStyle={setStyle}
               style={style}
+              isAdmin={isAdmin}
             />
           </div>
         ))}

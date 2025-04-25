@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import ImageStatusIndicators from './ImageStatusIndicators';
@@ -24,6 +23,7 @@ const ImageCard = ({
   isMobile,
   isLiked,
   onToggleLike = () => {},
+  isAdmin = false,
 }) => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
@@ -34,7 +34,6 @@ const ImageCard = ({
   const navigate = useNavigate();
   const { session, user } = useAuth();
 
-  // Fetch user profile to check if admin
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', user?.id],
     queryFn: async () => {
@@ -51,7 +50,6 @@ const ImageCard = ({
 
   const isAdmin = userProfile?.is_admin || false;
 
-  // Use the like_count property directly from the image object
   const likeCount = image.like_count || 0;
 
   const handleImageClick = (e) => {
