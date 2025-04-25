@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import ImageStatusIndicators from './ImageStatusIndicators';
@@ -23,7 +24,7 @@ const ImageCard = ({
   isMobile,
   isLiked,
   onToggleLike = () => {},
-  isAdmin = false,
+  isAdmin = false, // This prop will be used if provided
 }) => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [isDeleted, setIsDeleted] = useState(false);
@@ -34,6 +35,7 @@ const ImageCard = ({
   const navigate = useNavigate();
   const { session, user } = useAuth();
 
+  // We'll only run this query if isAdmin is false (not already provided via props)
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', user?.id],
     queryFn: async () => {
@@ -45,10 +47,12 @@ const ImageCard = ({
         .single();
       return data;
     },
-    enabled: !!user?.id
+    // Only enabled if isAdmin prop is false and user is logged in
+    enabled: !isAdmin && !!user?.id
   });
 
-  const isAdmin = userProfile?.is_admin || false;
+  // Use the prop value if provided, otherwise use the query result
+  const effectiveIsAdmin = isAdmin || userProfile?.is_admin || false;
 
   const likeCount = image.like_count || 0;
 
@@ -155,7 +159,7 @@ const ImageCard = ({
             onDiscard={handleDiscard}
             onAdminDiscard={handleAdminDiscard}
             userId={userId}
-            isAdmin={isAdmin}
+            isAdmin={effectiveIsAdmin}
           />
         </div>
       </div>
