@@ -1,3 +1,4 @@
+
 import React, { useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import Masonry from 'react-masonry-css';
@@ -10,6 +11,15 @@ import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
+import { 
+  parseISO, 
+  isToday, 
+  isYesterday, 
+  isThisWeek, 
+  isThisMonth, 
+  isAfter,
+  subWeeks
+} from 'date-fns';
 
 const getBreakpointColumns = () => ({
   default: 4,
@@ -83,7 +93,8 @@ const ImageGallery = ({
   showFollowing,
   showTop,
   showLatest,
-  following
+  following,
+  isAdmin
 }) => {
   const { userLikes, toggleLike } = useLikes(userId);
   const isMobile = window.innerWidth <= 768;
