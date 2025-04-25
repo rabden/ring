@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Download, Trash2, Wand2, Info, Shield } from "lucide-react";
@@ -12,13 +11,9 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import ImagePromptSection from './image-view/ImagePromptSection';
 import ImageDetailsSection from './image-view/ImageDetailsSection';
-import { useModelConfigs } from '@/hooks/useModelConfigs';
-import { format } from 'date-fns';
-import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminDiscardDialog from './admin/AdminDiscardDialog';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 const ImageCardActions = ({ 
   image, 
@@ -30,7 +25,8 @@ const ImageCardActions = ({
   onDownload = () => {},
   onDiscard = () => {},
   onAdminDiscard = () => {},
-  userId
+  userId,
+  isAdmin = false
 }) => {
   const { session } = useSupabaseAuth();
   const navigate = useNavigate();
@@ -39,8 +35,6 @@ const ImageCardActions = ({
   const [copyIcon, setCopyIcon] = useState('copy');
   const [shareIcon, setShareIcon] = useState('share');
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
-  const { data: modelConfigs } = useModelConfigs();
-  const { isAdmin } = useIsAdmin();
 
   const isOwner = image?.user_id === userId;
   const showAdminDelete = isAdmin && !isOwner;
@@ -171,7 +165,7 @@ const ImageCardActions = ({
                 <ScrollArea className="max-h-[85vh] overflow-y-auto px-2 py-2">
                   <div className="space-y-6">
                     <div className="flex gap-1 mt-2">
-                      {(image.user_id === userId || showAdminDelete) && (
+                      {(isOwner || showAdminDelete) && (
                         <Button 
                           onClick={handleDiscard}
                           variant="ghost" 
