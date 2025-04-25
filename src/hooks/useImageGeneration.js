@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
 import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
-import { containsNSFWContent } from '@/utils/nsfwUtils';
 import { useState, useRef, useCallback } from 'react';
 import { HfInference } from "@huggingface/inference";
 
@@ -30,9 +29,7 @@ export const useImageGeneration = ({
   setGeneratingImages,
   modelConfigs,
   imageCount = 1,
-  negativePrompt,
-  nsfwEnabled = false,
-  onNSFWDetected
+  negativePrompt
 }) => {
   // Queue to store pending generations
   const generationQueue = useRef([]);
@@ -239,15 +236,6 @@ export const useImageGeneration = ({
       huggingfaceId: lockedModelConfig.huggingfaceId,
       modelName: lockedModelConfig.name
     });
-
-    // Check for NSFW content if NSFW mode is disabled
-    if (!nsfwEnabled) {
-      const { isNSFW, foundWords } = containsNSFWContent(finalPrompt || prompt);
-      if (isNSFW) {
-        onNSFWDetected?.(foundWords);
-        return;
-      }
-    }
 
     // Capture ALL states at generation time
     const generationStates = {

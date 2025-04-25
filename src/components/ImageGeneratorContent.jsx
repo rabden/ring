@@ -23,8 +23,6 @@ const ImageGeneratorContent = ({
   activeTab,
   setActiveTab,
   generatingImages,
-  nsfwEnabled,
-  setNsfwEnabled,
   showPrivate,
   setShowPrivate,
   activeFilters,
@@ -153,8 +151,8 @@ const ImageGeneratorContent = ({
       <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground image-generator-content overflow-x-hidden">
         <div className={cn("flex-grow p-2 md:p-6 overflow-y-auto transition-[padding] duration-300 ease-in-out", !isGenerateTab ? 'block' : 'hidden md:block', isSidebarVisible ? 'md:pr-[350px]' : 'md:pr-6', "pb-20 md:pb-6")}>
           {session && <>
-              <DesktopHeader user={session.user} credits={credits} bonusCredits={bonusCredits} generatingImages={generatingImages} activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
-              <MobileHeader activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} isVisible={isHeaderVisible} nsfwEnabled={nsfwEnabled} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
+              <DesktopHeader user={session.user} credits={credits} bonusCredits={bonusCredits} generatingImages={generatingImages} activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
+              <MobileHeader activeFilters={activeFilters} onFilterChange={onFilterChange} onRemoveFilter={onRemoveFilter} onSearch={handleSearch} isVisible={isHeaderVisible} showPrivate={showPrivate} onTogglePrivate={handlePrivateToggle} showFollowing={showFollowing} showTop={showTop} onFollowingChange={setShowFollowing} onTopChange={setShowTop} searchQuery={searchQuery} />
               
               {!isInspiration && !searchQuery && <DesktopPromptBox 
                 prompt={imageGeneratorProps.prompt} 
@@ -179,7 +177,6 @@ const ImageGeneratorContent = ({
                 setSeed={imageGeneratorProps.setSeed}
                 randomizeSeed={imageGeneratorProps.randomizeSeed}
                 setRandomizeSeed={imageGeneratorProps.setRandomizeSeed}
-                nsfwEnabled={nsfwEnabled}
               />}
 
               <div className="md:mt-16 -mx-2 md:mx-0">
@@ -191,7 +188,6 @@ const ImageGeneratorContent = ({
                   onRemix={handleRemix}
                   onViewDetails={handleViewDetails}
                   generatingImages={generatingImages}
-                  nsfwEnabled={nsfwEnabled}
                   modelConfigs={imageGeneratorProps.modelConfigs}
                   activeFilters={activeFilters}
                   searchQuery={searchQuery}
@@ -216,15 +212,15 @@ const ImageGeneratorContent = ({
           isSidebarVisible ? "translate-x-0" : "translate-x-full"
         )}>
             <div className="min-h-[calc(100vh-56px)] md:h-full overflow-visible px-2 md:px-6 py-4 md:py-4">
-              <ImageGeneratorSettings {...imageGeneratorProps} hidePromptOnDesktop={!isMobile && !isGenerateTab} credits={credits} bonusCredits={bonusCredits} session={session} updateCredits={imageGeneratorProps.updateCredits} proMode={proMode} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} negativePrompt={imageGeneratorProps.negativePrompt} setNegativePrompt={imageGeneratorProps.setNegativePrompt} />
+              <ImageGeneratorSettings {...imageGeneratorProps} hidePromptOnDesktop={!isMobile && !isGenerateTab} credits={credits} bonusCredits={bonusCredits} session={session} updateCredits={imageGeneratorProps.updateCredits} proMode={proMode} negativePrompt={imageGeneratorProps.negativePrompt} setNegativePrompt={imageGeneratorProps.setNegativePrompt} />
             </div>
           </div>}
       </div>
 
       <MobileNotificationsMenu activeTab={activeTab} />
-      <MobileProfileMenu user={session?.user} credits={credits} bonusCredits={bonusCredits} activeTab={activeTab} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} />
+      <MobileProfileMenu user={session?.user} credits={credits} bonusCredits={bonusCredits} activeTab={activeTab} />
 
-      <BottomNavbar activeTab={activeTab} setActiveTab={setActiveTab} session={session} credits={credits} bonusCredits={bonusCredits} generatingImages={generatingImages} nsfwEnabled={nsfwEnabled} setNsfwEnabled={setNsfwEnabled} />
+      <BottomNavbar activeTab={activeTab} setActiveTab={setActiveTab} session={session} credits={credits} bonusCredits={bonusCredits} generatingImages={generatingImages} />
       
       <ImageDetailsDialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen} image={selectedImage} />
       {selectedImage && (
