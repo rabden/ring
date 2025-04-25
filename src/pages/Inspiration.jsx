@@ -16,8 +16,7 @@ import MobileProfileMenu from '@/components/MobileProfileMenu';
 import GeneratingImagesDropdown from '@/components/GeneratingImagesDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProUser } from '@/hooks/useProUser';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 const Inspiration = () => {
   const { session } = useSupabaseAuth();
@@ -38,22 +37,7 @@ const Inspiration = () => {
   const isHeaderVisible = useScrollDirection();
   const [activeTab, setActiveTab] = useState('images');
   const { isPro } = useProUser();
-
-  const { data: userProfile } = useQuery({
-    queryKey: ['userProfile', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
-      return data;
-    },
-    enabled: !!session?.user?.id
-  });
-
-  const isAdmin = userProfile?.is_admin || false;
+  const { isAdmin } = useIsAdmin();
 
   useEffect(() => {
     const hash = location.hash.replace('#', '');

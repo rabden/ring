@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Download, Trash2, Wand2, Info, Shield } from "lucide-react";
@@ -43,6 +44,20 @@ const ImageCardActions = ({
 
   const isOwner = image?.user_id === userId;
   const showAdminDelete = isAdmin && !isOwner;
+
+  const { data: ownerProfile } = useQuery({
+    queryKey: ['user', image?.user_id],
+    queryFn: async () => {
+      if (!image?.user_id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('id', image.user_id)
+        .single();
+      return data;
+    },
+    enabled: !!image?.user_id
+  });
 
   const handleViewDetails = (e) => {
     e.preventDefault();
@@ -333,7 +348,7 @@ const ImageCardActions = ({
         open={isAdminDialogOpen}
         onOpenChange={setIsAdminDialogOpen}
         onConfirm={handleAdminDiscard}
-        imageOwnerName={userProfile?.display_name}
+        imageOwnerName={ownerProfile?.display_name}
       />
     </>
   );

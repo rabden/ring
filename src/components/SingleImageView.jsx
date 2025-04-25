@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { handleImageDiscard } from '@/utils/discardUtils';
 import { toast } from 'sonner';
 import { useImageRemix } from '@/hooks/useImageRemix';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 const SingleImageView = () => {
   const { imageId } = useParams();
@@ -19,6 +20,7 @@ const SingleImageView = () => {
   const { session } = useSupabaseAuth();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const queryClient = useQueryClient();
+  const { isAdmin } = useIsAdmin();
 
   const { data: image, isLoading } = useQuery({
     queryKey: ['singleImage', imageId],
@@ -35,22 +37,6 @@ const SingleImageView = () => {
   });
 
   const { handleRemix } = useImageRemix(session);
-
-  const { data: userProfile } = useQuery({
-    queryKey: ['userProfile', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
-      return data;
-    },
-    enabled: !!session?.user?.id
-  });
-
-  const isAdmin = userProfile?.is_admin || false;
 
   const handleDownload = async () => {
     if (!image) return;
