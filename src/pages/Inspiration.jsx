@@ -122,6 +122,20 @@ const Inspiration = () => {
     document.body.removeChild(a);
   };
 
+  const handleDiscard = async (reason) => {
+    try {
+      if (selectedImage) {
+        await handleImageDiscard(selectedImage, queryClient, isAdmin, reason);
+        setFullScreenViewOpen(false);
+        setSelectedImage(null);
+        toast.success('Image deleted successfully');
+      }
+    } catch (error) {
+      console.error('Error discarding image:', error);
+      toast.error('Failed to delete image');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <DesktopHeader
@@ -217,15 +231,20 @@ const Inspiration = () => {
         open={detailsDialogOpen}
         onOpenChange={setDetailsDialogOpen}
         image={selectedImage}
+        isAdmin={isAdmin}
+        onDiscard={handleDiscard}
       />
+
       {selectedImage && (
         <FullScreenImageView
           image={selectedImage}
           isOpen={fullScreenViewOpen}
           onClose={() => setFullScreenViewOpen(false)}
           onDownload={handleDownload}
+          onDiscard={handleDiscard}
           onRemix={handleRemix}
           isOwner={selectedImage?.user_id === session?.user?.id}
+          isAdmin={isAdmin}
         />
       )}
     </div>
