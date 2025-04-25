@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import AdminDiscardDialog from './admin/AdminDiscardDialog';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 const FullScreenImageView = ({ 
   image, 
@@ -32,6 +32,9 @@ const FullScreenImageView = ({
   setActiveTab
 }) => {
   const { session } = useSupabaseAuth();
+  const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
+  
   const { data: modelConfigs } = useModelConfigs();
   const [copyIcon, setCopyIcon] = useState('copy');
   const [shareIcon, setShareIcon] = useState('share');
@@ -40,7 +43,6 @@ const FullScreenImageView = ({
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const { userLikes, toggleLike } = useLikes(session?.user?.id);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showSidebarButton, setShowSidebarButton] = useState(false);
 
@@ -60,7 +62,6 @@ const FullScreenImageView = ({
     enabled: !!session?.user?.id
   });
 
-  const isAdmin = userProfile?.is_admin || false;
   const isOwner = image?.user_id === session?.user?.id;
   const showAdminDelete = isAdmin && !isOwner;
 

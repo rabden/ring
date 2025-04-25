@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/supabase'
 import { toast } from 'sonner'
 import { useSupabaseAuth } from '@/integrations/supabase/auth'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 
 const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
   const { data: modelConfigs } = useModelConfigs();
@@ -23,22 +24,8 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
   const [shareIcon, setShareIcon] = useState('share');
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const { session } = useSupabaseAuth();
+  const { isAdmin } = useIsAdmin();
 
-  const { data: userProfile } = useQuery({
-    queryKey: ['userProfile', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return null;
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
-      return data;
-    },
-    enabled: !!session?.user?.id
-  });
-
-  const isAdmin = userProfile?.is_admin || false;
   const isOwner = image?.user_id === session?.user?.id;
   const showAdminDelete = isAdmin && !isOwner;
 
