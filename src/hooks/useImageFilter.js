@@ -1,12 +1,10 @@
 
 import { useMemo } from 'react';
-import { getNsfwModelKeys } from '@/utils/modelUtils';
 
 export const useImageFilter = () => {
   const filterImages = useMemo(() => (images, {
     userId,
     activeView,
-    nsfwEnabled,
     modelConfigs,
     activeFilters,
     searchQuery,
@@ -15,23 +13,11 @@ export const useImageFilter = () => {
     showTop,
     following = []
   }) => {
-    const NSFW_MODELS = getNsfwModelKeys();
-    
     let filteredData = images.filter(img => {
-      const isNsfw = NSFW_MODELS.includes(img.model);
-      
       // Filter private images
       if (activeView === 'inspiration') {
-        // Never show private images in inspiration
         if (img.is_private) return false;
         if (img.user_id === userId) return false;
-        
-        // Show only NSFW content when enabled
-        if (nsfwEnabled) {
-          if (!isNsfw) return false;
-        } else {
-          if (isNsfw) return false;
-        }
 
         // Apply following filter
         if (showFollowing && !showTop) {
@@ -69,13 +55,6 @@ export const useImageFilter = () => {
           if (!img.is_private) return false;
         } else {
           if (img.is_private) return false;
-        }
-
-        // Show only NSFW content when enabled
-        if (nsfwEnabled) {
-          if (!isNsfw) return false;
-        } else {
-          if (isNsfw) return false;
         }
 
         // Apply style and model filters
