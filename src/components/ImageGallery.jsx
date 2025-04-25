@@ -7,7 +7,9 @@ import { useLikes } from '@/hooks/useLikes';
 import NoResults from './NoResults';
 import { useGalleryImages } from '@/hooks/useGalleryImages';
 import { cn } from '@/lib/utils';
-import { format, isToday, isYesterday, isThisWeek, isThisMonth, parseISO, subWeeks, isAfter } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/supabase';
+import { useSupabaseAuth } from '@/integrations/supabase/auth';
 
 const getBreakpointColumns = () => ({
   default: 4,
@@ -81,15 +83,31 @@ const ImageGallery = ({
   showFollowing,
   showTop,
   showLatest,
-  following,
-  isAdmin = false
+  following
 }) => {
   const { userLikes, toggleLike } = useLikes(userId);
   const isMobile = window.innerWidth <= 768;
   const breakpointColumnsObj = getBreakpointColumns();
   const location = useLocation();
   const activeView = location.pathname === '/inspiration' ? 'inspiration' : 'myImages';
-  
+  const { session } = useSupabaseAuth();
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+      return data;
+    },
+    enabled: !!session?.user?.id
+  });
+
+  const isAdmin = userProfile?.is_admin || false;
+
   const { 
     images,
     isLoading,

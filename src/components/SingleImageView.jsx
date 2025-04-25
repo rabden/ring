@@ -112,6 +112,7 @@ const SingleImageView = () => {
       onDiscard={handleDiscard}
       onRemix={() => handleRemix(image)}
       isOwner={image.user_id === session?.user?.id}
+      isAdmin={isAdmin}
       setActiveTab={() => {}}
       setStyle={() => {}}
       showFullImage={true}
@@ -125,6 +126,7 @@ const SingleImageView = () => {
       onDiscard={handleDiscard}
       onRemix={() => handleRemix(image)}
       isOwner={image.user_id === session?.user?.id}
+      isAdmin={isAdmin}
       setStyle={() => {}}
       setActiveTab={() => {}}
     />
