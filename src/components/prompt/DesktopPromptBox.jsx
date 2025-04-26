@@ -15,17 +15,16 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import SettingSection from '@/components/settings/SettingSection';
-import { containsNSFWContent } from '@/utils/nsfwUtils';
 
 const PROMPT_TIPS = [
   "Tips: Try Remix an Image you like",
-  "Tips: Use FLux.1 Dev model for precise results",
-  "Tips: Use different models for different results",
-  "Tips: Try click the HD badge to improve quality to HD+",
-  "Tips: Use the 'Improve' button to enhance your prompt",
-  "Tips: Play with the slider to change the aspect ratio",
-  "Tips: Explore Inspiration page for more ideas",
-  "Tips: Use Stable Diffusion 3.5 large for more vibrant results",
+  "Tips: Use FLux.1 Dev model for precise results", 
+  "Tips: Use different models for different results", 
+  "Tips: Try click the HD badge to improve quality to HD+", 
+  "Tips: Use the 'Improve' button to enhance your prompt", 
+  "Tips: Play with the slider to change the aspect ratio", 
+  "Tips: Explore Inspiration page for more ideas", 
+  "Tips: Use Stable Diffusion 3.5 large for more vibrant results", 
   "Always improve prompt for better results",
 ];
 
@@ -52,8 +51,7 @@ const DesktopPromptBox = ({
   seed,
   setSeed,
   randomizeSeed,
-  setRandomizeSeed,
-  nsfwEnabled
+  setRandomizeSeed
 }) => {
   const [isFixed, setIsFixed] = useState(false);
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
@@ -114,48 +112,8 @@ const DesktopPromptBox = ({
   }, [settingsActive, onSettingsToggle]);
 
   useEffect(() => {
-    if (prompt) {
-      if (!nsfwEnabled) {
-        highlightNsfwWords(prompt);
-      } else {
-        setHighlightedPrompt('');
-      }
-    } else {
-      setHighlightedPrompt('');
-    }
-  }, [prompt, nsfwEnabled]);
-
-  const highlightNsfwWords = (text) => {
-    if (!text || nsfwEnabled) {
-      setHighlightedPrompt('');
-      return;
-    }
-    
-    const { foundWords } = containsNSFWContent(text);
-    if (foundWords.length === 0) {
-      setHighlightedPrompt('');
-      return;
-    }
-
-    const wordPattern = foundWords.map(word => {
-      if (word.includes(' ')) {
-        return word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      }
-      return `\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`;
-    }).join('|');
-
-    if (!wordPattern) {
-      setHighlightedPrompt('');
-      return;
-    }
-
-    const regex = new RegExp(wordPattern, 'gi');
-    const highlighted = text.replace(regex, match => {
-      return `<span class="bg-destructive/20 text-destructive font-medium rounded px-1">${match}</span>`;
-    });
-
-    setHighlightedPrompt(highlighted);
-  };
+    setHighlightedPrompt('');
+  }, [prompt]);
 
   const handlePromptChange = (e) => {
     if (typeof onChange === 'function') {
@@ -302,28 +260,13 @@ const DesktopPromptBox = ({
                     "pt-6 pb-12 pl-3 pr-5",
                     "transition-all duration-300",
                     textareaHeight,
-                    isImproving && "opacity-80",
-                    highlightedPrompt && "opacity-0"
+                    isImproving && "opacity-80"
                   )}
                   style={{ 
                     caretColor: 'currentColor',
                   }}
                   disabled={isImproving}
                 />
-                
-                {highlightedPrompt && (
-                  <div 
-                    className={cn(
-                      "absolute inset-0 z-0",
-                      "w-full resize-none bg-transparent text-base",
-                      "overflow-y-auto scrollbar-none whitespace-pre-wrap",
-                      "pt-6 pb-12 pl-3 pr-5",
-                      textareaHeight
-                    )}
-                    dangerouslySetInnerHTML={{ __html: highlightedPrompt }}
-                    onClick={() => textareaRef.current?.focus()}
-                  />
-                )}
               </div>
             </div>
 
