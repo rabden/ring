@@ -25,13 +25,13 @@ export const usePromptImprovement = (userId) => {
         prompt, 
         activeModel, 
         modelConfigs,
-        (chunk) => {
+        (chunk, isStreaming) => {
           // Call onSuccess with each chunk to update the textarea in real-time
-          onSuccess(chunk, true); // Added isStreaming flag
+          onSuccess(chunk, isStreaming);
         }
       );
 
-      if (!result) {
+      if (!result || result === prompt) {
         toast.error('Failed to improve prompt', { 
           id: toastId,
           position: 'top-center'
@@ -50,7 +50,6 @@ export const usePromptImprovement = (userId) => {
       }
 
       // Final update with the complete improved prompt
-      onSuccess(result);
       toast.success('Prompt improved!', { 
         id: toastId,
         position: 'top-center'
