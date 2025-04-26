@@ -19,7 +19,6 @@ import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import AdminDiscardDialog from './admin/AdminDiscardDialog';
-import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 const FullScreenImageView = ({ 
   image, 
@@ -28,13 +27,11 @@ const FullScreenImageView = ({
   onDownload,
   onDiscard,
   onRemix,
+  isOwner,
   setStyle,
   setActiveTab
 }) => {
   const { session } = useSupabaseAuth();
-  const navigate = useNavigate();
-  const { isAdmin } = useIsAdmin();
-  
   const { data: modelConfigs } = useModelConfigs();
   const [copyIcon, setCopyIcon] = useState('copy');
   const [shareIcon, setShareIcon] = useState('share');
@@ -43,6 +40,7 @@ const FullScreenImageView = ({
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const { userLikes, toggleLike } = useLikes(session?.user?.id);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showSidebarButton, setShowSidebarButton] = useState(false);
 
@@ -62,7 +60,7 @@ const FullScreenImageView = ({
     enabled: !!session?.user?.id
   });
 
-  const isOwner = image?.user_id === session?.user?.id;
+  const isAdmin = userProfile?.is_admin || false;
   const showAdminDelete = isAdmin && !isOwner;
 
   const { data: owner } = useQuery({

@@ -1,3 +1,4 @@
+
 import { modelConfig } from '@/config/modelConfig';
 
 /**
@@ -8,12 +9,4 @@ export const getNsfwModelKeys = () => {
   return Object.entries(modelConfig)
     .filter(([_, config]) => config.category === "NSFW")
     .map(([key]) => key);
-};
-
-export const getModelGroups = () => {
-  const groups = new Set();
-  Object.values(modelConfig).forEach(config => {
-    if (config.group) groups.add(config.group);
-  });
-  return Array.from(groups);
 };

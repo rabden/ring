@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -11,24 +11,12 @@ import { format } from 'date-fns'
 import { cn } from "@/lib/utils"
 import ImagePromptSection from './image-view/ImagePromptSection'
 import ImageDetailsSection from './image-view/ImageDetailsSection'
-import AdminDiscardDialog from './admin/AdminDiscardDialog'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/integrations/supabase/supabase'
-import { toast } from 'sonner'
-import { useSupabaseAuth } from '@/integrations/supabase/auth'
-import { useIsAdmin } from '@/hooks/useIsAdmin'
 
-const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
+const ImageDetailsDialog = ({ open, onOpenChange, image }) => {
   const { data: modelConfigs } = useModelConfigs();
   const [copyIcon, setCopyIcon] = useState('copy');
   const [shareIcon, setShareIcon] = useState('share');
-  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
-  const { session } = useSupabaseAuth();
-  const { isAdmin } = useIsAdmin();
-
-  const isOwner = image?.user_id === session?.user?.id;
-  const showAdminDelete = isAdmin && !isOwner;
-
+  
   if (!image) return null;
 
   const detailItems = [
@@ -52,71 +40,32 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
     setTimeout(() => setShareIcon('share'), 1500);
   };
 
-  const { data: owner } = useQuery({
-    queryKey: ['user', image?.user_id],
-    queryFn: async () => {
-      if (!image?.user_id) return null;
-      const { data } = await supabase
-        .from('profiles')
-        .select('display_name')
-        .eq('id', image.user_id)
-        .single();
-      return data;
-    },
-    enabled: !!image?.user_id
-  });
-
-  const handleAdminDiscard = (reason) => {
-    setIsAdminDialogOpen(false);
-    if (onDiscard) {
-      onDiscard(reason);
-    }
-  };
-
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={cn(
-          "sm:max-w-[500px] max-h-[80vh] overflow-hidden",
-          "border-border/80 bg-card",
-          "p-4 md:p-6 rounded-lg"
-        )}>
-          <DialogHeader className="px-2">
-            <DialogTitle className="text-sm font-semibold text-foreground/90 uppercase tracking-wide">Image Details</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="mt-6 max-h-[calc(80vh-80px)]">
-            <div className="space-y-6 px-2">
-              <ImagePromptSection 
-                prompt={image.user_prompt || image.prompt}
-                negative_prompt={image.negative_prompt}
-                copyIcon={copyIcon}
-                shareIcon={shareIcon}
-                onCopyPrompt={handleCopyPrompt}
-                onShare={handleShare}
-              />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={cn(
+        "sm:max-w-[500px] max-h-[80vh] overflow-hidden",
+        "border-border/80 bg-card",
+        "p-4 md:p-6 rounded-lg"
+      )}>
+        <DialogHeader className="px-2">
+          <DialogTitle className="text-sm font-semibold text-foreground/90 uppercase tracking-wide">Image Details</DialogTitle>
+        </DialogHeader>
+        <ScrollArea className="mt-6 max-h-[calc(80vh-80px)]">
+          <div className="space-y-6 px-2">
+            <ImagePromptSection 
+              prompt={image.user_prompt || image.prompt}
+              negative_prompt={image.negative_prompt}
+              copyIcon={copyIcon}
+              shareIcon={shareIcon}
+              onCopyPrompt={handleCopyPrompt}
+              onShare={handleShare}
+            />
 
-              <ImageDetailsSection detailItems={detailItems} />
-              
-              {(isOwner || showAdminDelete) && (
-                <button
-                  onClick={() => setIsAdminDialogOpen(true)}
-                  className="text-red-500 hover:text-red-600"
-                >
-                  {showAdminDelete ? 'Admin Delete' : 'Delete'}
-                </button>
-              )}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-
-      <AdminDiscardDialog
-        open={isAdminDialogOpen}
-        onOpenChange={setIsAdminDialogOpen}
-        onConfirm={handleAdminDiscard}
-        imageOwnerName={owner?.display_name}
-      />
-    </>
+            <ImageDetailsSection detailItems={detailItems} />
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 };
 

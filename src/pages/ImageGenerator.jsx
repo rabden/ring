@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -17,6 +16,8 @@ import { toast } from 'sonner';
 import ImageGeneratorContent from '@/components/ImageGeneratorContent';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
+import NSFWAlert from '@/components/alerts/NSFWAlert';
+import { containsNSFWContent } from '@/utils/nsfwUtils';
 
 const ImageGenerator = () => {
   const [searchParams] = useSearchParams();
@@ -24,6 +25,8 @@ const ImageGenerator = () => {
   const { session } = useSupabaseAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
+  const [showNSFWAlert, setShowNSFWAlert] = useState(false);
+  const [nsfwFoundWords, setNsfwFoundWords] = useState([]);
   const [activeFilters, setActiveFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -33,7 +36,7 @@ const ImageGenerator = () => {
 
   const queryClient = useQueryClient();
   const isHeaderVisible = useScrollDirection();
-  const { setIsRemixMode } = useUserPreferences();
+  const { nsfwEnabled, setNsfwEnabled, setIsRemixMode } = useUserPreferences();
   const { generatingImages, setGeneratingImages } = useGeneratingImages();
   const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
   const { data: isPro } = useProUser(session?.user?.id);
@@ -57,10 +60,10 @@ const ImageGenerator = () => {
   } = useImageGeneratorState();
 
   const defaultModel = useMemo(() => {
-    return 'flux';
-  }, []);
+    return nsfwEnabled ? 'nsfwMaster' : 'flux';
+  }, [nsfwEnabled]);
 
-  const { generateImage } = useImageGeneration({
+  const { generateImage, nsfwDetected } = useImageGeneration({
     session,
     prompt,
     seed,
@@ -75,7 +78,12 @@ const ImageGenerator = () => {
     setGeneratingImages,
     modelConfigs,
     imageCount,
-    negativePrompt
+    negativePrompt,
+    nsfwEnabled,
+    onNSFWDetected: (foundWords) => {
+      setNsfwFoundWords(foundWords);
+      setShowNSFWAlert(true);
+    }
   });
 
   const handleGenerateImage = useCallback(async () => {
@@ -88,6 +96,15 @@ const ImageGenerator = () => {
     if (!session) {
       toast.error('Please sign in to generate images');
       return;
+    }
+
+    if (!nsfwEnabled) {
+      const { isNSFW, foundWords } = containsNSFWContent(prompt);
+      if (isNSFW) {
+        setNsfwFoundWords(foundWords);
+        setShowNSFWAlert(true);
+        return;
+      }
     }
 
     setIsGenerating(true);
@@ -113,7 +130,7 @@ const ImageGenerator = () => {
       setIsGenerating(false);
     }
   }, [
-    prompt, session, isImproving, generateImage, 
+    prompt, session, isImproving, nsfwEnabled, generateImage, 
     isPrivate, improveCurrentPrompt, model, modelConfigs, setPrompt
   ]);
 
@@ -221,6 +238,11 @@ const ImageGenerator = () => {
 
   return (
     <>
+      <NSFWAlert 
+        isVisible={showNSFWAlert} 
+        onClose={() => setShowNSFWAlert(false)}
+        foundWords={nsfwFoundWords}
+      />
       <ImageGeneratorContent
         session={session}
         credits={credits}
@@ -229,6 +251,8 @@ const ImageGenerator = () => {
         setActiveTab={setActiveTab}
         generatingImages={generatingImages}
         setGeneratingImages={setGeneratingImages}
+        nsfwEnabled={nsfwEnabled}
+        setNsfwEnabled={setNsfwEnabled}
         showPrivate={showPrivate}
         setShowPrivate={setShowPrivate}
         activeFilters={activeFilters}
@@ -275,6 +299,8 @@ const ImageGenerator = () => {
           setImageCount,
           isPrivate,
           setIsPrivate,
+          nsfwEnabled,
+          setNsfwEnabled,
           modelConfigs,
           negativePrompt,
           setNegativePrompt,

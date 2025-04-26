@@ -16,10 +16,8 @@ import MobileProfileMenu from '@/components/MobileProfileMenu';
 import GeneratingImagesDropdown from '@/components/GeneratingImagesDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useProUser } from '@/hooks/useProUser';
-import { useIsAdmin } from '@/hooks/useIsAdmin';
-import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
-import { handleImageDiscard } from '@/utils/discardUtils';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const Inspiration = () => {
   const { session } = useSupabaseAuth();
@@ -40,8 +38,22 @@ const Inspiration = () => {
   const isHeaderVisible = useScrollDirection();
   const [activeTab, setActiveTab] = useState('images');
   const { isPro } = useProUser();
-  const { isAdmin } = useIsAdmin();
-  const queryClient = useQueryClient();
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+      return data;
+    },
+    enabled: !!session?.user?.id
+  });
+
+  const isAdmin = userProfile?.is_admin || false;
 
   useEffect(() => {
     const hash = location.hash.replace('#', '');
@@ -108,20 +120,6 @@ const Inspiration = () => {
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
-  };
-
-  const handleDiscard = async (reason) => {
-    try {
-      if (selectedImage) {
-        await handleImageDiscard(selectedImage, queryClient, reason);
-        setFullScreenViewOpen(false);
-        setSelectedImage(null);
-        toast.success('Image deleted successfully');
-      }
-    } catch (error) {
-      console.error('Error discarding image:', error);
-      toast.error('Failed to delete image');
-    }
   };
 
   return (
@@ -220,17 +218,14 @@ const Inspiration = () => {
         onOpenChange={setDetailsDialogOpen}
         image={selectedImage}
       />
-
       {selectedImage && (
         <FullScreenImageView
           image={selectedImage}
           isOpen={fullScreenViewOpen}
           onClose={() => setFullScreenViewOpen(false)}
           onDownload={handleDownload}
-          onDiscard={handleDiscard}
           onRemix={handleRemix}
           isOwner={selectedImage?.user_id === session?.user?.id}
-          isAdmin={isAdmin}
         />
       )}
     </div>

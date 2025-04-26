@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Download, Trash2, Wand2, Info, Shield } from "lucide-react";
@@ -11,12 +12,12 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import ImagePromptSection from './image-view/ImagePromptSection';
 import ImageDetailsSection from './image-view/ImageDetailsSection';
+import { useModelConfigs } from '@/hooks/useModelConfigs';
+import { format } from 'date-fns';
+import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminDiscardDialog from './admin/AdminDiscardDialog';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { format } from 'date-fns';
-import { useModelConfigs } from '@/hooks/useModelConfigs';
 
 const ImageCardActions = ({ 
   image, 
@@ -40,10 +41,8 @@ const ImageCardActions = ({
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const { data: modelConfigs } = useModelConfigs();
 
-  const isOwner = image?.user_id === userId;
-  const showAdminDelete = isAdmin && !isOwner;
-
-  const { data: ownerProfile } = useQuery({
+  // Fetch owner name for the admin dialog
+  const { data: owner } = useQuery({
     queryKey: ['user', image?.user_id],
     queryFn: async () => {
       if (!image?.user_id) return null;
@@ -54,7 +53,7 @@ const ImageCardActions = ({
         .single();
       return data;
     },
-    enabled: !!image?.user_id
+    enabled: !!image?.user_id && isAdmin && image?.user_id !== userId
   });
 
   const handleViewDetails = (e) => {
@@ -72,9 +71,11 @@ const ImageCardActions = ({
     e.stopPropagation();
     if (!image?.id) return;
     
+    // If it's an admin and not their own image, show confirmation dialog
     if (isAdmin && image.user_id !== userId) {
       setIsAdminDialogOpen(true);
     } else {
+      // Regular discard for own images
       onDiscard(image);
     }
     
@@ -128,6 +129,9 @@ const ImageCardActions = ({
     { label: 'Created', value: format(new Date(image.created_at), 'MMM d, yyyy h:mm a') }
   ];
 
+  // Check if we can show admin delete button (user is admin AND this is not their own image)
+  const showAdminDelete = isAdmin && image.user_id !== userId;
+
   return (
     <>
       <div className="flex items-center gap-1 px-1" onClick={e => e.stopPropagation()}>
@@ -169,7 +173,7 @@ const ImageCardActions = ({
                 <ScrollArea className="max-h-[85vh] overflow-y-auto px-2 py-2">
                   <div className="space-y-6">
                     <div className="flex gap-1 mt-2">
-                      {(isOwner || showAdminDelete) && (
+                      {(image.user_id === userId || showAdminDelete) && (
                         <Button 
                           onClick={handleDiscard}
                           variant="ghost" 
@@ -277,6 +281,7 @@ const ImageCardActions = ({
                 <>
                   <DropdownMenuSeparator className="my-2 bg-border/80" />
                   
+                  {/* Show delete buttons based on permissions */}
                   {image.user_id === userId && (
                     <DropdownMenuItem 
                       onClick={handleDiscard}
@@ -293,6 +298,7 @@ const ImageCardActions = ({
                     </DropdownMenuItem>
                   )}
                   
+                  {/* Admin delete option */}
                   {showAdminDelete && (
                     <DropdownMenuItem 
                       onClick={handleDiscard}
@@ -342,11 +348,12 @@ const ImageCardActions = ({
         )}
       </div>
 
+      {/* Admin discard confirmation dialog */}
       <AdminDiscardDialog
         open={isAdminDialogOpen}
         onOpenChange={setIsAdminDialogOpen}
         onConfirm={handleAdminDiscard}
-        imageOwnerName={ownerProfile?.display_name}
+        imageOwnerName={owner?.display_name}
       />
     </>
   );
