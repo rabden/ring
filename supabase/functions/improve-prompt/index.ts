@@ -27,6 +27,16 @@ serve(async (req) => {
         contents: [
           {
             role: "user",
+            parts: [{ text: "a dog" }]
+          },
+          {
+            role: "model",
+            parts: [{ 
+              text: "A majestic golden retriever, radiating joy and boundless energy, frolicking playfully in a vibrant, sun-drenched meadow filled with wildflowers. Captured with a shallow depth of field, emphasizing the dog's expressive eyes and fluffy fur. Cinematic lighting and a warm, inviting atmosphere." 
+            }]
+          },
+          {
+            role: "user",
             parts: [{ text: originalPrompt }]
           }
         ],
