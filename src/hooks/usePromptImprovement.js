@@ -20,14 +20,36 @@ export const usePromptImprovement = (userId) => {
     });
     
     try {
-      // Try to improve the prompt first with streaming updates
+      // Try to deduct credits first
+      const deductResult = await deductCredits();
+      if (deductResult === -1) {
+        toast.error('Not enough credits for prompt improvement', { 
+          id: toastId,
+          position: 'top-center'
+        });
+        setIsImproving(false);
+        return;
+      }
+      
+      // Clear the current input to prepare for streaming updates
+      let accumulatedPrompt = "";
+      onSuccess("", true); // Clear the input initially
+      
+      // Now improve the prompt with streaming updates
       const result = await improvePrompt(
         prompt, 
         activeModel, 
         modelConfigs,
         (chunk, isStreaming) => {
-          // Call onSuccess with each chunk to update the textarea in real-time
-          onSuccess(chunk, isStreaming);
+          if (isStreaming) {
+            // Accumulate the chunks
+            accumulatedPrompt += chunk;
+            // Update the textarea in real-time with accumulated text
+            onSuccess(accumulatedPrompt, true);
+          } else {
+            // Final update with the complete improved prompt
+            onSuccess(chunk, false);
+          }
         }
       );
 
@@ -36,24 +58,16 @@ export const usePromptImprovement = (userId) => {
           id: toastId,
           position: 'top-center'
         });
+        // Restore original prompt on error
+        onSuccess(prompt, false);
         return;
       }
 
-      // Only deduct credits if improvement was successful
-      const deductResult = await deductCredits();
-      if (deductResult === -1) {
-        toast.error('Not enough credits for prompt improvement', { 
-          id: toastId,
-          position: 'top-center'
-        });
-        return;
-      }
-
-      // Final update with the complete improved prompt
       toast.success('Prompt improved!', { 
         id: toastId,
         position: 'top-center'
       });
+      
       return result;
     } catch (error) {
       console.error('Error improving prompt:', error);
@@ -62,7 +76,7 @@ export const usePromptImprovement = (userId) => {
         position: 'top-center'
       });
       // Restore original prompt on error
-      onSuccess(prompt);
+      onSuccess(prompt, false);
     } finally {
       setIsImproving(false);
     }

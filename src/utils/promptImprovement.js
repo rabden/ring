@@ -3,43 +3,25 @@ import { supabase } from '@/integrations/supabase/supabase';
 
 export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, onChunk) => {
   try {
-    const API_KEY = "AIzaSyCETmVzAEQdD5lFpql415j06FjJlah59Gk";
     const modelExample = modelConfigs?.[activeModel]?.example || "a photo of a cat, high quality, detailed";
     
     let improvedPrompt = "";
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:streamGenerateContent?key=" + API_KEY, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await supabase.functions.invoke('improve-prompt', {
+      body: {
+        originalPrompt,
+        activeModel,
+        modelExample
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: originalPrompt }]
-          }
-        ],
-        systemInstruction: {
-          parts: [{ 
-            text: `You are an expert AI image prompt engineer. Your task is to enhance the given prompt for high-quality image generation. Preserve the core idea and artistic vision, enrich brief prompts with details, and remove any extraneous noise. Keep the final prompt concise, between 20 to 80 words, and follow these guidelines: ${modelExample}. Output only the improved prompt.` 
-          }]
-        },
-        generationConfig: {
-          temperature: 0.8,
-          topP: 0.7,
-          responseMimeType: "text/plain"
-        }
-      })
+      responseType: 'stream',
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Gemini API error:", errorData);
-      throw new Error(`Gemini API error: ${response.status}`);
+    if (!response.data) {
+      console.error("Error response from edge function:", response.error);
+      throw new Error("Failed to improve prompt");
     }
 
-    const reader = response.body.getReader();
+    const reader = response.data.getReader();
     const decoder = new TextDecoder();
     
     // Process the stream

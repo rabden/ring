@@ -29,13 +29,13 @@ const PromptInput = ({
   activeModel,
   modelConfigs
 }) => {
-  const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const totalCredits = (credits || 0) + (bonusCredits || 0);
   const hasEnoughCreditsForImprovement = totalCredits >= 1;
   const { isImproving, improveCurrentPrompt } = usePromptImprovement(userId);
   const [isPlayingAnimation, setIsPlayingAnimation] = useState(false);
   const videoRef = useRef(null);
   const textareaRef = useRef(null);
+  const [currentTipIndex, setCurrentTipIndex] = useState(0);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -63,23 +63,12 @@ const PromptInput = ({
     }
 
     try {
-      let accumulatedPrompt = "";
-      let isFirstChunk = true;
       await improveCurrentPrompt(
         prompt,
         activeModel,
         modelConfigs,
-        (chunk, isStreaming) => {
-          if (isStreaming) {
-            if (isFirstChunk) {
-              onChange({ target: { value: "" } });
-              isFirstChunk = false;
-            }
-            accumulatedPrompt += chunk;
-            onChange({ target: { value: accumulatedPrompt } });
-          } else {
-            onChange({ target: { value: chunk } });
-          }
+        (updatedPrompt, isStreaming) => {
+          onChange({ target: { value: updatedPrompt } });
         }
       );
     } catch (error) {
