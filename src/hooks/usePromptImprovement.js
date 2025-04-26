@@ -20,54 +20,41 @@ export const usePromptImprovement = (userId) => {
     });
     
     try {
-      // Try to deduct credits first
+      // Try to improve the prompt first with streaming updates
+      const result = await improvePrompt(
+        prompt, 
+        activeModel, 
+        modelConfigs,
+        (chunk) => {
+          // Call onSuccess with each chunk to update the textarea in real-time
+          onSuccess(chunk, true); // Added isStreaming flag
+        }
+      );
+
+      if (!result) {
+        toast.error('Failed to improve prompt', { 
+          id: toastId,
+          position: 'top-center'
+        });
+        return;
+      }
+
+      // Only deduct credits if improvement was successful
       const deductResult = await deductCredits();
       if (deductResult === -1) {
         toast.error('Not enough credits for prompt improvement', { 
           id: toastId,
           position: 'top-center'
         });
-        setIsImproving(false);
-        return;
-      }
-      
-      // Clear the current input to prepare for streaming updates
-      let accumulatedPrompt = "";
-      onSuccess("", true); // Clear the input initially
-      
-      // Now improve the prompt with streaming updates
-      const result = await improvePrompt(
-        prompt, 
-        activeModel, 
-        modelConfigs,
-        (chunk, isStreaming) => {
-          if (isStreaming) {
-            // Accumulate the chunks
-            accumulatedPrompt += chunk;
-            // Update the textarea in real-time with accumulated text
-            onSuccess(accumulatedPrompt, true);
-          } else {
-            // Final update with the complete improved prompt
-            onSuccess(chunk, false);
-          }
-        }
-      );
-
-      if (!result || result === prompt) {
-        toast.error('Failed to improve prompt', { 
-          id: toastId,
-          position: 'top-center'
-        });
-        // Restore original prompt on error
-        onSuccess(prompt, false);
         return;
       }
 
+      // Final update with the complete improved prompt
+      onSuccess(result);
       toast.success('Prompt improved!', { 
         id: toastId,
         position: 'top-center'
       });
-      
       return result;
     } catch (error) {
       console.error('Error improving prompt:', error);
@@ -76,7 +63,7 @@ export const usePromptImprovement = (userId) => {
         position: 'top-center'
       });
       // Restore original prompt on error
-      onSuccess(prompt, false);
+      onSuccess(prompt);
     } finally {
       setIsImproving(false);
     }

@@ -1,65 +1,60 @@
 
+import { HfInference } from "@huggingface/inference";
 import { supabase } from '@/integrations/supabase/supabase';
 
 export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, onChunk) => {
   try {
+    const { data: apiKeyData, error: apiKeyError } = await supabase
+      .from('huggingface_api_keys')
+      .select('api_key')
+      .eq('is_active', true)
+      .order('last_used_at', { ascending: true })
+      .limit(1)
+      .single();
+    
+    if (apiKeyError) {
+      throw new Error(`Failed to get API key: ${apiKeyError.message}`);
+    }
+    if (!apiKeyData) {
+      throw new Error('No active API key available');
+    }
+
+    // Update the last_used_at timestamp for the selected key
+    await supabase
+      .from('huggingface_api_keys')
+      .update({ last_used_at: new Date().toISOString() })
+      .eq('api_key', apiKeyData.api_key);
+
+    const client = new HfInference(apiKeyData.api_key);
+    
     const modelExample = modelConfigs?.[activeModel]?.example || "a photo of a cat, high quality, detailed";
     
     let improvedPrompt = "";
-
-    const response = await supabase.functions.invoke('improve-prompt', {
-      body: {
-        originalPrompt,
-        activeModel,
-        modelExample
-      },
-      responseType: 'stream',
+    
+    const stream = await client.chatCompletionStream({
+      model: "meta-llama/Llama-3.2-3B-Instruct",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert AI image prompt engineer. Your task is to enhance the given prompt for high-quality image generation. Preserve the core idea and artistic vision, enrich brief prompts with details, and remove any extraneous noise. Keep the final prompt concise, between 20 to 80 words, and follow these guidelines: ${modelExample}. Output only the improved prompt.`
+        },
+        {
+          role: "user",
+          content: originalPrompt
+        }
+      ],
+      temperature: 0.5,
+      max_tokens: 64000,
+      top_p: 0.7
     });
 
-    if (!response.data) {
-      console.error("Error response from edge function:", response.error);
-      throw new Error("Failed to improve prompt");
-    }
-
-    const reader = response.data.getReader();
-    const decoder = new TextDecoder();
-    
-    // Process the stream
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      
-      const chunk = decoder.decode(value, { stream: true });
-      
-      try {
-        // Gemini returns data in a specific format - we need to parse it
-        const lines = chunk.split('\n').filter(line => line.trim());
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.substring(6);
-            if (jsonStr === '[DONE]') continue;
-            
-            try {
-              const data = JSON.parse(jsonStr);
-              if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-                const textPart = data.candidates[0].content.parts.find(part => part.text);
-                if (textPart) {
-                  const newContent = textPart.text;
-                  improvedPrompt += newContent;
-                  if (onChunk) {
-                    onChunk(newContent, true);
-                  }
-                }
-              }
-            } catch (parseError) {
-              console.warn("Error parsing JSON chunk:", parseError);
-              // Continue with other chunks even if one fails to parse
-            }
-          }
+    for await (const chunk of stream) {
+      if (chunk.choices && chunk.choices.length > 0) {
+        const newContent = chunk.choices[0].delta.content;
+        if (newContent) {
+          improvedPrompt += newContent;
+          if (onChunk) onChunk(newContent, true);
         }
-      } catch (processError) {
-        console.warn("Error processing chunk:", processError);
       }
     }
 
@@ -68,10 +63,9 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
       if (onChunk) onChunk(improvedPrompt, false);
     }
 
-    return improvedPrompt.trim() || originalPrompt;
+    return improvedPrompt.trim();
   } catch (error) {
     console.error('Error improving prompt:', error);
-    // Return the original prompt on error so the user can still proceed
-    return originalPrompt;
+    throw error;
   }
 }
