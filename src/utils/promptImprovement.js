@@ -1,5 +1,5 @@
 
-import { HfInference } from "@huggingface/inference";
+import { InferenceClient } from "@huggingface/inference";
 import { supabase } from '@/integrations/supabase/supabase';
 
 export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, onChunk) => {
@@ -25,14 +25,15 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
       .update({ last_used_at: new Date().toISOString() })
       .eq('api_key', apiKeyData.api_key);
 
-    const client = new HfInference(apiKeyData.api_key);
+    const client = new InferenceClient(apiKeyData.api_key);
     
     const modelExample = modelConfigs?.[activeModel]?.example || "a photo of a cat, high quality, detailed";
     
     let improvedPrompt = "";
     
     const stream = await client.chatCompletionStream({
-      model: "Qwen/Qwen3-32B",
+      provider: "hf-inference",
+      model: "mistralai/Mistral-Nemo-Instruct-2407",
       messages: [
         {
           role: "system",
