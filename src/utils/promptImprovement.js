@@ -31,27 +31,26 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
     
     let improvedPrompt = "";
     
-    const stream = await client.textGenerationStream({
-      model: "mistralai/Mistral-Nemo-Instruct-2407",
-      inputs: `<|im_start|>system
-You are an expert AI image prompt engineer. Your task is to enhance the given prompt for high-quality image generation. Preserve the core idea and artistic vision, enrich brief prompts with details, and remove any extraneous noise. Keep the final prompt concise, between 20 to 80 words, and follow these guidelines: ${modelExample}. Output only the improved prompt.
-<|im_end|>
-<|im_start|>user
-${originalPrompt}
-<|im_end|>
-<|im_start|>assistant
-`,
-      parameters: {
-        max_new_tokens: 1024,
-        temperature: 0.5,
-        top_p: 0.7,
-        return_full_text: false
-      }
+    const stream = await client.chatCompletionStream({
+      model: "meta-llama/Llama-3.2-3B-Instruct",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert AI image prompt engineer. Your task is to enhance the given prompt for high-quality image generation. Preserve the core idea and artistic vision, enrich brief prompts with details, and remove any extraneous noise. Keep the final prompt concise, between 20 to 80 words, and follow these guidelines: ${modelExample}. Output only the improved prompt.`
+        },
+        {
+          role: "user",
+          content: originalPrompt
+        }
+      ],
+      temperature: 0.5,
+      max_tokens: 64000,
+      top_p: 0.7
     });
 
     for await (const chunk of stream) {
-      if (chunk.token && chunk.token.text) {
-        const newContent = chunk.token.text;
+      if (chunk.choices && chunk.choices.length > 0) {
+        const newContent = chunk.choices[0].delta.content;
         if (newContent) {
           improvedPrompt += newContent;
           if (onChunk) onChunk(newContent, true);
