@@ -57,7 +57,7 @@ const ImageGenerator = () => {
   } = useImageGeneratorState();
 
   const defaultModel = useMemo(() => {
-    return 'flux';
+    return 'flash';
   }, []);
 
   const { generateImage } = useImageGeneration({
