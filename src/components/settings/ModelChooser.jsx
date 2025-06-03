@@ -278,7 +278,7 @@ const ModelChooser = ({ model, setModel, proMode, nsfwEnabled, modelConfigs }) =
   }, [nsfwEnabled, modelConfigs]);
 
   const defaultModel = useMemo(() => {
-    return nsfwEnabled ? 'nsfwMaster' : 'flux';
+    return nsfwEnabled ? 'nsfwMaster' : 'flash';
   }, [nsfwEnabled]);
 
   const handleModelSelection = useCallback((newModel) => {
