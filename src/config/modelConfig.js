@@ -39,7 +39,7 @@ export const modelConfig = {
     qualityLimits: ["HD"],
     isPremium: false,
     promptSuffix: null,
-    tagline: "Latest Stable diffusion model",
+    tagline: "create in a flash",
     image: "https://i.pinimg.com/474x/a5/28/01/a528013c303d5dfa392b53140f70f279.jpg",
     example: "the prompt should be clear, should describe the users base prompt in best way and add extra elements to it for maximizing performance, you can add word tags that might enhance the image result or effect its styles",
     steps: 4,
