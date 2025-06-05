@@ -31,23 +31,6 @@ export const modelConfig = {
     use_guidance: false,
     use_negative_prompt: false
   },
-  flash: {
-    name: "flash",
-    category: "General",
-    group: "Base Models",
-    huggingfaceId: "stabilityai/stable-diffusion-3.5-large-turbo",
-    qualityLimits: ["HD"],
-    isPremium: false,
-    promptSuffix: null,
-    tagline: "create in a flash",
-    image: "https://i.pinimg.com/474x/a5/28/01/a528013c303d5dfa392b53140f70f279.jpg",
-    example: "the prompt should be clear, should describe the users base prompt in best way and add extra elements to it for maximizing performance, you can add word tags that might enhance the image result or effect its styles",
-    steps: 4,
-    use_guidance: true,
-    defaultguidance: 0,
-    use_negative_prompt: false,
-    default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
-  },
   sd35l: {
     name: "SD-3.5Large",
     category: "General",
@@ -61,7 +44,7 @@ export const modelConfig = {
     example: "the prompt should be clear, should describe the users base prompt in best way and add extra elements to it for maximizing performance, you can add word tags that might enhance the image result or effect its styles",
     steps: 40,
     use_guidance: true,
-    defaultguidance: 7.5,
+    defaultguidance: 4.5,
     use_negative_prompt: false,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   }
