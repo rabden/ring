@@ -29,9 +29,9 @@ const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
 
 const MiniModelChooser = ({ currentModel, onModelChange }) => {
   const quickModels = [
-    { key: 'flux', name: 'Fast' },
-    { key: 'fluxDev', name: 'Dev' },
-    { key: 'sd35l', name: 'SD 3.5' }
+    { key: 'flux', name: 'Flux' },
+    { key: 'sd35l', name: 'SD 3.5' },
+    { key: 'flash', name: 'Flash' }
   ];
   
   return (

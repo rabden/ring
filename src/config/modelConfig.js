@@ -44,7 +44,24 @@ export const modelConfig = {
     example: "the prompt should be clear, should describe the users base prompt in best way and add extra elements to it for maximizing performance, you can add word tags that might enhance the image result or effect its styles",
     steps: 40,
     use_guidance: true,
-    defaultguidance: 4.5,
+    defaultguidance: 7.5,
+    use_negative_prompt: false,
+    default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
+  },
+  flash: {
+    name: "flash",
+    category: "General",
+    group: "Base Models",
+    huggingfaceId: "stabilityai/stable-diffusion-3.5-large-turbo",
+    qualityLimits: ["HD"],
+    isPremium: false,
+    promptSuffix: null,
+    tagline: "Latest Stable diffusion model",
+    image: "https://i.ibb.co/XDLVk6m/R8-sd3-5-L-00001.webp",
+    example: "the prompt should be clear, should describe the users base prompt in best way and add extra elements to it for maximizing performance, you can add word tags that might enhance the image result or effect its styles",
+    steps: 4,
+    use_guidance: true,
+    defaultguidance: 0,
     use_negative_prompt: false,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   }
