@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from '@google/genai';
 
-const GEMINI_API_KEY = 'AIzaSyBiRXk75QwKLcOuMjTZqzxU-7oXkjKAgeM';
+const GEMINI_API_KEY = 'AIzaSyAvsEc_xHr9zswJmAd1bFYoyZlneyXqUP8';
 
 export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, onChunk) => {
   try {
@@ -20,7 +20,7 @@ export const improvePrompt = async (originalPrompt, activeModel, modelConfigs, o
       ],
     };
 
-    const model = 'gemini-2.0-flash';
+    const model = 'gemini-2.0-flash-lite';
     const contents = [
       {
         role: 'user',
