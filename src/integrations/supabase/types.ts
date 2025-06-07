@@ -72,6 +72,38 @@ export type Database = {
         }
         Relationships: []
       }
+      pro_trials: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          start_time: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          id?: string
+          start_time?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          id?: string
+          start_time?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pro_trials_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -87,6 +119,7 @@ export type Database = {
           is_pro_request: boolean | null
           last_refill_time: string | null
           like_count: number
+          pro_trial_used: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -103,6 +136,7 @@ export type Database = {
           is_pro_request?: boolean | null
           last_refill_time?: string | null
           like_count?: number
+          pro_trial_used?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -119,6 +153,7 @@ export type Database = {
           is_pro_request?: boolean | null
           last_refill_time?: string | null
           like_count?: number
+          pro_trial_used?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
@@ -227,6 +262,10 @@ export type Database = {
       add_bonus_credits: {
         Args: { p_user_id: string; p_bonus_amount: number }
         Returns: number
+      }
+      check_expired_pro_trials: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       delete_old_read_notifications: {
         Args: Record<PropertyKey, never>

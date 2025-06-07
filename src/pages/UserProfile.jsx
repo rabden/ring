@@ -31,6 +31,9 @@ import {
 } from "@/components/ui/carousel";
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ProUpgradeModal from '@/components/ProUpgradeModal';
+import { useProTrialStatus } from '@/hooks/useProTrialStatus';
+import { Crown } from 'lucide-react';
 
 const SettingsCard = ({ title, children, icon: Icon, isPro, rightHeader, topLeftText }) => (
   <motion.div
@@ -183,6 +186,10 @@ const UserProfile = () => {
   const { data: isPro } = useProUser(session?.user?.id);
   const { data: isProRequest } = useProRequest(session?.user?.id);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [showProUpgrade, setShowProUpgrade] = useState(false);
+
+  // Add pro trial status hook
+  const { data: proTrialStatus } = useProTrialStatus(session?.user?.id);
 
   React.useEffect(() => {
     if (session?.user) {
@@ -367,6 +374,27 @@ const UserProfile = () => {
               Settings
             </span>
           </Link>
+          
+          <div className="flex items-center gap-2">
+            {isPro ? (
+              <span className="text-xs bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 text-white px-3 py-1.5 rounded-full flex items-center gap-1">
+                <Crown className="w-3 h-3" />
+                Pro User
+              </span>
+            ) : proTrialStatus?.isProTrialUsed ? (
+              <span className="text-xs bg-muted text-muted-foreground px-3 py-1.5 rounded-full">
+                Pro Trial Used
+              </span>
+            ) : proTrialStatus?.canUseTrial ? (
+              <Button
+                onClick={() => setShowProUpgrade(true)}
+                className="h-8 text-xs bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 hover:from-orange-600 hover:via-purple-600 hover:to-pink-600 text-white px-3"
+              >
+                <Crown className="w-3 h-3 mr-1" />
+                Upgrade to Pro
+              </Button>
+            ) : null}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -552,6 +580,12 @@ const UserProfile = () => {
             />
           )}
         </AnimatePresence>
+
+        <ProUpgradeModal
+          isOpen={showProUpgrade}
+          onOpenChange={setShowProUpgrade}
+          userId={session?.user?.id}
+        />
       </motion.div>
     </div>
   );
