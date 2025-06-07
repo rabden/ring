@@ -377,7 +377,7 @@ const UserProfile = () => {
           
           <div className="flex items-center gap-2">
             {isPro ? (
-              <span className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-full flex items-center gap-1">
+              <span className="text-xs bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 text-white px-3 py-1.5 rounded-full flex items-center gap-1">
                 <Crown className="w-3 h-3" />
                 Pro User
               </span>
@@ -388,8 +388,7 @@ const UserProfile = () => {
             ) : proTrialStatus?.canUseTrial ? (
               <Button
                 onClick={() => setShowProUpgrade(true)}
-                size="sm"
-                className="h-8 text-xs px-3"
+                className="h-8 text-xs bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 hover:from-orange-600 hover:via-purple-600 hover:to-pink-600 text-white px-3"
               >
                 <Crown className="w-3 h-3 mr-1" />
                 Upgrade to Pro
@@ -454,18 +453,25 @@ const UserProfile = () => {
             title="Stats" 
             icon={CreditCard} 
             rightHeader={
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => {
-                  logout();
-                  navigate('/');
-                }}
-                className="h-7 text-xs bg-destructive/5 hover:bg-destructive/10 text-destructive/90 hover:text-destructive"
-              >
-                <LogOut className="w-3.5 h-3.5 mr-1.5" />
-                Sign out
-              </Button>
+              <div className="flex items-center gap-2">
+                {isPro && (
+                  <span className="text-xs bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
+                    Pro
+                  </span>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    logout();
+                    navigate('/');
+                  }}
+                  className="h-7 text-xs bg-destructive/5 hover:bg-destructive/10 text-destructive/90 hover:text-destructive"
+                >
+                  <LogOut className="w-3.5 h-3.5 mr-1.5" />
+                  Sign out
+                </Button>
+              </div>
             }
           >
             <div className="space-y-6">
