@@ -265,6 +265,25 @@ const UserProfile = () => {
     enabled: !!session?.user?.id
   });
 
+  // Check if user has private images
+  const { data: hasPrivateImages = false } = useQuery({
+    queryKey: ['hasPrivateImages', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return false;
+      
+      const { data, error } = await supabase
+        .from('user_images')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('is_private', true)
+        .limit(1);
+      
+      if (error) return false;
+      return data && data.length > 0;
+    },
+    enabled: !!session?.user?.id
+  });
+
   const handleDisplayNameUpdate = async () => {
     if (tempDisplayName.trim() === displayName.trim()) {
       setIsEditing(false);
@@ -407,33 +426,10 @@ const UserProfile = () => {
             icon={CreditCard} 
             rightHeader={
               <div className="flex items-center gap-2">
-                {isPro ? (
+                {isPro && (
                   <span className="text-xs bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
                     Pro
                   </span>
-                ) : isProRequest ? (
-                  <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
-                    Requested
-                  </span>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-xs hover:bg-muted/50"
-                    onClick={async () => {
-                      try {
-                        await supabase
-                          .from('profiles')
-                          .update({ is_pro_request: true })
-                          .eq('id', session.user.id);
-                        toast.success("Pro request submitted");
-                      } catch (error) {
-                        toast.error("Failed to submit request");
-                      }
-                    }}
-                  >
-                    Upgrade
-                  </Button>
                 )}
                 <Button 
                   variant="ghost" 
@@ -491,25 +487,27 @@ const UserProfile = () => {
           />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mt-4"
-        >
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Lock className="h-5 w-5 text-primary" />
-            Your Privates
-          </h2>
-          <ImageGallery 
-            userId={session.user.id}
-            profileUserId={session.user.id}
-            activeView="myImages"
-            nsfwEnabled={false}
-            showPrivate={true}
-            onImageClick={setSelectedImage}
-          />
-        </motion.div>
+        {hasPrivateImages && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-4"
+          >
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" />
+              Your Privates
+            </h2>
+            <ImageGallery 
+              userId={session.user.id}
+              profileUserId={session.user.id}
+              activeView="myImages"
+              nsfwEnabled={false}
+              showPrivate={true}
+              onImageClick={setSelectedImage}
+            />
+          </motion.div>
+        )}
 
         <AnimatePresence>
           {isEditing && (
@@ -560,4 +558,3 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
-
