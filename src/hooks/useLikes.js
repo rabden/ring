@@ -1,25 +1,19 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 export const useLikes = (userId) => {
   const queryClient = useQueryClient();
-  const subscriptionRef = useRef(null);
 
-  // Set up real-time subscription with proper cleanup
+  // Set up real-time subscription
   useEffect(() => {
     if (!userId) return;
 
-    // Clean up existing subscription if it exists
-    if (subscriptionRef.current) {
-      subscriptionRef.current.unsubscribe();
-      subscriptionRef.current = null;
-    }
-
     // Subscribe to changes in user_images table
     const subscription = supabase
-      .channel(`likes_${userId}_${Date.now()}`) // Unique channel name
+      .channel('likes_channel')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -33,13 +27,8 @@ export const useLikes = (userId) => {
       })
       .subscribe();
 
-    subscriptionRef.current = subscription;
-
     return () => {
-      if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe();
-        subscriptionRef.current = null;
-      }
+      subscription.unsubscribe();
     };
   }, [userId, queryClient]);
 

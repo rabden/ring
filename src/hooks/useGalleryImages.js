@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { startOfMonth, startOfWeek } from 'date-fns';
 import { getNsfwModelKeys } from '@/utils/modelUtils';
 
@@ -20,7 +20,6 @@ export const useGalleryImages = ({
   const queryClient = useQueryClient();
   const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth <= 768 ? 50 : 200);
   const NSFW_MODELS = getNsfwModelKeys();
-  const channelRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -180,19 +179,13 @@ export const useGalleryImages = ({
     initialPageParam: { page: 0 }
   });
 
-  // Set up real-time subscription with proper cleanup
+  // Set up real-time subscription
   useEffect(() => {
     if (!userId) return;
 
-    // Clean up existing channel if it exists
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-
-    // Create new channel
+    // Create channel for real-time updates
     const channel = supabase
-      .channel(`gallery-changes-${Date.now()}`) // Unique channel name
+      .channel('gallery-changes')
       .on(
         'postgres_changes',
         {
@@ -212,14 +205,9 @@ export const useGalleryImages = ({
       )
       .subscribe();
 
-    channelRef.current = channel;
-
-    // Cleanup subscription on unmount or dependency change
+    // Cleanup subscription on unmount
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      supabase.removeChannel(channel);
     };
   }, [userId, activeView, queryClient]);
 
