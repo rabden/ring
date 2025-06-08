@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Check, Crown, Zap, Palette, Clock } from 'lucide-react';
@@ -87,7 +87,7 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
     <Button
       onClick={handleStartTrial}
       disabled={isLoading || isActivated}
-      className="w-full bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 hover:from-orange-600 hover:via-purple-600 hover:to-pink-600"
+      className="w-full"
     >
       {isActivated ? (
         <>
@@ -105,10 +105,10 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
   const content = (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 mb-4">
-          <Crown className="w-8 h-8 text-white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+          <Crown className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold">
           Upgrade to Pro
         </h2>
       </div>
@@ -130,9 +130,9 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-orange-500/10 via-purple-500/10 to-pink-500/10 p-4 rounded-lg border border-primary/20">
+      <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
         <p className="text-center font-medium text-sm">
-          🎉 <span className="bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+          🎉 <span className="text-primary">
             Enjoy a month of free Pro subscription!
           </span>
         </p>
@@ -150,10 +150,10 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
           <DrawerHeader>
             <DrawerTitle className="sr-only">Upgrade to Pro</DrawerTitle>
           </DrawerHeader>
-          <ScrollArea className="px-4 max-h-[calc(80vh-theme(spacing.20))] overflow-y-auto"> {/* Adjusted max-h and removed pb-8 */}
+          <ScrollArea className="px-4 max-h-[calc(80vh-theme(spacing.20))] overflow-y-auto">
             {content}
           </ScrollArea>
-          <DrawerFooter className="p-4 pt-2"> {/* Added padding for aesthetics */}
+          <DrawerFooter className="p-4 pt-2">
             {SubscriptionButton}
           </DrawerFooter>
         </DrawerContent>
@@ -163,14 +163,14 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden border-border/80 bg-card rounded-lg p-0 flex flex-col"> {/* Added flex flex-col */}
-        <DialogHeader className="px-6 pt-6"> {/* Added padding here as DialogContent is p-0 */}
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden border-border/80 bg-card rounded-lg p-0 flex flex-col">
+        <DialogHeader className="px-6 pt-6">
           <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="px-6 pt-2 flex-1 min-h-0"> {/* Adjusted padding, flex-1 and min-h-0 for scroll */}
+        <ScrollArea className="px-6 pt-2 flex-1 min-h-0">
           {content}
         </ScrollArea>
-        <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/80"> {/* Added padding and border */}
+        <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/80">
           {SubscriptionButton}
         </DialogFooter>
       </DialogContent>
