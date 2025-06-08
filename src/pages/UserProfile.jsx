@@ -454,11 +454,6 @@ const UserProfile = () => {
             icon={CreditCard} 
             rightHeader={
               <div className="flex items-center gap-2">
-                {isPro && (
-                  <span className="text-xs bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 text-white px-2 py-1 rounded-full">
-                    Pro
-                  </span>
-                )}
                 <Button 
                   variant="ghost" 
                   size="sm"
