@@ -183,9 +183,9 @@ export const useGalleryImages = ({
   useEffect(() => {
     if (!userId) return;
 
-    // Create channel for real-time updates with unique name
+    // Create channel for real-time updates
     const channel = supabase
-      .channel(`gallery-changes-${userId}-${activeView}`)
+      .channel('gallery-changes')
       .on(
         'postgres_changes',
         {
