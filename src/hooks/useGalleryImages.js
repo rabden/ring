@@ -1,4 +1,3 @@
-
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect, useState } from 'react';
@@ -184,12 +183,9 @@ export const useGalleryImages = ({
   useEffect(() => {
     if (!userId) return;
 
-    // Create a unique channel name per user and view to avoid conflicts
-    const channelName = `gallery-${userId}-${activeView}`;
-
     // Create channel for real-time updates
     const channel = supabase
-      .channel(channelName)
+      .channel('gallery-changes')
       .on(
         'postgres_changes',
         {

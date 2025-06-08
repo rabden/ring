@@ -11,12 +11,9 @@ export const useLikes = (userId) => {
   useEffect(() => {
     if (!userId) return;
 
-    // Create a unique channel name per user to avoid conflicts
-    const channelName = `likes-${userId}`;
-
     // Subscribe to changes in user_images table
     const subscription = supabase
-      .channel(channelName)
+      .channel('likes_channel')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -31,8 +28,7 @@ export const useLikes = (userId) => {
       .subscribe();
 
     return () => {
-      // Properly unsubscribe and remove the channel
-      supabase.removeChannel(subscription);
+      subscription.unsubscribe();
     };
   }, [userId, queryClient]);
 

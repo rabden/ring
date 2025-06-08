@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -35,11 +34,8 @@ export const NotificationProvider = ({ children }) => {
 
     fetchNotifications();
 
-    // Create a unique channel name per user to avoid conflicts
-    const channelName = `notifications-${session.user.id}`;
-
     const notificationsChannel = supabase
-      .channel(channelName)
+      .channel('notifications_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${session.user.id}` },
         () => {
