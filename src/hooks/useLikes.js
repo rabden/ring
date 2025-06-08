@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
@@ -13,7 +12,7 @@ export const useLikes = (userId) => {
 
     // Subscribe to changes in user_images table
     const subscription = supabase
-      .channel('likes_channel')
+      .channel(`likes_channel_${userId}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -28,7 +27,7 @@ export const useLikes = (userId) => {
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(subscription);
     };
   }, [userId, queryClient]);
 

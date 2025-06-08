@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useQueryClient } from '@tanstack/react-query';
@@ -9,7 +10,7 @@ export const useRealtimeProfile = (userId) => {
     if (!userId) return;
 
     const channel = supabase
-      .channel('profile-changes')
+      .channel(`profile-changes-${userId}`)
       .on(
         'postgres_changes',
         {
