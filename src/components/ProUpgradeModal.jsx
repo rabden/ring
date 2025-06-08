@@ -150,7 +150,7 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
           <DrawerHeader>
             <DrawerTitle className="sr-only">Upgrade to Pro</DrawerTitle>
           </DrawerHeader>
-          <ScrollArea className="px-4 max-h-[calc(80vh-theme(spacing.20))] overflow-y-auto">
+          <ScrollArea className="px-4 max-h-[calc(80vh-theme(spacing.20))]">
             {content}
           </ScrollArea>
           <DrawerFooter className="p-4 pt-2">
@@ -163,11 +163,11 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden border-border/80 bg-card rounded-lg p-0 flex flex-col">
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] border-border/80 bg-card rounded-lg p-0 flex flex-col">
         <DialogHeader className="px-6 pt-6">
           <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="px-6 pt-2 flex-1 min-h-0">
+        <ScrollArea className="px-6 pt-2 flex-1 max-h-[calc(80vh-theme(spacing.32))]">
           {content}
         </ScrollArea>
         <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/80">
