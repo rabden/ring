@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -83,13 +83,32 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
     }
   };
 
+  const SubscriptionButton = (
+    <Button
+      onClick={handleStartTrial}
+      disabled={isLoading || isActivated}
+      className="w-full"
+    >
+      {isActivated ? (
+        <>
+          <Check className="w-4 h-4 mr-2" />
+          Subscription Started
+        </>
+      ) : isLoading ? (
+        "Starting Trial..."
+      ) : (
+        "Start Pro Subscription"
+      )}
+    </Button>
+  );
+
   const content = (
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
           <Crown className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold text-primary">
+        <h2 className="text-2xl font-bold">
           Upgrade to Pro
         </h2>
       </div>
@@ -124,37 +143,18 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
     </div>
   );
 
-  const actionButton = (
-    <Button 
-      onClick={handleStartTrial}
-      disabled={isLoading || isActivated}
-      className="w-full"
-    >
-      {isActivated ? (
-        <>
-          <Check className="w-4 h-4 mr-2" />
-          Subscription Started
-        </>
-      ) : isLoading ? (
-        "Starting Trial..."
-      ) : (
-        "Start Pro Subscription"
-      )}
-    </Button>
-  );
-
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[85vh]">
+        <DrawerContent className="max-h-[80vh]">
           <DrawerHeader>
             <DrawerTitle className="sr-only">Upgrade to Pro</DrawerTitle>
           </DrawerHeader>
-          <ScrollArea className="flex-1 px-4">
+          <ScrollArea className="px-4 max-h-[calc(80vh-theme(spacing.20))] overflow-y-auto">
             {content}
           </ScrollArea>
-          <DrawerFooter className="pt-4">
-            {actionButton}
+          <DrawerFooter className="p-4 pt-2">
+            {SubscriptionButton}
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
@@ -163,16 +163,16 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden border-border/80 bg-card rounded-lg p-0 flex flex-col">
+        <DialogHeader className="px-6 pt-6">
           <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="px-6 pt-2 flex-1 min-h-0">
           {content}
         </ScrollArea>
-        <div className="pt-4">
-          {actionButton}
-        </div>
+        <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/80">
+          {SubscriptionButton}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
