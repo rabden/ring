@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -165,16 +164,16 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[80vh] p-0 flex flex-col">
-        <DialogHeader className="px-6 pt-6 pb-2">
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden border-border/80 bg-card p-4 md:p-6 rounded-lg">
+        <DialogHeader className="px-2">
           <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="flex-1 px-6">
-          <div className="max-h-[calc(80vh-140px)] pr-4">
+        <ScrollArea className="mt-6 max-h-[calc(80vh-80px)]">
+          <div className="space-y-6 px-2">
             {content}
           </div>
         </ScrollArea>
-        <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/80">
+        <DialogFooter className="px-2 pt-4 border-t border-border/80">
           {SubscriptionButton}
         </DialogFooter>
       </DialogContent>
