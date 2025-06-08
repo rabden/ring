@@ -1,6 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
+import { useSupabaseAuth } from '@/integrations/supabase/auth';
 
 const NotificationContext = createContext();
 
@@ -15,25 +15,7 @@ export const useNotifications = () => {
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [session, setSession] = useState(null);
-
-  // Get session directly from Supabase instead of using useAuth hook
-  useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-    };
-
-    getSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { session } = useSupabaseAuth();
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -53,7 +35,7 @@ export const NotificationProvider = ({ children }) => {
     fetchNotifications();
 
     const notificationsChannel = supabase
-      .channel(`notifications_changes_${session.user.id}`)
+      .channel('notifications_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${session.user.id}` },
         () => {

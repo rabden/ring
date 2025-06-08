@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/integrations/supabase/components/AuthProvider';
+import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useImageGeneration } from '@/hooks/useImageGeneration';
 import { useQueryClient } from '@tanstack/react-query';
@@ -20,7 +21,7 @@ import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 const ImageGenerator = () => {
   const [searchParams] = useSearchParams();
   const remixId = searchParams.get('remix');
-  const { session } = useAuth();
+  const { session } = useSupabaseAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
   const [activeFilters, setActiveFilters] = useState({});
