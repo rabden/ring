@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
 import { useEffect } from 'react';
@@ -9,8 +10,11 @@ export const useImagePrivacy = (imageId) => {
   useEffect(() => {
     if (!imageId) return;
 
+    // Create a unique channel name per image to avoid conflicts
+    const channelName = `image-privacy-${imageId}`;
+
     const subscription = supabase
-      .channel('image_privacy_channel')
+      .channel(channelName)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -23,7 +27,8 @@ export const useImagePrivacy = (imageId) => {
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      // Properly unsubscribe and remove the channel
+      supabase.removeChannel(subscription);
     };
   }, [imageId, queryClient]);
 
