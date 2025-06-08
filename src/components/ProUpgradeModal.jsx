@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -168,7 +169,7 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
         <DialogHeader className="px-2">
           <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="mt-6 max-h-[calc(80vh-80px)]">
+        <ScrollArea className="mt-6 max-h-[calc(80vh-160px)]">
           <div className="space-y-6 px-2">
             {content}
           </div>
