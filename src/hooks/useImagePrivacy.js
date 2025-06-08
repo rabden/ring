@@ -1,16 +1,24 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const useImagePrivacy = (imageId) => {
   const queryClient = useQueryClient();
+  const subscriptionRef = useRef(null);
 
-  // Set up real-time subscription
+  // Set up real-time subscription with proper cleanup
   useEffect(() => {
     if (!imageId) return;
 
+    // Clean up existing subscription if it exists
+    if (subscriptionRef.current) {
+      subscriptionRef.current.unsubscribe();
+      subscriptionRef.current = null;
+    }
+
     const subscription = supabase
-      .channel('image_privacy_channel')
+      .channel(`image_privacy_${imageId}_${Date.now()}`) // Unique channel name
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -22,8 +30,13 @@ export const useImagePrivacy = (imageId) => {
       })
       .subscribe();
 
+    subscriptionRef.current = subscription;
+
     return () => {
-      subscription.unsubscribe();
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+        subscriptionRef.current = null;
+      }
     };
   }, [imageId, queryClient]);
 
