@@ -148,7 +148,7 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
           <DrawerHeader>
             <DrawerTitle className="sr-only">Upgrade to Pro</DrawerTitle>
           </DrawerHeader>
-          <ScrollArea className="px-4 pb-8 max-h-[calc(80vh-50px)]">
+          <ScrollArea className="px-4 pb-8 max-h-[calc(80vh-theme(spacing.16))] overflow-y-auto">
             {content}
           </ScrollArea>
         </DrawerContent>
