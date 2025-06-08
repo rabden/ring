@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
-import { useSupabaseAuth } from '@/integrations/supabase/auth';
+import { useAuth } from '@/integrations/supabase/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/supabase';
 import LoadingScreen from '@/components/LoadingScreen';
 import ImageGenerator from '@/pages/ImageGenerator';
@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { session, loading } = useSupabaseAuth();
+  const { session, loading } = useAuth();
   const location = useLocation();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -39,7 +39,7 @@ const ProtectedRoute = ({ children }) => {
 
 // Auth Route Component
 const AuthRoute = ({ children }) => {
-  const { session, loading } = useSupabaseAuth();
+  const { session, loading } = useAuth();
   const location = useLocation();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   
