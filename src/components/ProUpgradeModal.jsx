@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -83,6 +83,25 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
     }
   };
 
+  const SubscriptionButton = (
+    <Button
+      onClick={handleStartTrial}
+      disabled={isLoading || isActivated}
+      className="w-full bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 hover:from-orange-600 hover:via-purple-600 hover:to-pink-600"
+    >
+      {isActivated ? (
+        <>
+          <Check className="w-4 h-4 mr-2" />
+          Subscription Started
+        </>
+      ) : isLoading ? (
+        "Starting Trial..."
+      ) : (
+        "Start Pro Subscription"
+      )}
+    </Button>
+  );
+
   const content = (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -121,23 +140,6 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
           No need to add any payment details, just enroll
         </p>
       </div>
-
-      <Button 
-        onClick={handleStartTrial}
-        disabled={isLoading || isActivated}
-        className="w-full bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 hover:from-orange-600 hover:via-purple-600 hover:to-pink-600"
-      >
-        {isActivated ? (
-          <>
-            <Check className="w-4 h-4 mr-2" />
-            Subscription Started
-          </>
-        ) : isLoading ? (
-          "Starting Trial..."
-        ) : (
-          "Start Pro Subscription"
-        )}
-      </Button>
     </div>
   );
 
@@ -148,9 +150,12 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
           <DrawerHeader>
             <DrawerTitle className="sr-only">Upgrade to Pro</DrawerTitle>
           </DrawerHeader>
-          <ScrollArea className="px-4 pb-8 max-h-[calc(80vh-theme(spacing.16))] overflow-y-auto">
+          <ScrollArea className="px-4 max-h-[calc(80vh-theme(spacing.20))] overflow-y-auto"> {/* Adjusted max-h and removed pb-8 */}
             {content}
           </ScrollArea>
+          <DrawerFooter className="p-4 pt-2"> {/* Added padding for aesthetics */}
+            {SubscriptionButton}
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
     );
@@ -158,13 +163,16 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden border-border/80 bg-card rounded-lg p-0">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden border-border/80 bg-card rounded-lg p-0 flex flex-col"> {/* Added flex flex-col */}
+        <DialogHeader className="px-6 pt-6"> {/* Added padding here as DialogContent is p-0 */}
           <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="p-6 max-h-[calc(80vh-70px)]">
+        <ScrollArea className="px-6 pt-2 flex-1 min-h-0"> {/* Adjusted padding, flex-1 and min-h-0 for scroll */}
           {content}
         </ScrollArea>
+        <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/80"> {/* Added padding and border */}
+          {SubscriptionButton}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
