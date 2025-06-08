@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Check, Crown, Zap, Palette, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/supabase';
@@ -83,7 +84,7 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
   };
 
   const content = (
-    <div className="space-y-6 p-1">
+    <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 via-purple-500 to-pink-500 mb-4">
           <Crown className="w-8 h-8 text-white" />
@@ -143,13 +144,13 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[90vh]">
+        <DrawerContent className="max-h-[80vh]">
           <DrawerHeader>
             <DrawerTitle className="sr-only">Upgrade to Pro</DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 pb-8 overflow-y-auto">
+          <ScrollArea className="px-4 pb-8 max-h-[calc(80vh-50px)]">
             {content}
-          </div>
+          </ScrollArea>
         </DrawerContent>
       </Drawer>
     );
@@ -157,11 +158,13 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden border-border/80 bg-card rounded-lg p-0">
         <DialogHeader>
           <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
         </DialogHeader>
-        {content}
+        <ScrollArea className="p-6 max-h-[calc(80vh-70px)]">
+          {content}
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
