@@ -150,8 +150,10 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
           <DrawerHeader>
             <DrawerTitle className="sr-only">Upgrade to Pro</DrawerTitle>
           </DrawerHeader>
-          <ScrollArea className="px-4 max-h-[calc(80vh-theme(spacing.20))] overflow-y-auto">
-            {content}
+          <ScrollArea className="px-4 flex-1">
+            <div className="max-h-[calc(80vh-120px)] overflow-y-auto">
+              {content}
+            </div>
           </ScrollArea>
           <DrawerFooter className="p-4 pt-2">
             {SubscriptionButton}
@@ -163,12 +165,14 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden border-border/80 bg-card rounded-lg p-0 flex flex-col">
-        <DialogHeader className="px-6 pt-6">
+      <DialogContent className="sm:max-w-[500px] max-h-[80vh] p-0 flex flex-col">
+        <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="px-6 pt-2 flex-1 min-h-0">
-          {content}
+        <ScrollArea className="flex-1 px-6">
+          <div className="max-h-[calc(80vh-140px)] pr-4">
+            {content}
+          </div>
         </ScrollArea>
         <DialogFooter className="px-6 pb-6 pt-4 border-t border-border/80">
           {SubscriptionButton}
