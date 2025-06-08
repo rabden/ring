@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Check, Crown, Zap, Palette, Clock } from 'lucide-react';
@@ -83,81 +83,79 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
     }
   };
 
-  const scrollableContent = (
-    <ScrollArea className="h-[calc(100%-80px)] w-full">
-      <div className="space-y-6 p-1">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <Crown className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="text-2xl font-bold text-primary">
-            Upgrade to Pro
-          </h2>
+  const content = (
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+          <Crown className="w-8 h-8 text-primary" />
         </div>
+        <h2 className="text-2xl font-bold text-primary">
+          Upgrade to Pro
+        </h2>
+      </div>
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-center">Pro Benefits:</h3>
-          <div className="grid gap-3">
-            {benefits.map((benefit, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <benefit.icon className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-sm">{benefit.title}</h4>
-                  <p className="text-xs text-muted-foreground">{benefit.description}</p>
-                </div>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-center">Pro Benefits:</h3>
+        <div className="grid gap-3">
+          {benefits.map((benefit, index) => (
+            <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <benefit.icon className="w-4 h-4 text-primary" />
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-          <p className="text-center font-medium text-sm">
-            🎉 <span className="text-primary">
-              Enjoy a month of free Pro subscription!
-            </span>
-          </p>
-          <p className="text-center text-xs text-muted-foreground mt-1">
-            No need to add any payment details, just enroll
-          </p>
+              <div>
+                <h4 className="font-medium text-sm">{benefit.title}</h4>
+                <p className="text-xs text-muted-foreground">{benefit.description}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    </ScrollArea>
+
+      <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
+        <p className="text-center font-medium text-sm">
+          🎉 <span className="text-primary">
+            Enjoy a month of free Pro subscription!
+          </span>
+        </p>
+        <p className="text-center text-xs text-muted-foreground mt-1">
+          No need to add any payment details, just enroll
+        </p>
+      </div>
+    </div>
   );
 
-  const fixedButton = (
-    <div className="p-4 border-t bg-background">
-      <Button 
-        onClick={handleStartTrial}
-        disabled={isLoading || isActivated}
-        className="w-full"
-      >
-        {isActivated ? (
-          <>
-            <Check className="w-4 h-4 mr-2" />
-            Subscription Started
-          </>
-        ) : isLoading ? (
-          "Starting Trial..."
-        ) : (
-          "Start Pro Subscription"
-        )}
-      </Button>
-    </div>
+  const actionButton = (
+    <Button 
+      onClick={handleStartTrial}
+      disabled={isLoading || isActivated}
+      className="w-full"
+    >
+      {isActivated ? (
+        <>
+          <Check className="w-4 h-4 mr-2" />
+          Subscription Started
+        </>
+      ) : isLoading ? (
+        "Starting Trial..."
+      ) : (
+        "Start Pro Subscription"
+      )}
+    </Button>
   );
 
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[90vh] w-full max-w-md mx-auto">
+        <DrawerContent className="max-h-[85vh]">
           <DrawerHeader>
             <DrawerTitle className="sr-only">Upgrade to Pro</DrawerTitle>
           </DrawerHeader>
-          <div className="flex flex-col h-full">
-            {scrollableContent}
-            {fixedButton}
-          </div>
+          <ScrollArea className="flex-1 px-4">
+            {content}
+          </ScrollArea>
+          <DrawerFooter className="pt-4">
+            {actionButton}
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
     );
@@ -165,13 +163,15 @@ const ProUpgradeModal = ({ isOpen, onOpenChange, userId }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-full max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="sr-only">Upgrade to Pro</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col h-[600px]">
-          {scrollableContent}
-          {fixedButton}
+        <ScrollArea className="flex-1 pr-4">
+          {content}
+        </ScrollArea>
+        <div className="pt-4">
+          {actionButton}
         </div>
       </DialogContent>
     </Dialog>
