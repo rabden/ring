@@ -1,7 +1,7 @@
 
 export const modelConfig = {
   flux: {
-    name: "Flux.1 Schnell",
+    name: "Flux",
     category: "General",
     group: "Base Models",
     huggingfaceId: "black-forest-labs/FLUX.1-schnell",
@@ -17,7 +17,7 @@ export const modelConfig = {
     use_negative_prompt: false
   },
   fluxDev: {
-    name: "FLx.1 Dev",
+    name: "Flux Pro",
     category: "General",
     group: "Base Models",
     huggingfaceId: "black-forest-labs/FLUX.1-dev",
@@ -32,7 +32,7 @@ export const modelConfig = {
     use_negative_prompt: false
   },
   flash: {
-    name: "flash",
+    name: "Flash",
     category: "General",
     group: "Base Models",
     huggingfaceId: "stabilityai/stable-diffusion-3.5-large-turbo",
