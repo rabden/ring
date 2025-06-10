@@ -30,7 +30,7 @@ const ModelButton = ({ name, modelKey, currentModel, onClick }) => {
 const MiniModelChooser = ({ currentModel, onModelChange }) => {
   const quickModels = [
     { key: 'flux', name: 'Flux' },
-    { key: 'sd35l', name: 'SD 3.5' },
+    { key: 'fluxDev', name: 'Flux Pro' },
     { key: 'flash', name: 'Flash' }
   ];
   
