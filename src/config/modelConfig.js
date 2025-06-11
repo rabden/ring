@@ -22,7 +22,7 @@ export const modelConfig = {
     group: "Base Models",
     huggingfaceId: "black-forest-labs/FLUX.1-dev",
     qualityLimits: null,
-    isPremium: false,
+    isPremium: true,
     promptSuffix: null,
     tagline: "Flux dev by black forest labs",
     image: "https://i.ibb.co/gjrM8R5/out-0-1.webp",
