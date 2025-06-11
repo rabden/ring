@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -28,13 +27,12 @@ const ImageGenerator = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [showPrivate, setShowPrivate] = useState(false);
-  const [negativePrompt, setNegativePrompt] = useState("");
   const [remixProcessed, setRemixProcessed] = useState(false);
 
   const queryClient = useQueryClient();
   const isHeaderVisible = useScrollDirection();
   const { setIsRemixMode } = useUserPreferences();
-  const { generatingImages, setGeneratingImages } = useGeneratingImages();
+  const { generatingImages, setGeneratingImages, negativePrompt, setNegativePrompt, guidanceScale, setGuidanceScale } = useGeneratingImages();
   const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
   const { data: isPro } = useProUser(session?.user?.id);
   const { data: modelConfigs } = useModelConfigs();
@@ -74,8 +72,7 @@ const ImageGenerator = () => {
     updateCredits,
     setGeneratingImages,
     modelConfigs,
-    imageCount,
-    negativePrompt
+    imageCount
   });
 
   const handleGenerateImage = useCallback(async () => {
@@ -191,6 +188,16 @@ const ImageGenerator = () => {
       setModel(remixImage.model);
       setQuality(remixImage.quality);
       
+      // Update context values for negative prompt and guidance scale
+      if (remixImage.negative_prompt) {
+        setNegativePrompt(remixImage.negative_prompt);
+      }
+      
+      // Set guidance scale from model config if available
+      if (modelConfigs && modelConfigs[remixImage.model]?.defaultguidance !== undefined) {
+        setGuidanceScale(modelConfigs[remixImage.model].defaultguidance);
+      }
+      
       if (remixImage.aspect_ratio) {
         setAspectRatio(remixImage.aspect_ratio);
         setUseAspectRatio(true);
@@ -206,7 +213,7 @@ const ImageGenerator = () => {
   }, [
     remixImage, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
     setIsRemixMode, setModel, setPrompt, setQuality, setRandomizeSeed, 
-    setSeed, setUseAspectRatio, setWidth
+    setSeed, setUseAspectRatio, setWidth, setNegativePrompt, setGuidanceScale, modelConfigs
   ]);
   
   useEffect(() => {

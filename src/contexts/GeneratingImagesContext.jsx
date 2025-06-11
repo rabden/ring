@@ -6,6 +6,8 @@ const GeneratingImagesContext = createContext();
 export const GeneratingImagesProvider = ({ children }) => {
   const [generatingImages, setGeneratingImages] = useState([]);
   const [shouldOpenDrawer, setShouldOpenDrawer] = useState(false);
+  const [guidanceScale, setGuidanceScale] = useState(7.5);
+  const [negativePrompt, setNegativePrompt] = useState("");
 
   // Add auto-removal of completed images after 10 seconds
   useEffect(() => {
@@ -92,7 +94,11 @@ export const GeneratingImagesProvider = ({ children }) => {
     setGeneratingImages,
     cancelGeneration,
     shouldOpenDrawer,
-    resetShouldOpenDrawer
+    resetShouldOpenDrawer,
+    guidanceScale,
+    setGuidanceScale,
+    negativePrompt,
+    setNegativePrompt
   };
 
   return (

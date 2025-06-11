@@ -6,6 +6,7 @@ import { calculateDimensions, getModifiedPrompt } from '@/utils/imageUtils';
 import { handleApiResponse, initRetryCount } from '@/utils/retryUtils';
 import { useState, useRef, useCallback } from 'react';
 import { HfInference } from "@huggingface/inference";
+import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 
 const generateRandomSeed = () => {
   // Generate a positive 5-9 digit number within PostgreSQL int4 range (max 2147483647)
@@ -28,9 +29,11 @@ export const useImageGeneration = ({
   updateCredits,
   setGeneratingImages,
   modelConfigs,
-  imageCount = 1,
-  negativePrompt
+  imageCount = 1
 }) => {
+  // Get guidance scale and negative prompt from context
+  const { guidanceScale, negativePrompt } = useGeneratingImages();
+  
   // Queue to store pending generations
   const generationQueue = useRef([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -52,7 +55,8 @@ export const useImageGeneration = ({
         modifiedPrompt,
         actualSeed,
         isPrivate,
-        negativePrompt,
+        negativePrompt: queuedNegativePrompt,
+        guidanceScale: queuedGuidanceScale,
         modelConfig: queuedModelConfig
       } = currentGeneration;
 
@@ -94,9 +98,9 @@ export const useImageGeneration = ({
             width: finalWidth,
             height: finalHeight,
             ...(queuedModelConfig.steps && { num_inference_steps: parseInt(queuedModelConfig.steps) }),
-            ...(queuedModelConfig.use_guidance && { guidance_scale: queuedModelConfig.defaultguidance }),
-            ...(queuedModelConfig.use_negative_prompt && negativePrompt && { 
-              negative_prompt: negativePrompt 
+            ...(queuedModelConfig.use_guidance && { guidance_scale: queuedGuidanceScale }),
+            ...(queuedModelConfig.use_negative_prompt && queuedNegativePrompt && { 
+              negative_prompt: queuedNegativePrompt 
             })
           };
 
@@ -104,7 +108,9 @@ export const useImageGeneration = ({
           console.log('Processing queued generation:', {
             model: model,
             modelName: modelConfigs[model]?.name,
-            huggingfaceModelId: queuedModelConfig.huggingfaceId || model
+            huggingfaceModelId: queuedModelConfig.huggingfaceId || model,
+            guidanceScale: queuedGuidanceScale,
+            negativePrompt: queuedNegativePrompt
           });
 
           // Create HfInference client with API key
@@ -161,7 +167,7 @@ export const useImageGeneration = ({
               quality,
               aspect_ratio: currentGeneration.finalAspectRatio,
               is_private: isPrivate,
-              negative_prompt: negativePrompt,
+              negative_prompt: queuedNegativePrompt,
               like_count: 0
             }])
             .select()
@@ -234,7 +240,9 @@ export const useImageGeneration = ({
     console.log('Generation attempt:', {
       model,
       huggingfaceId: lockedModelConfig.huggingfaceId,
-      modelName: lockedModelConfig.name
+      modelName: lockedModelConfig.name,
+      guidanceScale,
+      negativePrompt
     });
 
     // Capture ALL states at generation time
@@ -245,7 +253,8 @@ export const useImageGeneration = ({
       aspectRatio,
       width,
       height,
-      negativePrompt,
+      negativePrompt, // From context
+      guidanceScale, // From context
       modelConfig: lockedModelConfig, // Use locked config
       maxDimension: qualityOptions[quality]
     };
@@ -303,6 +312,7 @@ export const useImageGeneration = ({
         actualSeed,
         isPrivate,
         negativePrompt: generationStates.negativePrompt,
+        guidanceScale: generationStates.guidanceScale,
         modelConfig: generationStates.modelConfig
       };
 

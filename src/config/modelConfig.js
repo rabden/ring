@@ -45,7 +45,7 @@ export const modelConfig = {
     steps: 8,
     use_guidance: true,
     defaultguidance: 0,
-    use_negative_prompt: false,
+    use_negative_prompt: true,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   }
 };
