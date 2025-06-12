@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -36,7 +37,14 @@ const SingleImageView = () => {
     },
   });
 
-  const { handleRemix } = useImageRemix(session);
+  // Use the remix hook with proper handlers
+  const { handleRemix } = useImageRemix(session, (image) => {
+    // This will handle the remix and navigate to the generator
+    console.log('Remixing image:', image);
+  }, () => {
+    // Close handler - navigate back
+    navigate(-1);
+  });
 
   const handleDownload = async () => {
     if (!image) return;

@@ -39,7 +39,6 @@ const MobileImageView = ({
   const [imageError, setImageError] = useState(false);
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { handleRemix } = useImageRemix(session, onRemix, onClose, isPro);
   const queryClient = useQueryClient();
   const { userLikes, toggleLike } = useLikes(session?.user?.id);
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -157,7 +156,7 @@ const MobileImageView = ({
     }
     
     if (onRemix && image) {
-      onRemix(image);
+      onRemix();
     }
   };
 

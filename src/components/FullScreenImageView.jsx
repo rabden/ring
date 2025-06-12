@@ -46,7 +46,8 @@ const FullScreenImageView = ({
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showSidebarButton, setShowSidebarButton] = useState(false);
 
-  const { handleRemix } = useImageRemix(session, onRemix, onClose);
+  // Remove the local handleRemix hook usage
+  // const { handleRemix } = useImageRemix(session, onRemix, onClose);
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
@@ -122,7 +123,7 @@ const FullScreenImageView = ({
     }
     
     if (onRemix && image) {
-      onRemix(image);
+      onRemix();
     }
   };
 
