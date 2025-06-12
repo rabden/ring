@@ -18,7 +18,7 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 
 const ImageGenerator = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const remixId = searchParams.get('remix');
   const { session } = useSupabaseAuth();
   const [isGenerating, setIsGenerating] = useState(false);
@@ -155,6 +155,8 @@ const ImageGenerator = () => {
       setActiveTab('input');
     } else if (hash === '#notifications') {
       setActiveTab('notifications');
+    } else if (hash === '#myimages') {
+      setActiveTab('images');
     } else {
       setActiveTab('images');
     }
@@ -177,6 +179,7 @@ const ImageGenerator = () => {
 
   useEffect(() => {
     if (remixImage && !remixProcessed) {
+      console.log('Processing remix for image:', remixImage);
       setRemixProcessed(true);
       setIsRemixMode(true);
       
@@ -203,17 +206,26 @@ const ImageGenerator = () => {
         setUseAspectRatio(true);
       }
       
-      setActiveTab('input');
-      
-      if (window.history.replaceState) {
-        const newUrl = window.location.pathname;
-        window.history.replaceState({ path: newUrl }, '', newUrl);
+      // Set active tab based on current hash
+      const hash = window.location.hash;
+      if (hash === '#imagegenerate') {
+        setActiveTab('input');
+      } else if (hash === '#myimages') {
+        setActiveTab('images');
       }
+      
+      // Clear the remix parameter from URL after processing
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('remix');
+      setSearchParams(newSearchParams, { replace: true });
+      
+      toast.success('Image settings loaded for remix!');
     }
   }, [
     remixImage, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
     setIsRemixMode, setModel, setPrompt, setQuality, setRandomizeSeed, 
-    setSeed, setUseAspectRatio, setWidth, setNegativePrompt, setGuidanceScale, modelConfigs
+    setSeed, setUseAspectRatio, setWidth, setNegativePrompt, setGuidanceScale, 
+    modelConfigs, searchParams, setSearchParams
   ]);
   
   useEffect(() => {
