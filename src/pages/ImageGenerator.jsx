@@ -32,7 +32,7 @@ const ImageGenerator = () => {
   const queryClient = useQueryClient();
   const isHeaderVisible = useScrollDirection();
   const { setIsRemixMode } = useUserPreferences();
-  const { generatingImages, setGeneratingImages, negativePrompt, setNegativePrompt, guidanceScale, setGuidanceScale } = useGeneratingImages();
+  const { generatingImages, setGeneratingImages, negativePrompt, setNegativePrompt, guidanceScale, setGuidanceScale, updateModelSettings } = useGeneratingImages();
   const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
   const { data: isPro } = useProUser(session?.user?.id);
   const { data: modelConfigs } = useModelConfigs();
@@ -221,6 +221,12 @@ const ImageGenerator = () => {
       setIsRemixMode(false);
     };
   }, [setIsRemixMode]);
+
+  useEffect(() => {
+    if (modelConfigs && modelConfigs[model]) {
+      updateModelSettings(modelConfigs[model]);
+    }
+  }, [model, modelConfigs, updateModelSettings]);
 
   if (isRemixLoading && !remixProcessed) {
     return <div>Loading remix...</div>;

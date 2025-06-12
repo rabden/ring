@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -57,7 +56,9 @@ export const useImageGeneration = ({
         isPrivate,
         negativePrompt: queuedNegativePrompt,
         guidanceScale: queuedGuidanceScale,
-        modelConfig: queuedModelConfig
+        modelConfig: queuedModelConfig,
+        useGuidance,
+        useNegativePrompt
       } = currentGeneration;
 
       // Update UI to show processing status
@@ -98,8 +99,8 @@ export const useImageGeneration = ({
             width: finalWidth,
             height: finalHeight,
             ...(queuedModelConfig.steps && { num_inference_steps: parseInt(queuedModelConfig.steps) }),
-            ...(queuedModelConfig.use_guidance && { guidance_scale: queuedGuidanceScale }),
-            ...(queuedModelConfig.use_negative_prompt && queuedNegativePrompt && { 
+            ...(useGuidance && { guidance_scale: queuedGuidanceScale }),
+            ...(useNegativePrompt && queuedNegativePrompt && { 
               negative_prompt: queuedNegativePrompt 
             })
           };
@@ -109,7 +110,9 @@ export const useImageGeneration = ({
             model: model,
             modelName: modelConfigs[model]?.name,
             huggingfaceModelId: queuedModelConfig.huggingfaceId || model,
+            useGuidance,
             guidanceScale: queuedGuidanceScale,
+            useNegativePrompt,
             negativePrompt: queuedNegativePrompt
           });
 
@@ -236,13 +239,32 @@ export const useImageGeneration = ({
       return;
     }
 
+    // Determine guidance and negative prompt settings based on model config
+    const useGuidance = lockedModelConfig.use_guidance === true;
+    const useNegativePrompt = lockedModelConfig.use_negative_prompt === true;
+    
+    // Use model's default guidance if guidance is enabled
+    const modelGuidanceScale = useGuidance ? (lockedModelConfig.defaultguidance || guidanceScale) : undefined;
+    
+    // Use model's default negative prompt if user hasn't provided one and model supports it
+    let modelNegativePrompt = '';
+    if (useNegativePrompt) {
+      if (negativePrompt && negativePrompt.trim()) {
+        modelNegativePrompt = negativePrompt;
+      } else if (lockedModelConfig.default_negative_prompt) {
+        modelNegativePrompt = lockedModelConfig.default_negative_prompt;
+      }
+    }
+
     // Log generation attempt for debugging
     console.log('Generation attempt:', {
       model,
       huggingfaceId: lockedModelConfig.huggingfaceId,
       modelName: lockedModelConfig.name,
-      guidanceScale,
-      negativePrompt
+      useGuidance,
+      guidanceScale: modelGuidanceScale,
+      useNegativePrompt,
+      negativePrompt: modelNegativePrompt
     });
 
     // Capture ALL states at generation time
@@ -253,9 +275,11 @@ export const useImageGeneration = ({
       aspectRatio,
       width,
       height,
-      negativePrompt, // From context
-      guidanceScale, // From context
-      modelConfig: lockedModelConfig, // Use locked config
+      negativePrompt: modelNegativePrompt,
+      guidanceScale: modelGuidanceScale,
+      modelConfig: lockedModelConfig,
+      useGuidance,
+      useNegativePrompt,
       maxDimension: qualityOptions[quality]
     };
 
@@ -313,7 +337,9 @@ export const useImageGeneration = ({
         isPrivate,
         negativePrompt: generationStates.negativePrompt,
         guidanceScale: generationStates.guidanceScale,
-        modelConfig: generationStates.modelConfig
+        modelConfig: generationStates.modelConfig,
+        useGuidance: generationStates.useGuidance,
+        useNegativePrompt: generationStates.useNegativePrompt
       };
 
       generationQueue.current.push(queueItem);

@@ -29,6 +29,7 @@ export const modelConfig = {
     example: "the prompt should be clear, should describe the users base prompt in best way and add extra elements to it for maximizing performance, you can add word tags that might enhance the image result or effect its styles",
     steps: 48,
     use_guidance: false,
+    defaultguidance: 7.5,
     use_negative_prompt: false
   },
   flash: {
@@ -44,7 +45,7 @@ export const modelConfig = {
     example: "the prompt should be clear, should describe the users base prompt in best way and add extra elements to it for maximizing performance, you can add word tags that might enhance the image result or effect its styles",
     steps: 8,
     use_guidance: true,
-    defaultguidance: 0,
+    defaultguidance: 3.5,
     use_negative_prompt: true,
     default_negative_prompt: "ugly, bad anatomy, blurry, pixelated, poor quality, watermark, signature, text"
   }
