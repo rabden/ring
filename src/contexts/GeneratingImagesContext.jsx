@@ -89,20 +89,17 @@ export const GeneratingImagesProvider = ({ children }) => {
     setShouldOpenDrawer(false);
   };
 
-  // Function to update guidance and negative prompt based on model config
+  // Function to update guidance based on model config
   const updateModelSettings = (modelConfig) => {
     if (modelConfig) {
-      // Set guidance scale from model's default
+      // Set guidance scale from model's default only if guidance is used
       if (modelConfig.use_guidance && modelConfig.defaultguidance !== undefined) {
         setGuidanceScale(modelConfig.defaultguidance);
       }
       
-      // Set negative prompt from model's default if user hasn't set one
-      if (modelConfig.use_negative_prompt && modelConfig.default_negative_prompt) {
-        if (!negativePrompt.trim()) {
-          setNegativePrompt(modelConfig.default_negative_prompt);
-        }
-      } else if (!modelConfig.use_negative_prompt) {
+      // Don't auto-fill negative prompt textbox
+      // Only clear it if the model doesn't support negative prompts
+      if (!modelConfig.use_negative_prompt) {
         setNegativePrompt("");
       }
     }
@@ -134,4 +131,4 @@ export const useGeneratingImages = () => {
     throw new Error('useGeneratingImages must be used within a GeneratingImagesProvider');
   }
   return context;
-}; 
+};

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -244,14 +245,16 @@ export const useImageGeneration = ({
     const useNegativePrompt = lockedModelConfig.use_negative_prompt === true;
     
     // Use model's default guidance if guidance is enabled
-    const modelGuidanceScale = useGuidance ? (lockedModelConfig.defaultguidance || guidanceScale) : undefined;
+    const modelGuidanceScale = useGuidance ? lockedModelConfig.defaultguidance : undefined;
     
-    // Use model's default negative prompt if user hasn't provided one and model supports it
+    // Use user's negative prompt if provided, otherwise use model's default if model supports it
     let modelNegativePrompt = '';
     if (useNegativePrompt) {
       if (negativePrompt && negativePrompt.trim()) {
+        // User provided a negative prompt, use it
         modelNegativePrompt = negativePrompt;
       } else if (lockedModelConfig.default_negative_prompt) {
+        // User didn't provide one, use model's default
         modelNegativePrompt = lockedModelConfig.default_negative_prompt;
       }
     }
@@ -264,7 +267,8 @@ export const useImageGeneration = ({
       useGuidance,
       guidanceScale: modelGuidanceScale,
       useNegativePrompt,
-      negativePrompt: modelNegativePrompt
+      userNegativePrompt: negativePrompt,
+      finalNegativePrompt: modelNegativePrompt
     });
 
     // Capture ALL states at generation time
