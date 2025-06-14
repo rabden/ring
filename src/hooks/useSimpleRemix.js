@@ -28,6 +28,13 @@ export const useSimpleRemix = () => {
     const isMobile = window.innerWidth <= 768;
     const hash = isMobile ? '#imagegenerate' : '#myimages';
     navigate(`/${hash}`);
+    
+    // Scroll to top on desktop after navigation
+    if (!isMobile) {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    }
   }, [navigate]);
   
   return { remix };
