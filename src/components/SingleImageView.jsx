@@ -12,7 +12,6 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import { handleImageDiscard } from '@/utils/discardUtils';
 import { toast } from 'sonner';
-import { useImageRemix } from '@/hooks/useImageRemix';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 const SingleImageView = () => {
@@ -37,14 +36,15 @@ const SingleImageView = () => {
     },
   });
 
-  // Use the remix hook with proper handlers
-  const { handleRemix } = useImageRemix(session, (image) => {
-    // This will handle the remix and navigate to the generator
-    console.log('Remixing image:', image);
-  }, () => {
-    // Close handler - navigate back
-    navigate(-1);
-  });
+  const handleRemix = (image) => {
+    if (!session) {
+      toast.error('Please sign in to remix images');
+      return;
+    }
+    
+    // Simple remix - navigate to home with remix parameter
+    navigate(`/?remix=${image.id}`);
+  };
 
   const handleDownload = async () => {
     if (!image) return;

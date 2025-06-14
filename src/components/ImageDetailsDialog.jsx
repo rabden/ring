@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -17,6 +18,7 @@ import { supabase } from '@/integrations/supabase/supabase'
 import { toast } from 'sonner'
 import { useSupabaseAuth } from '@/integrations/supabase/auth'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
+import { useNavigate } from 'react-router-dom'
 
 const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
   const { data: modelConfigs } = useModelConfigs();
@@ -25,6 +27,7 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const { session } = useSupabaseAuth();
   const { isAdmin } = useIsAdmin();
+  const navigate = useNavigate();
 
   const isOwner = image?.user_id === session?.user?.id;
   const showAdminDelete = isAdmin && !isOwner;
@@ -50,6 +53,17 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
     await navigator.clipboard.writeText(`${window.location.origin}/image/${image.id}`);
     setShareIcon('check');
     setTimeout(() => setShareIcon('share'), 1500);
+  };
+
+  const handleRemix = () => {
+    if (!session) {
+      toast.error('Please sign in to remix images');
+      return;
+    }
+    
+    // Simple remix - navigate to home with remix parameter
+    navigate(`/?remix=${image.id}`);
+    onOpenChange(false);
   };
 
   const { data: owner } = useQuery({
@@ -96,6 +110,15 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
               />
 
               <ImageDetailsSection detailItems={detailItems} />
+              
+              {session && (
+                <button
+                  onClick={handleRemix}
+                  className="text-blue-500 hover:text-blue-600"
+                >
+                  Remix
+                </button>
+              )}
               
               {(isOwner || showAdminDelete) && (
                 <button
