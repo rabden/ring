@@ -78,4 +78,4 @@ export const useImagePrivacy = (imageId) => {
     isPrivate: isPrivate || false,
     togglePrivacy: togglePrivacy.mutate
   };
-}; 
+};
