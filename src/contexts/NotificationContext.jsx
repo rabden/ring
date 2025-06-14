@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useSupabaseAuth } from '@/integrations/supabase/auth';
+import { useAuth } from '@/integrations/supabase/components/AuthProvider';
 
 const NotificationContext = createContext();
 
@@ -15,7 +16,7 @@ export const useNotifications = () => {
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { session } = useSupabaseAuth();
+  const { session } = useAuth();
 
   useEffect(() => {
     if (!session?.user?.id) return;
