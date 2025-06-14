@@ -1,24 +1,31 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
+import { useEffect } from 'react';
 
 export const useImagePrivacy = (imageId) => {
   const queryClient = useQueryClient();
 
-  const callback = (payload) => {
-    console.log('Image privacy realtime update:', payload);
-    queryClient.invalidateQueries({ queryKey: ['imagePrivacy', imageId] });
-  };
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!imageId) return;
 
-  useRealtimeSubscription(
-    'user_images',
-    imageId ? `id=eq.${imageId}` : null,
-    callback,
-    {
-      queryKeys: [['imagePrivacy', imageId]]
-    }
-  );
+    const subscription = supabase
+      .channel('image_privacy_channel')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_images',
+        filter: `id=eq.${imageId}`,
+      }, () => {
+        // Invalidate and refetch when changes occur
+        queryClient.invalidateQueries(['imagePrivacy', imageId]);
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [imageId, queryClient]);
 
   const { data: isPrivate } = useQuery({
     queryKey: ['imagePrivacy', imageId],
@@ -46,7 +53,7 @@ export const useImagePrivacy = (imageId) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['imagePrivacy', imageId] });
+      queryClient.invalidateQueries(['imagePrivacy', imageId]);
     }
   });
 
@@ -54,4 +61,4 @@ export const useImagePrivacy = (imageId) => {
     isPrivate: isPrivate || false,
     togglePrivacy: togglePrivacy.mutate
   };
-};
+}; 

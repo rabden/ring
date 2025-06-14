@@ -1,27 +1,33 @@
-
-import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
+import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 
 export const useRealtimeProfile = (userId) => {
   const queryClient = useQueryClient();
 
-  const callback = (payload) => {
-    console.log('Profile realtime update:', payload);
-    queryClient.invalidateQueries({ queryKey: ['user', userId] });
-    queryClient.invalidateQueries({ queryKey: ['proUser', userId] });
-    queryClient.invalidateQueries({ queryKey: ['proRequest', userId] });
-  };
+  useEffect(() => {
+    if (!userId) return;
 
-  useRealtimeSubscription(
-    'profiles',
-    userId ? `id=eq.${userId}` : null,
-    callback,
-    {
-      queryKeys: [
-        ['user', userId],
-        ['proUser', userId],
-        ['proRequest', userId]
-      ]
-    }
-  );
+    const channel = supabase
+      .channel('profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${userId}`
+        },
+        (payload) => {
+          queryClient.invalidateQueries(['user', userId]);
+          queryClient.invalidateQueries(['proUser', userId]);
+          queryClient.invalidateQueries(['proRequest', userId]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
 };

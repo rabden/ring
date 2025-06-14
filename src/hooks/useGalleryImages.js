@@ -1,11 +1,8 @@
-
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { startOfMonth, startOfWeek } from 'date-fns';
 import { getNsfwModelKeys } from '@/utils/modelUtils';
-import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
-import { useQueryClient } from '@tanstack/react-query';
 
 export const useGalleryImages = ({
   userId,
@@ -24,42 +21,6 @@ export const useGalleryImages = ({
   const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth <= 768 ? 50 : 200);
   const NSFW_MODELS = getNsfwModelKeys();
 
-  // Create stable query key for this specific configuration
-  const queryKey = useMemo(() => [
-    'galleryImages', 
-    userId, 
-    activeView, 
-    nsfwEnabled, 
-    showPrivate, 
-    activeFilters, 
-    searchQuery, 
-    showFollowing, 
-    showTop, 
-    following, 
-    itemsPerPage
-  ], [userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following, itemsPerPage]);
-
-  // Set up realtime subscription with centralized manager
-  const callback = (payload) => {
-    console.log('Gallery realtime update:', payload);
-    queryClient.invalidateQueries({
-      queryKey: ['galleryImages']
-    });
-  };
-
-  const filter = activeView === 'myImages' 
-    ? userId ? `user_id=eq.${userId}` : null
-    : userId ? `user_id=neq.${userId}` : null;
-
-  useRealtimeSubscription(
-    'user_images',
-    filter,
-    callback,
-    {
-      queryKeys: [['galleryImages']]
-    }
-  );
-
   useEffect(() => {
     const handleResize = () => {
       setItemsPerPage(window.innerWidth <= 768 ? 50 : 200);
@@ -76,7 +37,7 @@ export const useGalleryImages = ({
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey,
+    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following, itemsPerPage],
     queryFn: async ({ pageParam = { page: 0 } }) => {
       if (!userId) return { data: [], nextPage: null };
 
@@ -217,6 +178,38 @@ export const useGalleryImages = ({
     getNextPageParam: (lastPage) => lastPage?.nextPage,
     initialPageParam: { page: 0 }
   });
+
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!userId) return;
+
+    // Create channel for real-time updates
+    const channel = supabase
+      .channel('gallery-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_images',
+          filter: activeView === 'myImages' 
+            ? `user_id=eq.${userId}` 
+            : `user_id=neq.${userId}`
+        },
+        () => {
+          // Invalidate the query to trigger a refetch
+          queryClient.invalidateQueries({
+            queryKey: ['galleryImages', userId, activeView]
+          });
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, activeView, queryClient]);
 
   const images = data?.pages?.flatMap(page => page.data) || [];
 

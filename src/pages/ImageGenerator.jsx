@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -11,12 +10,16 @@ import { useImageGeneratorState } from '@/hooks/useImageGeneratorState';
 import { useImageHandlers } from '@/hooks/useImageHandlers';
 import { useProUser } from '@/hooks/useProUser';
 import { useModelConfigs } from '@/hooks/useModelConfigs';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import ImageGeneratorContent from '@/components/ImageGeneratorContent';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 
 const ImageGenerator = () => {
+  const [searchParams] = useSearchParams();
+  const remixId = searchParams.get('remix');
   const { session } = useSupabaseAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
@@ -24,9 +27,11 @@ const ImageGenerator = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [showPrivate, setShowPrivate] = useState(false);
+  const [remixProcessed, setRemixProcessed] = useState(false);
 
   const queryClient = useQueryClient();
   const isHeaderVisible = useScrollDirection();
+  const { setIsRemixMode } = useUserPreferences();
   const { generatingImages, setGeneratingImages, negativePrompt, setNegativePrompt, guidanceScale, setGuidanceScale, updateModelSettings } = useGeneratingImages();
   const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
   const { data: isPro } = useProUser(session?.user?.id);
@@ -138,6 +143,7 @@ const ImageGenerator = () => {
   const {
     handleImageClick,
     handleModelChange,
+    handleRemix,
     handleDownload,
     handleDiscard,
     handleViewDetails,
@@ -154,58 +160,77 @@ const ImageGenerator = () => {
     }
   }, [window.location.hash]);
 
-  // Handle remix data from session storage
+  const { data: remixImage, isLoading: isRemixLoading } = useQuery({
+    queryKey: ['remixImage', remixId],
+    queryFn: async () => {
+      if (!remixId) return null;
+      const { data, error } = await supabase
+        .from('user_images')
+        .select('*')
+        .eq('id', remixId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!remixId && !remixProcessed,
+  });
+
   useEffect(() => {
-    const remixData = sessionStorage.getItem('remixData');
-    if (remixData) {
-      try {
-        const data = JSON.parse(remixData);
-        
-        // Apply remix data to state
-        setPrompt(data.prompt || '');
-        setModel(data.model || 'flux');
-        setWidth(data.width || 1024);
-        setHeight(data.height || 1024);
-        setSeed(data.seed || '');
-        setRandomizeSeed(false);
-        setQuality(data.quality || 'HD');
-        
-        // Update context values for negative prompt and guidance scale
-        if (data.negative_prompt) {
-          setNegativePrompt(data.negative_prompt);
-        }
-        
-        // Set guidance scale from model config if available
-        if (modelConfigs && modelConfigs[data.model]?.defaultguidance !== undefined) {
-          setGuidanceScale(modelConfigs[data.model].defaultguidance);
-        }
-        
-        if (data.aspect_ratio) {
-          setAspectRatio(data.aspect_ratio);
-          setUseAspectRatio(true);
-        }
-        
-        // Set active tab to input for remix
-        setActiveTab('input');
-        
-        // Clear the remix data
-        sessionStorage.removeItem('remixData');
-      } catch (error) {
-        console.error('Error parsing remix data:', error);
-        sessionStorage.removeItem('remixData');
+    if (remixImage && !remixProcessed) {
+      setRemixProcessed(true);
+      setIsRemixMode(true);
+      
+      setPrompt(remixImage.prompt);
+      setSeed(remixImage.seed);
+      setRandomizeSeed(false);
+      setWidth(remixImage.width);
+      setHeight(remixImage.height);
+      setModel(remixImage.model);
+      setQuality(remixImage.quality);
+      
+      // Update context values for negative prompt and guidance scale
+      if (remixImage.negative_prompt) {
+        setNegativePrompt(remixImage.negative_prompt);
+      }
+      
+      // Set guidance scale from model config if available
+      if (modelConfigs && modelConfigs[remixImage.model]?.defaultguidance !== undefined) {
+        setGuidanceScale(modelConfigs[remixImage.model].defaultguidance);
+      }
+      
+      if (remixImage.aspect_ratio) {
+        setAspectRatio(remixImage.aspect_ratio);
+        setUseAspectRatio(true);
+      }
+      
+      setActiveTab('input');
+      
+      if (window.history.replaceState) {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
       }
     }
   }, [
-    setPrompt, setModel, setWidth, setHeight, setSeed, setRandomizeSeed, 
-    setQuality, setAspectRatio, setUseAspectRatio, setNegativePrompt, 
-    setGuidanceScale, modelConfigs, setActiveTab
+    remixImage, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
+    setIsRemixMode, setModel, setPrompt, setQuality, setRandomizeSeed, 
+    setSeed, setUseAspectRatio, setWidth, setNegativePrompt, setGuidanceScale, modelConfigs
   ]);
+  
+  useEffect(() => {
+    return () => {
+      setIsRemixMode(false);
+    };
+  }, [setIsRemixMode]);
 
   useEffect(() => {
     if (modelConfigs && modelConfigs[model]) {
       updateModelSettings(modelConfigs[model]);
     }
   }, [model, modelConfigs, updateModelSettings]);
+
+  if (isRemixLoading && !remixProcessed) {
+    return <div>Loading remix...</div>;
+  }
 
   return (
     <>
@@ -231,6 +256,7 @@ const ImageGenerator = () => {
         handleImageClick={handleImageClick}
         handleDownload={handleDownload}
         handleDiscard={handleDiscard}
+        handleRemix={handleRemix}
         handleViewDetails={handleViewDetails}
         selectedImage={selectedImage}
         detailsDialogOpen={detailsDialogOpen}

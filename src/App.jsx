@@ -1,42 +1,48 @@
-
-
-import React from 'react';
+import React, { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './integrations/supabase/components/AuthProvider';
+import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/integrations/supabase/components/AuthProvider';
+import { NotificationProvider } from '@/contexts/NotificationContext';
+import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
+import { GeneratingImagesProvider } from '@/contexts/GeneratingImagesContext';
+import { Toaster } from 'sonner';
+import LoadingScreen from '@/components/LoadingScreen';
 import AppRoutes from './AppRoutes';
-import { ThemeProvider } from "./components/theme-provider";
-import { Toaster } from "@/components/ui/toaster"
-import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-import { GeneratingImagesProvider } from './contexts/GeneratingImagesContext';
-import { RealtimeManagerProvider } from '@/contexts/RealtimeManagerContext';
 
-const queryClient = new QueryClient();
+// Create QueryClient instance with retry configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      suspense: false,
+      useErrorBoundary: true
+    },
+  },
+});
 
-const App = () => {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <UserPreferencesProvider>
+          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
             <NotificationProvider>
-              <GeneratingImagesProvider>
-                <RealtimeManagerProvider>
-                  <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-                    <div className="min-h-screen bg-background font-sans antialiased">
-                      <Toaster />
-                      <AppRoutes />
-                    </div>
-                  </ThemeProvider>
-                </RealtimeManagerProvider>
-              </GeneratingImagesProvider>
+              <UserPreferencesProvider>
+                <GeneratingImagesProvider>
+                  <Suspense fallback={<LoadingScreen />}>
+                    <AppRoutes />
+                    <Toaster />
+                  </Suspense>
+                </GeneratingImagesProvider>
+              </UserPreferencesProvider>
             </NotificationProvider>
-          </UserPreferencesProvider>
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
