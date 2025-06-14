@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './integrations/supabase/auth';
 import AppRoutes from './AppRoutes';
-import { ThemeProvider } from "@/components/ui/theme-provider"
+import { ThemeProvider } from "./components/theme-provider";
 import { Toaster } from "@/components/ui/toaster"
 import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
 import { NotificationProvider } from './contexts/NotificationContext';
