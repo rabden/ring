@@ -1,7 +1,6 @@
-
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { startOfMonth, startOfWeek } from 'date-fns';
 import { getNsfwModelKeys } from '@/utils/modelUtils';
 
@@ -19,24 +18,8 @@ export const useGalleryImages = ({
   following = []
 }) => {
   const queryClient = useQueryClient();
-  const channelRef = useRef(null);
   const [itemsPerPage, setItemsPerPage] = useState(window.innerWidth <= 768 ? 50 : 200);
   const NSFW_MODELS = getNsfwModelKeys();
-
-  // Create stable query key for this specific configuration
-  const queryKey = useMemo(() => [
-    'galleryImages', 
-    userId, 
-    activeView, 
-    nsfwEnabled, 
-    showPrivate, 
-    activeFilters, 
-    searchQuery, 
-    showFollowing, 
-    showTop, 
-    following, 
-    itemsPerPage
-  ], [userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following, itemsPerPage]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -54,7 +37,7 @@ export const useGalleryImages = ({
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey,
+    queryKey: ['galleryImages', userId, activeView, nsfwEnabled, showPrivate, activeFilters, searchQuery, showFollowing, showTop, following, itemsPerPage],
     queryFn: async ({ pageParam = { page: 0 } }) => {
       if (!userId) return { data: [], nextPage: null };
 
@@ -196,22 +179,13 @@ export const useGalleryImages = ({
     initialPageParam: { page: 0 }
   });
 
-  // Set up real-time subscription with proper cleanup and unique naming
+  // Set up real-time subscription
   useEffect(() => {
     if (!userId) return;
 
-    // Clean up existing channel if it exists
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
-
-    // Create unique channel name based on view and user
-    const channelName = `gallery-${activeView}-${userId}-${Date.now()}`;
-
     // Create channel for real-time updates
     const channel = supabase
-      .channel(channelName)
+      .channel('gallery-changes')
       .on(
         'postgres_changes',
         {
@@ -222,24 +196,18 @@ export const useGalleryImages = ({
             ? `user_id=eq.${userId}` 
             : `user_id=neq.${userId}`
         },
-        (payload) => {
-          console.log('Gallery realtime update:', payload);
-          // Invalidate the query to trigger a refetch using the stable query key
+        () => {
+          // Invalidate the query to trigger a refetch
           queryClient.invalidateQueries({
-            queryKey: ['galleryImages']
+            queryKey: ['galleryImages', userId, activeView]
           });
         }
       )
       .subscribe();
 
-    channelRef.current = channel;
-
-    // Cleanup subscription on unmount or dependency change
+    // Cleanup subscription on unmount
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      supabase.removeChannel(channel);
     };
   }, [userId, activeView, queryClient]);
 
