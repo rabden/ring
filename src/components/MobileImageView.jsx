@@ -11,7 +11,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ImagePromptSection from './image-view/ImagePromptSection';
 import ImageDetailsSection from './image-view/ImageDetailsSection';
 import { handleImageDiscard } from '@/utils/discardUtils';
-import { useImageRemix } from '@/hooks/useImageRemix';
 import HeartAnimation from './animations/HeartAnimation';
 import ImageOwnerHeader from './image-view/ImageOwnerHeader';
 import { format } from 'date-fns';
