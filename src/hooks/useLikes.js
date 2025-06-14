@@ -1,52 +1,25 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/supabase';
-import { useEffect, useRef } from 'react';
+import { useRealtimeSubscription } from '@/hooks/useRealtimeSubscription';
 import { toast } from 'sonner';
 
 export const useLikes = (userId) => {
   const queryClient = useQueryClient();
-  const channelRef = useRef(null);
 
-  // Set up real-time subscription
-  useEffect(() => {
-    if (!userId) return;
+  const callback = (payload) => {
+    console.log('Likes realtime update:', payload);
+    queryClient.invalidateQueries({ queryKey: ['likes', userId] });
+  };
 
-    // Clean up existing channel if it exists
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
+  useRealtimeSubscription(
+    'user_images',
+    userId ? `liked_by.cs.{${userId}}` : null,
+    callback,
+    {
+      queryKeys: [['likes', userId]]
     }
-
-    // Create unique channel name
-    const channelName = `likes-${userId}-${Date.now()}`;
-
-    // Subscribe to changes in user_images table
-    const subscription = supabase
-      .channel(channelName)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'user_images',
-        filter: `liked_by cs.{${userId}}`,
-      }, (payload) => {
-        console.log('Likes realtime update:', payload);
-        // Invalidate and refetch when changes occur
-        queryClient.invalidateQueries({
-          queryKey: ['likes', userId]
-        });
-      })
-      .subscribe();
-
-    channelRef.current = subscription;
-
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-    };
-  }, [userId, queryClient]);
+  );
 
   const { data: userLikes = [] } = useQuery({
     queryKey: ['likes', userId],

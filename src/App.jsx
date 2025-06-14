@@ -1,48 +1,37 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider } from '@/components/theme-provider';
-import { AuthProvider } from '@/integrations/supabase/components/AuthProvider';
-import { NotificationProvider } from '@/contexts/NotificationContext';
-import { UserPreferencesProvider } from '@/contexts/UserPreferencesContext';
-import { GeneratingImagesProvider } from '@/contexts/GeneratingImagesContext';
-import { Toaster } from 'sonner';
-import LoadingScreen from '@/components/LoadingScreen';
+import { AuthProvider } from './integrations/supabase/auth';
 import AppRoutes from './AppRoutes';
+import { ThemeProvider } from "@/components/ui/theme-provider"
+import { Toaster } from "@/components/ui/toaster"
+import { UserPreferencesProvider } from './contexts/UserPreferencesContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { GeneratingImagesProvider } from './contexts/GeneratingImagesContext';
+import { RealtimeManagerProvider } from '@/contexts/RealtimeManagerContext';
 
-// Create QueryClient instance with retry configuration
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      suspense: false,
-      useErrorBoundary: true
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-function App() {
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-            <NotificationProvider>
-              <UserPreferencesProvider>
-                <GeneratingImagesProvider>
-                  <Suspense fallback={<LoadingScreen />}>
-                    <AppRoutes />
+      <AuthProvider>
+        <UserPreferencesProvider>
+          <NotificationProvider>
+            <GeneratingImagesProvider>
+              <RealtimeManagerProvider>
+                <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+                  <div className="min-h-screen bg-background font-sans antialiased">
                     <Toaster />
-                  </Suspense>
-                </GeneratingImagesProvider>
-              </UserPreferencesProvider>
-            </NotificationProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </BrowserRouter>
+                    <AppRoutes />
+                  </div>
+                </ThemeProvider>
+              </RealtimeManagerProvider>
+            </GeneratingImagesProvider>
+          </NotificationProvider>
+        </UserPreferencesProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
-}
+};
 
 export default App;
