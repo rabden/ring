@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import { qualityOptions } from '@/utils/imageConfigs';
@@ -71,29 +70,20 @@ export const useImageGeneration = ({
         try {
           initRetryCount(generationId);
 
-          const { data: apiKeyData, error: apiKeyError } = await supabase
-            .from('huggingface_api_keys')
-            .select('api_key')
-            .eq('is_active', true)
-            .order('last_used_at', { ascending: true })
-            .limit(1)
-            .single();
+          // Use the database function to get an API key with RLS support
+          const { data: apiKey, error: apiKeyError } = await supabase
+            .rpc('get_random_huggingface_api_key');
           
           if (apiKeyError) {
             setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
             toast.error('Failed to get API key');
             throw new Error(`Failed to get API key: ${apiKeyError.message}`);
           }
-          if (!apiKeyData) {
+          if (!apiKey) {
             setGeneratingImages(prev => prev.filter(img => img.id !== generationId));
             toast.error('No active API key available');
             throw new Error('No active API key available');
           }
-
-          await supabase
-            .from('huggingface_api_keys')
-            .update({ last_used_at: new Date().toISOString() })
-            .eq('api_key', apiKeyData.api_key);
 
           const parameters = {
             seed: actualSeed,
@@ -118,7 +108,7 @@ export const useImageGeneration = ({
           });
 
           // Create HfInference client with API key
-          const client = new HfInference(apiKeyData.api_key);
+          const client = new HfInference(apiKey);
           
           console.log('Making HfInference API call:', {
             model: queuedModelConfig.huggingfaceId || model,
