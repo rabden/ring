@@ -12,7 +12,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import { handleImageDiscard } from '@/utils/discardUtils';
 import { toast } from 'sonner';
-import { useImageRemix } from '@/hooks/useImageRemix';
+import { useSimpleRemix } from '@/hooks/useSimpleRemix';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 const SingleImageView = () => {
@@ -22,6 +22,7 @@ const SingleImageView = () => {
   const isMobile = useMediaQuery('(max-width: 768px)');
   const queryClient = useQueryClient();
   const { isAdmin } = useIsAdmin();
+  const { remix } = useSimpleRemix();
 
   const { data: image, isLoading } = useQuery({
     queryKey: ['singleImage', imageId],
@@ -37,14 +38,16 @@ const SingleImageView = () => {
     },
   });
 
-  // Use the remix hook with proper handlers
-  const { handleRemix } = useImageRemix(session, (image) => {
-    // This will handle the remix and navigate to the generator
-    console.log('Remixing image:', image);
-  }, () => {
-    // Close handler - navigate back
-    navigate(-1);
-  });
+  const handleRemix = () => {
+    if (!session) {
+      toast.error('Please sign in to remix images');
+      return;
+    }
+    
+    if (image) {
+      remix(image);
+    }
+  };
 
   const handleDownload = async () => {
     if (!image) return;
@@ -104,7 +107,7 @@ const SingleImageView = () => {
       onClose={() => navigate(-1)}
       onDownload={handleDownload}
       onDiscard={handleDiscard}
-      onRemix={() => handleRemix(image)}
+      onRemix={handleRemix}
       isOwner={image.user_id === session?.user?.id}
       isAdmin={isAdmin}
       setActiveTab={() => {}}
@@ -118,7 +121,7 @@ const SingleImageView = () => {
       onClose={() => navigate(-1)}
       onDownload={handleDownload}
       onDiscard={handleDiscard}
-      onRemix={() => handleRemix(image)}
+      onRemix={handleRemix}
       isOwner={image.user_id === session?.user?.id}
       isAdmin={isAdmin}
       setStyle={() => {}}

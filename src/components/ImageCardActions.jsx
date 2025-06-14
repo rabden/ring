@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Download, Trash2, Wand2, Info, Shield } from "lucide-react";
@@ -17,6 +18,7 @@ import { supabase } from '@/integrations/supabase/supabase';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from 'date-fns';
 import { useModelConfigs } from '@/hooks/useModelConfigs';
+import { useSimpleRemix } from '@/hooks/useSimpleRemix';
 
 const ImageCardActions = ({ 
   image, 
@@ -39,6 +41,7 @@ const ImageCardActions = ({
   const [shareIcon, setShareIcon] = useState('share');
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const { data: modelConfigs } = useModelConfigs();
+  const { remix } = useSimpleRemix();
 
   const isOwner = image?.user_id === userId;
   const showAdminDelete = isAdmin && !isOwner;
@@ -102,8 +105,10 @@ const ImageCardActions = ({
       toast.error('Please sign in to remix images');
       return;
     }
-    const hash = isMobileDevice ? '#imagegenerate' : '#myimages';
-    navigate(`/?remix=${image.id}${hash}`, { replace: true });
+    
+    if (image) {
+      remix(image);
+    }
     setIsDrawerOpen(false);
   };
 

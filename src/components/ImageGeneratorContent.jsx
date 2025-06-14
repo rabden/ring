@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { useFollows } from '@/hooks/useFollows';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
+import { useSimpleRemix } from '@/hooks/useSimpleRemix';
 
 const ImageGeneratorContent = ({
   session,
@@ -31,7 +32,6 @@ const ImageGeneratorContent = ({
   isHeaderVisible,
   handleDownload,
   handleDiscard,
-  handleRemix,
   handleViewDetails,
   selectedImage,
   detailsDialogOpen,
@@ -54,6 +54,7 @@ const ImageGeneratorContent = ({
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const { settingsActive } = useUserPreferences();
+  const { remix } = useSimpleRemix();
   const {
     following
   } = useFollows(session?.user?.id);
@@ -91,6 +92,10 @@ const ImageGeneratorContent = ({
     if (imageGeneratorProps && imageGeneratorProps.setImageCount) {
       imageGeneratorProps.setImageCount(newCount);
     }
+  };
+
+  const handleRemix = (image) => {
+    remix(image);
   };
 
   useEffect(() => {
