@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/integrations/supabase/components/AuthProvider';
+import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useImageGeneration } from '@/hooks/useImageGeneration';
 import { useQueryClient } from '@tanstack/react-query';
@@ -18,18 +18,20 @@ import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 
 const ImageGenerator = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const remixId = searchParams.get('remix');
-  const { session } = useAuth();
+  const { session } = useSupabaseAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
   const [activeFilters, setActiveFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [showPrivate, setShowPrivate] = useState(false);
+  const [remixProcessed, setRemixProcessed] = useState(false);
 
   const queryClient = useQueryClient();
   const isHeaderVisible = useScrollDirection();
+  const { setIsRemixMode } = useUserPreferences();
   const { generatingImages, setGeneratingImages, negativePrompt, setNegativePrompt, guidanceScale, setGuidanceScale, updateModelSettings } = useGeneratingImages();
   const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
   const { data: isPro } = useProUser(session?.user?.id);
@@ -158,7 +160,6 @@ const ImageGenerator = () => {
     }
   }, [window.location.hash]);
 
-  // Handle remix functionality
   const { data: remixImage, isLoading: isRemixLoading } = useQuery({
     queryKey: ['remixImage', remixId],
     queryFn: async () => {
@@ -171,12 +172,14 @@ const ImageGenerator = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!remixId,
+    enabled: !!remixId && !remixProcessed,
   });
 
   useEffect(() => {
-    if (remixImage && remixId) {
-      // Populate form fields with remix data
+    if (remixImage && !remixProcessed) {
+      setRemixProcessed(true);
+      setIsRemixMode(true);
+      
       setPrompt(remixImage.prompt);
       setSeed(remixImage.seed);
       setRandomizeSeed(false);
@@ -200,18 +203,24 @@ const ImageGenerator = () => {
         setUseAspectRatio(true);
       }
       
-      // Switch to input tab and clear remix parameter
       setActiveTab('input');
-      setSearchParams(params => {
-        params.delete('remix');
-        return params;
-      });
+      
+      if (window.history.replaceState) {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({ path: newUrl }, '', newUrl);
+      }
     }
   }, [
-    remixImage, remixId, setPrompt, setSeed, setRandomizeSeed, setWidth, setHeight,
-    setModel, setQuality, setNegativePrompt, setGuidanceScale, setAspectRatio, 
-    setUseAspectRatio, setActiveTab, setSearchParams, modelConfigs
+    remixImage, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
+    setIsRemixMode, setModel, setPrompt, setQuality, setRandomizeSeed, 
+    setSeed, setUseAspectRatio, setWidth, setNegativePrompt, setGuidanceScale, modelConfigs
   ]);
+  
+  useEffect(() => {
+    return () => {
+      setIsRemixMode(false);
+    };
+  }, [setIsRemixMode]);
 
   useEffect(() => {
     if (modelConfigs && modelConfigs[model]) {
@@ -219,7 +228,7 @@ const ImageGenerator = () => {
     }
   }, [model, modelConfigs, updateModelSettings]);
 
-  if (isRemixLoading) {
+  if (isRemixLoading && !remixProcessed) {
     return <div>Loading remix...</div>;
   }
 

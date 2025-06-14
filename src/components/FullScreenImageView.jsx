@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ImagePromptSection from './image-view/ImagePromptSection';
 import ImageDetailsSection from './image-view/ImageDetailsSection';
 import { handleImageDiscard } from '@/utils/discardUtils';
+import { useImageRemix } from '@/hooks/useImageRemix';
 import HeartAnimation from './animations/HeartAnimation';
 import ImageOwnerHeader from './image-view/ImageOwnerHeader';
 import { format } from 'date-fns';
@@ -44,6 +45,9 @@ const FullScreenImageView = ({
   const queryClient = useQueryClient();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showSidebarButton, setShowSidebarButton] = useState(false);
+
+  // Remove the local handleRemix hook usage
+  // const { handleRemix } = useImageRemix(session, onRemix, onClose);
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
@@ -118,8 +122,9 @@ const FullScreenImageView = ({
       return;
     }
     
-    // Simple remix - navigate to home with remix parameter
-    navigate(`/?remix=${image.id}`);
+    if (onRemix && image) {
+      onRemix();
+    }
   };
 
   const detailItems = image ? [
@@ -151,7 +156,7 @@ const FullScreenImageView = ({
     let timeout;
     const handleMouseMove = (e) => {
       const screenWidth = window.innerWidth;
-      const threshold = screenWidth - 350;
+      const threshold = screenWidth - 350; // Show when cursor is within 100px of right edge
       
       if (e.clientX >= threshold) {
         setShowSidebarButton(true);

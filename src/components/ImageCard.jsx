@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import ImageStatusIndicators from './ImageStatusIndicators';
@@ -14,7 +15,7 @@ import ImageCardBadges from './image-card/ImageCardBadges';
 import { useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import HeartAnimation from './animations/HeartAnimation';
-import { useAuth } from '@/integrations/supabase/components/AuthProvider';
+import { useAuth } from '@/integrations/supabase/hooks/useAuth';
 
 const ImageCard = ({ 
   image, 

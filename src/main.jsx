@@ -1,26 +1,42 @@
 
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
-import "./index.css";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
 
-// Create a query client instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      cacheTime: 1000 * 60 * 30, // 30 minutes
-      retry: 2,
-      refetchOnWindowFocus: true,
-    },
-  },
-});
+// Unregister any existing service workers
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => {
+      registration.unregister();
+      console.log('ServiceWorker unregistered');
+    });
+  });
+}
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
+// Ensure React is available globally
+window.React = React;
+
+const renderApp = () => {
+  const root = document.getElementById('root');
+  
+  if (!root) {
+    throw new Error('Root element not found');
+  }
+
+  const app = ReactDOM.createRoot(root);
+  
+  app.render(
+    <React.StrictMode>
       <App />
-    </QueryClientProvider>
-  </React.StrictMode>,
-);
+    </React.StrictMode>
+  );
+};
+
+// Initial render
+renderApp();
+
+// Enable HMR in development
+if (import.meta.hot) {
+  import.meta.hot.accept();
+}

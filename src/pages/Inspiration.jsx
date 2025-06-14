@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -95,13 +94,7 @@ const Inspiration = () => {
   };
 
   const handleRemix = async (image) => {
-    if (!session) {
-      toast.error('Please sign in to remix images');
-      return;
-    }
-    
-    // Simple remix - navigate to home with remix parameter
-    navigate(`/?remix=${image.id}`);
+    navigate(`/remix/${image.id}`);
   };
 
   const handleDownload = async (image) => {
