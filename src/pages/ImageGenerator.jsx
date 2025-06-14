@@ -31,7 +31,7 @@ const ImageGenerator = () => {
 
   const queryClient = useQueryClient();
   const isHeaderVisible = useScrollDirection();
-  const { setIsRemixMode } = useUserPreferences();
+  const { isRemixMode, setIsRemixMode } = useUserPreferences();
   const { generatingImages, setGeneratingImages, negativePrompt, setNegativePrompt, guidanceScale, setGuidanceScale, updateModelSettings } = useGeneratingImages();
   const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
   const { data: isPro } = useProUser(session?.user?.id);
@@ -76,6 +76,9 @@ const ImageGenerator = () => {
   });
 
   const handleGenerateImage = useCallback(async () => {
+    if (isRemixMode) {
+      setIsRemixMode(false);
+    }
     console.log('handleGenerateImage called', {prompt, session, isImproving});
     
     if (!prompt.trim()) {
@@ -111,7 +114,8 @@ const ImageGenerator = () => {
     }
   }, [
     prompt, session, isImproving, generateImage, 
-    isPrivate, improveCurrentPrompt, model, modelConfigs, setPrompt
+    isPrivate, improveCurrentPrompt, model, modelConfigs, setPrompt,
+    isRemixMode, setIsRemixMode
   ]);
 
   const handleAspectRatioChange = useCallback((newRatio) => {
@@ -151,6 +155,9 @@ const ImageGenerator = () => {
 
   useEffect(() => {
     const hash = window.location.hash;
+    if (isRemixMode) {
+      return;
+    }
     if (hash === '#imagegenerate') {
       setActiveTab('input');
     } else if (hash === '#notifications') {
@@ -158,7 +165,7 @@ const ImageGenerator = () => {
     } else {
       setActiveTab('images');
     }
-  }, [window.location.hash]);
+  }, [window.location.hash, isRemixMode]);
 
   const { data: remixImage, isLoading: isRemixLoading } = useQuery({
     queryKey: ['remixImage', remixId],
@@ -206,8 +213,9 @@ const ImageGenerator = () => {
       setActiveTab('input');
       
       if (window.history.replaceState) {
-        const newUrl = window.location.pathname;
-        window.history.replaceState({ path: newUrl }, '', newUrl);
+        const url = new URL(window.location.href);
+        url.searchParams.delete('remix');
+        window.history.replaceState({ path: url.href }, '', url.href);
       }
     }
   }, [
