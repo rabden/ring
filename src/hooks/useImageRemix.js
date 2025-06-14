@@ -3,12 +3,10 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 export const useImageRemix = (session, onRemix, onClose) => {
   const navigate = useNavigate();
   const { setIsRemixMode } = useUserPreferences();
-  const isMobileDevice = useMediaQuery('(max-width: 768px)');
 
   const handleRemix = useCallback((image) => {
     if (!session) {
@@ -27,10 +25,9 @@ export const useImageRemix = (session, onRemix, onClose) => {
       onClose();
     }
 
-    // Use query parameter with hash, similar to other remix buttons
-    const hash = isMobileDevice ? '#imagegenerate' : '#myimages';
-    navigate(`/?remix=${image.id}${hash}`, { replace: true });
-  }, [session, onRemix, onClose, navigate, setIsRemixMode, isMobileDevice]);
+    // Use query parameter instead of hash to avoid infinite loop with useEffect reactions
+    navigate(`/?remix=${image.id}`, { replace: true });
+  }, [session, onRemix, onClose, navigate, setIsRemixMode]);
 
   return { handleRemix };
 };
