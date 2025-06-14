@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 
 export const useScrollDirection = () => {
   const [isVisible, setIsVisible] = useState(true);
