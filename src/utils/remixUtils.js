@@ -1,6 +1,10 @@
 
 import { toast } from 'sonner';
 
+const isMobile = () => {
+  return window.innerWidth <= 768;
+};
+
 export const remixImage = (image, navigate, session) => {
   if (!session) {
     toast.error('Please sign in to remix images');
@@ -12,8 +16,14 @@ export const remixImage = (image, navigate, session) => {
     return;
   }
 
-  // Navigate to the main page with image data in state
-  navigate('/', {
+  // Determine navigation target based on device
+  const mobile = isMobile();
+  const targetRoute = mobile ? '/#imagegenerate' : '/#myimages';
+
+  console.log('Remix navigation:', { mobile, targetRoute, from: window.location.pathname });
+
+  // Navigate to the appropriate route with image data in state
+  navigate(targetRoute, {
     state: {
       remixImage: {
         id: image.id,
@@ -30,4 +40,11 @@ export const remixImage = (image, navigate, session) => {
     },
     replace: true
   });
+
+  // For desktop, scroll to top after navigation
+  if (!mobile) {
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+  }
 };

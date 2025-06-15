@@ -152,15 +152,18 @@ const ImageGenerator = () => {
       setActiveTab('input');
     } else if (hash === '#notifications') {
       setActiveTab('notifications');
+    } else if (hash === '#myimages') {
+      setActiveTab('images');
     } else {
       setActiveTab('images');
     }
   }, [window.location.hash]);
 
-  // Handle remix from location state (new simple remix system)
+  // Handle remix from location state (improved system)
   useEffect(() => {
     const remixImage = location.state?.remixImage;
     if (remixImage && !remixProcessed) {
+      console.log('Processing remix:', remixImage);
       setRemixProcessed(true);
       
       setPrompt(remixImage.user_prompt || remixImage.prompt);
@@ -186,10 +189,22 @@ const ImageGenerator = () => {
         setUseAspectRatio(true);
       }
       
-      setActiveTab('input');
+      // Set appropriate tab based on current hash
+      const hash = window.location.hash;
+      if (hash === '#imagegenerate') {
+        setActiveTab('input');
+      } else if (hash === '#myimages') {
+        setActiveTab('images');
+        // Scroll to top for desktop remix
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
+      } else {
+        setActiveTab('input');
+      }
       
       // Clear the location state to prevent re-processing
-      window.history.replaceState({ ...location.state, remixImage: null }, '', location.pathname);
+      window.history.replaceState({ ...location.state, remixImage: null }, '', location.pathname + location.hash);
     }
   }, [
     location.state, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
