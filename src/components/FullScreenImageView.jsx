@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ImagePromptSection from './image-view/ImagePromptSection';
 import ImageDetailsSection from './image-view/ImageDetailsSection';
 import { handleImageDiscard } from '@/utils/discardUtils';
+import { useImageRemix } from '@/hooks/useImageRemix';
 import HeartAnimation from './animations/HeartAnimation';
 import ImageOwnerHeader from './image-view/ImageOwnerHeader';
 import { format } from 'date-fns';
@@ -19,7 +20,6 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import AdminDiscardDialog from './admin/AdminDiscardDialog';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
-import { useSimpleRemix } from '@/hooks/useSimpleRemix';
 
 const FullScreenImageView = ({ 
   image, 
@@ -34,7 +34,6 @@ const FullScreenImageView = ({
   const { session } = useSupabaseAuth();
   const navigate = useNavigate();
   const { isAdmin } = useIsAdmin();
-  const { remix } = useSimpleRemix();
   
   const { data: modelConfigs } = useModelConfigs();
   const [copyIcon, setCopyIcon] = useState('copy');
@@ -46,6 +45,9 @@ const FullScreenImageView = ({
   const queryClient = useQueryClient();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showSidebarButton, setShowSidebarButton] = useState(false);
+
+  // Remove the local handleRemix hook usage
+  // const { handleRemix } = useImageRemix(session, onRemix, onClose);
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
@@ -120,8 +122,8 @@ const FullScreenImageView = ({
       return;
     }
     
-    if (image) {
-      remix(image);
+    if (onRemix && image) {
+      onRemix();
     }
   };
 

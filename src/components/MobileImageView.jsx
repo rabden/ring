@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ImagePromptSection from './image-view/ImagePromptSection';
 import ImageDetailsSection from './image-view/ImageDetailsSection';
 import { handleImageDiscard } from '@/utils/discardUtils';
+import { useImageRemix } from '@/hooks/useImageRemix';
 import HeartAnimation from './animations/HeartAnimation';
 import ImageOwnerHeader from './image-view/ImageOwnerHeader';
 import { format } from 'date-fns';
@@ -20,7 +21,6 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminDiscardDialog from './admin/AdminDiscardDialog';
-import { useSimpleRemix } from '@/hooks/useSimpleRemix';
 
 const MobileImageView = ({ 
   image, 
@@ -47,7 +47,6 @@ const MobileImageView = ({
   const [imageStyle, setImageStyle] = useState({});
   const imageRef = useRef(null);
   const containerRef = useRef(null);
-  const { remix } = useSimpleRemix();
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
@@ -156,8 +155,8 @@ const MobileImageView = ({
       return;
     }
     
-    if (image) {
-      remix(image);
+    if (onRemix && image) {
+      onRemix();
     }
   };
 
