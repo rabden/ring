@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -11,8 +12,8 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import { handleImageDiscard } from '@/utils/discardUtils';
 import { toast } from 'sonner';
-import { useImageRemix } from '@/hooks/useImageRemix';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { remixImage } from '@/utils/remixUtils';
 
 const SingleImageView = () => {
   const { imageId } = useParams();
@@ -36,8 +37,6 @@ const SingleImageView = () => {
     },
   });
 
-  const { handleRemix } = useImageRemix(session);
-
   const handleDownload = async () => {
     if (!image) return;
     const imageUrl = supabase.storage.from('user-images').getPublicUrl(image.storage_path).data.publicUrl;
@@ -53,6 +52,10 @@ const SingleImageView = () => {
       console.error('Error deleting image:', error);
       toast.error('Failed to delete image');
     }
+  };
+
+  const handleRemixClick = () => {
+    remixImage(image, navigate, session);
   };
 
   if (isLoading) {
@@ -96,7 +99,7 @@ const SingleImageView = () => {
       onClose={() => navigate(-1)}
       onDownload={handleDownload}
       onDiscard={handleDiscard}
-      onRemix={() => handleRemix(image)}
+      onRemix={handleRemixClick}
       isOwner={image.user_id === session?.user?.id}
       isAdmin={isAdmin}
       setActiveTab={() => {}}
@@ -110,7 +113,7 @@ const SingleImageView = () => {
       onClose={() => navigate(-1)}
       onDownload={handleDownload}
       onDiscard={handleDiscard}
-      onRemix={() => handleRemix(image)}
+      onRemix={handleRemixClick}
       isOwner={image.user_id === session?.user?.id}
       isAdmin={isAdmin}
       setStyle={() => {}}

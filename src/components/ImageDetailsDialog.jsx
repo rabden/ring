@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -17,6 +18,10 @@ import { supabase } from '@/integrations/supabase/supabase'
 import { toast } from 'sonner'
 import { useSupabaseAuth } from '@/integrations/supabase/auth'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
+import { useNavigate } from 'react-router-dom'
+import { remixImage } from '@/utils/remixUtils'
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
 
 const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
   const { data: modelConfigs } = useModelConfigs();
@@ -25,6 +30,7 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const { session } = useSupabaseAuth();
   const { isAdmin } = useIsAdmin();
+  const navigate = useNavigate();
 
   const isOwner = image?.user_id === session?.user?.id;
   const showAdminDelete = isAdmin && !isOwner;
@@ -73,6 +79,11 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
     }
   };
 
+  const handleRemixClick = () => {
+    remixImage(image, navigate, session);
+    onOpenChange(false);
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -86,6 +97,29 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
           </DialogHeader>
           <ScrollArea className="mt-6 max-h-[calc(80vh-80px)]">
             <div className="space-y-6 px-2">
+              {session && (
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleRemixClick}
+                    variant="outline" 
+                    size="sm"
+                    className="flex-1"
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Remix
+                  </Button>
+                  {(isOwner || showAdminDelete) && (
+                    <Button
+                      onClick={() => setIsAdminDialogOpen(true)}
+                      variant="destructive"
+                      size="sm"
+                    >
+                      {showAdminDelete ? 'Admin Delete' : 'Delete'}
+                    </Button>
+                  )}
+                </div>
+              )}
+
               <ImagePromptSection 
                 prompt={image.user_prompt || image.prompt}
                 negative_prompt={image.negative_prompt}
@@ -96,15 +130,6 @@ const ImageDetailsDialog = ({ open, onOpenChange, image, onDiscard }) => {
               />
 
               <ImageDetailsSection detailItems={detailItems} />
-              
-              {(isOwner || showAdminDelete) && (
-                <button
-                  onClick={() => setIsAdminDialogOpen(true)}
-                  className="text-red-500 hover:text-red-600"
-                >
-                  {showAdminDelete ? 'Admin Delete' : 'Delete'}
-                </button>
-              )}
             </div>
           </ScrollArea>
         </DialogContent>

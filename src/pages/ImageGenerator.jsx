@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -10,16 +11,13 @@ import { useImageGeneratorState } from '@/hooks/useImageGeneratorState';
 import { useImageHandlers } from '@/hooks/useImageHandlers';
 import { useProUser } from '@/hooks/useProUser';
 import { useModelConfigs } from '@/hooks/useModelConfigs';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/supabase';
 import { toast } from 'sonner';
 import ImageGeneratorContent from '@/components/ImageGeneratorContent';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
 import { useGeneratingImages } from '@/contexts/GeneratingImagesContext';
 
 const ImageGenerator = () => {
-  const [searchParams] = useSearchParams();
-  const remixId = searchParams.get('remix');
+  const location = useLocation();
   const { session } = useSupabaseAuth();
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
@@ -31,7 +29,6 @@ const ImageGenerator = () => {
 
   const queryClient = useQueryClient();
   const isHeaderVisible = useScrollDirection();
-  const { setIsRemixMode } = useUserPreferences();
   const { generatingImages, setGeneratingImages, negativePrompt, setNegativePrompt, guidanceScale, setGuidanceScale, updateModelSettings } = useGeneratingImages();
   const { credits, bonusCredits, updateCredits } = useUserCredits(session?.user?.id);
   const { data: isPro } = useProUser(session?.user?.id);
@@ -160,27 +157,13 @@ const ImageGenerator = () => {
     }
   }, [window.location.hash]);
 
-  const { data: remixImage, isLoading: isRemixLoading } = useQuery({
-    queryKey: ['remixImage', remixId],
-    queryFn: async () => {
-      if (!remixId) return null;
-      const { data, error } = await supabase
-        .from('user_images')
-        .select('*')
-        .eq('id', remixId)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!remixId && !remixProcessed,
-  });
-
+  // Handle remix from location state (new simple remix system)
   useEffect(() => {
+    const remixImage = location.state?.remixImage;
     if (remixImage && !remixProcessed) {
       setRemixProcessed(true);
-      setIsRemixMode(true);
       
-      setPrompt(remixImage.prompt);
+      setPrompt(remixImage.user_prompt || remixImage.prompt);
       setSeed(remixImage.seed);
       setRandomizeSeed(false);
       setWidth(remixImage.width);
@@ -205,32 +188,20 @@ const ImageGenerator = () => {
       
       setActiveTab('input');
       
-      if (window.history.replaceState) {
-        const newUrl = window.location.pathname;
-        window.history.replaceState({ path: newUrl }, '', newUrl);
-      }
+      // Clear the location state to prevent re-processing
+      window.history.replaceState({ ...location.state, remixImage: null }, '', location.pathname);
     }
   }, [
-    remixImage, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
-    setIsRemixMode, setModel, setPrompt, setQuality, setRandomizeSeed, 
+    location.state, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
+    setModel, setPrompt, setQuality, setRandomizeSeed, 
     setSeed, setUseAspectRatio, setWidth, setNegativePrompt, setGuidanceScale, modelConfigs
   ]);
-  
-  useEffect(() => {
-    return () => {
-      setIsRemixMode(false);
-    };
-  }, [setIsRemixMode]);
 
   useEffect(() => {
     if (modelConfigs && modelConfigs[model]) {
       updateModelSettings(modelConfigs[model]);
     }
   }, [model, modelConfigs, updateModelSettings]);
-
-  if (isRemixLoading && !remixProcessed) {
-    return <div>Loading remix...</div>;
-  }
 
   return (
     <>

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from '@/integrations/supabase/supabase';
@@ -11,7 +12,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ImagePromptSection from './image-view/ImagePromptSection';
 import ImageDetailsSection from './image-view/ImageDetailsSection';
 import { handleImageDiscard } from '@/utils/discardUtils';
-import { useImageRemix } from '@/hooks/useImageRemix';
 import HeartAnimation from './animations/HeartAnimation';
 import ImageOwnerHeader from './image-view/ImageOwnerHeader';
 import { format } from 'date-fns';
@@ -21,6 +21,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminDiscardDialog from './admin/AdminDiscardDialog';
+import { remixImage } from '@/utils/remixUtils';
 
 const MobileImageView = ({ 
   image, 
@@ -39,7 +40,6 @@ const MobileImageView = ({
   const [imageError, setImageError] = useState(false);
   const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { handleRemix } = useImageRemix(session, onRemix, onClose, isPro);
   const queryClient = useQueryClient();
   const { userLikes, toggleLike } = useLikes(session?.user?.id);
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -151,14 +151,8 @@ const MobileImageView = ({
   };
 
   const handleRemixClick = () => {
-    if (!session) {
-      toast.error('Please sign in to remix images');
-      return;
-    }
-    
-    if (onRemix && image) {
-      onRemix(image);
-    }
+    remixImage(image, navigate, session);
+    onClose();
   };
 
   const isLandscape = image?.width > image?.height;

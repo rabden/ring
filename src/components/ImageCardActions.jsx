@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { MoreVertical, Download, Trash2, Wand2, Info, Shield } from "lucide-react";
@@ -17,6 +18,7 @@ import { supabase } from '@/integrations/supabase/supabase';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from 'date-fns';
 import { useModelConfigs } from '@/hooks/useModelConfigs';
+import { remixImage } from '@/utils/remixUtils';
 
 const ImageCardActions = ({ 
   image, 
@@ -98,12 +100,7 @@ const ImageCardActions = ({
   const handleRemixClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!session) {
-      toast.error('Please sign in to remix images');
-      return;
-    }
-    const hash = isMobileDevice ? '#imagegenerate' : '#myimages';
-    navigate(`/?remix=${image.id}${hash}`, { replace: true });
+    remixImage(image, navigate, session);
     setIsDrawerOpen(false);
   };
 

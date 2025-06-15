@@ -20,6 +20,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from "@/lib/utils";
 import AdminDiscardDialog from './admin/AdminDiscardDialog';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { remixImage } from '@/utils/remixUtils';
 
 const FullScreenImageView = ({ 
   image, 
@@ -45,8 +46,6 @@ const FullScreenImageView = ({
   const queryClient = useQueryClient();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [showSidebarButton, setShowSidebarButton] = useState(false);
-
-  const { handleRemix } = useImageRemix(session, onRemix, onClose);
 
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile', session?.user?.id],
@@ -116,14 +115,8 @@ const FullScreenImageView = ({
   };
 
   const handleRemixClick = () => {
-    if (!session) {
-      toast.error('Please sign in to remix images');
-      return;
-    }
-    
-    if (onRemix && image) {
-      onRemix(image);
-    }
+    remixImage(image, navigate, session);
+    onClose();
   };
 
   const detailItems = image ? [
