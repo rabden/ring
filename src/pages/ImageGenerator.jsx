@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -10,6 +11,7 @@ import { useImageGeneratorState } from '@/hooks/useImageGeneratorState';
 import { useImageHandlers } from '@/hooks/useImageHandlers';
 import { useProUser } from '@/hooks/useProUser';
 import { useModelConfigs } from '@/hooks/useModelConfigs';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { toast } from 'sonner';
 import ImageGeneratorContent from '@/components/ImageGeneratorContent';
 import { useUserPreferences } from '@/contexts/UserPreferencesContext';
@@ -25,6 +27,7 @@ const ImageGenerator = () => {
   const [isPrivate, setIsPrivate] = useState(false);
   const [showPrivate, setShowPrivate] = useState(false);
   const [remixProcessed, setRemixProcessed] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const queryClient = useQueryClient();
   const isHeaderVisible = useScrollDirection();
@@ -145,27 +148,11 @@ const ImageGenerator = () => {
     handleViewDetails,
   } = imageHandlers;
 
-  // Enhanced hash handling with better timing
-  useEffect(() => {
-    const hash = window.location.hash;
-    console.log('Hash changed:', hash);
-    
-    if (hash === '#imagegenerate') {
-      setActiveTab('input');
-    } else if (hash === '#notifications') {
-      setActiveTab('notifications');
-    } else if (hash === '#myimages') {
-      setActiveTab('images');
-    } else {
-      setActiveTab('images');
-    }
-  }, [location.hash]);
-
-  // Enhanced remix processing with better cross-route handling
+  // Simplified remix processing - handle state from navigation
   useEffect(() => {
     const remixImage = location.state?.remixImage;
     if (remixImage && !remixProcessed) {
-      console.log('Processing remix from navigation:', remixImage);
+      console.log('Processing remix from navigation state:', remixImage);
       setRemixProcessed(true);
       
       // Apply remix data
@@ -192,32 +179,27 @@ const ImageGenerator = () => {
         setUseAspectRatio(true);
       }
       
-      // Set appropriate tab based on current hash or default
-      const hash = window.location.hash;
-      if (hash === '#imagegenerate') {
+      // Set tab based on device
+      if (isMobile) {
         setActiveTab('input');
-      } else if (hash === '#myimages') {
+      } else {
         setActiveTab('images');
-        // Scroll to top for desktop remix
+        // Scroll to top for desktop
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 200);
-      } else {
-        // Default behavior for cross-route navigation
-        setActiveTab('input');
+        }, 100);
       }
       
-      // Clear remix state to prevent re-processing
-      const newState = { ...location.state };
-      delete newState.remixImage;
-      window.history.replaceState(newState, '', location.pathname + location.hash);
+      // Clear remix state
+      window.history.replaceState({}, '', location.pathname);
       
       console.log('Remix processing completed');
     }
   }, [
     location.state, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
     setModel, setPrompt, setQuality, setRandomizeSeed, 
-    setSeed, setUseAspectRatio, setWidth, setNegativePrompt, setGuidanceScale, modelConfigs
+    setSeed, setUseAspectRatio, setWidth, setNegativePrompt, setGuidanceScale, 
+    modelConfigs, isMobile
   ]);
 
   // Reset remix processed flag when location pathname changes

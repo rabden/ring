@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ImageGeneratorSettings from './ImageGeneratorSettings';
@@ -45,8 +46,7 @@ const ImageGeneratorContent = ({
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 767px)');
   const isInspiration = location.pathname === '/inspiration';
-  const isGenerateTab = location.hash === '#imagegenerate';
-  const isNotificationsTab = location.hash === '#notifications';
+  const isGenerateTab = activeTab === 'input';
   const shouldShowSettings = isMobile ? isGenerateTab : !isInspiration;
   const [isPromptVisible, setIsPromptVisible] = useState(true);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -112,16 +112,6 @@ const ImageGeneratorContent = ({
     }
   }, [shouldShowSettings, isPromptVisible, isInspiration, isGenerateTab, isMobile, searchQuery, settingsActive]);
 
-  useEffect(() => {
-    if (isGenerateTab) {
-      setActiveTab('input');
-    } else if (isNotificationsTab) {
-      setActiveTab('notifications');
-    } else {
-      setActiveTab('images');
-    }
-  }, [location.hash, setActiveTab]);
-
   const handleSearch = query => {
     setSearchQuery(query);
     onSearch(query);
@@ -132,11 +122,11 @@ const ImageGeneratorContent = ({
   };
 
   useEffect(() => {
-    if (!isInspiration && !location.hash.includes('myimages')) {
+    if (!isInspiration) {
       setSearchQuery('');
       onSearch('');
     }
-  }, [location.pathname, location.hash]);
+  }, [location.pathname]);
 
   const handleImageClick = (image) => {
     navigate(`/image/${image.id}`);
