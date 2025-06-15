@@ -20,6 +20,7 @@ import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { handleImageDiscard } from '@/utils/discardUtils';
+import { remixImage } from '@/utils/remixUtils';
 
 const Inspiration = () => {
   const { session } = useSupabaseAuth();
@@ -94,7 +95,7 @@ const Inspiration = () => {
   };
 
   const handleRemix = async (image) => {
-    navigate(`/remix/${image.id}`);
+    remixImage(image, navigate, session);
   };
 
   const handleDownload = async (image) => {

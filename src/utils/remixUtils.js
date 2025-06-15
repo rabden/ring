@@ -16,35 +16,57 @@ export const remixImage = (image, navigate, session) => {
     return;
   }
 
-  // Determine navigation target based on device
   const mobile = isMobile();
-  const targetRoute = mobile ? '/#imagegenerate' : '/#myimages';
+  const targetHash = mobile ? '#imagegenerate' : '#myimages';
 
-  console.log('Remix navigation:', { mobile, targetRoute, from: window.location.pathname });
+  console.log('Remix navigation:', { mobile, targetHash, from: window.location.pathname });
 
-  // Navigate to the appropriate route with image data in state
-  navigate(targetRoute, {
-    state: {
-      remixImage: {
-        id: image.id,
-        prompt: image.prompt,
-        user_prompt: image.user_prompt,
-        seed: image.seed,
-        width: image.width,
-        height: image.height,
-        model: image.model,
-        quality: image.quality,
-        aspect_ratio: image.aspect_ratio,
-        negative_prompt: image.negative_prompt
-      }
-    },
-    replace: true
-  });
+  // Prepare remix data
+  const remixData = {
+    remixImage: {
+      id: image.id,
+      prompt: image.prompt,
+      user_prompt: image.user_prompt,
+      seed: image.seed,
+      width: image.width,
+      height: image.height,
+      model: image.model,
+      quality: image.quality,
+      aspect_ratio: image.aspect_ratio,
+      negative_prompt: image.negative_prompt
+    }
+  };
 
-  // For desktop, scroll to top after navigation
-  if (!mobile) {
+  // Check if we're already on the root route
+  const isOnRootRoute = window.location.pathname === '/';
+  
+  if (isOnRootRoute) {
+    // We're already on the root route, just change the hash
+    console.log('Same route navigation, updating hash only');
+    navigate(targetHash, {
+      state: remixData,
+      replace: true
+    });
+  } else {
+    // Cross-route navigation: first navigate to root, then set hash
+    console.log('Cross-route navigation, two-step process');
+    
+    // Step 1: Navigate to root route with remix data
+    navigate('/', {
+      state: remixData,
+      replace: true
+    });
+    
+    // Step 2: Set the hash after a small delay to ensure route transition completes
     setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
+      window.location.hash = targetHash;
+      
+      // For desktop, scroll to top after navigation
+      if (!mobile) {
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
+      }
+    }, 50);
   }
 };

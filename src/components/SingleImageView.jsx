@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -55,6 +54,7 @@ const SingleImageView = () => {
   };
 
   const handleRemixClick = () => {
+    console.log('SingleImageView remix clicked, using remixUtils');
     remixImage(image, navigate, session);
   };
 

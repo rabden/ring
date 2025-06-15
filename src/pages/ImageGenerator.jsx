@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import { useSupabaseAuth } from '@/integrations/supabase/auth';
@@ -146,8 +145,11 @@ const ImageGenerator = () => {
     handleViewDetails,
   } = imageHandlers;
 
+  // Enhanced hash handling with better timing
   useEffect(() => {
     const hash = window.location.hash;
+    console.log('Hash changed:', hash);
+    
     if (hash === '#imagegenerate') {
       setActiveTab('input');
     } else if (hash === '#notifications') {
@@ -157,15 +159,16 @@ const ImageGenerator = () => {
     } else {
       setActiveTab('images');
     }
-  }, [window.location.hash]);
+  }, [location.hash]);
 
-  // Handle remix from location state (improved system)
+  // Enhanced remix processing with better cross-route handling
   useEffect(() => {
     const remixImage = location.state?.remixImage;
     if (remixImage && !remixProcessed) {
-      console.log('Processing remix:', remixImage);
+      console.log('Processing remix from navigation:', remixImage);
       setRemixProcessed(true);
       
+      // Apply remix data
       setPrompt(remixImage.user_prompt || remixImage.prompt);
       setSeed(remixImage.seed);
       setRandomizeSeed(false);
@@ -174,12 +177,12 @@ const ImageGenerator = () => {
       setModel(remixImage.model);
       setQuality(remixImage.quality);
       
-      // Update context values for negative prompt and guidance scale
+      // Update context values
       if (remixImage.negative_prompt) {
         setNegativePrompt(remixImage.negative_prompt);
       }
       
-      // Set guidance scale from model config if available
+      // Set guidance scale from model config
       if (modelConfigs && modelConfigs[remixImage.model]?.defaultguidance !== undefined) {
         setGuidanceScale(modelConfigs[remixImage.model].defaultguidance);
       }
@@ -189,7 +192,7 @@ const ImageGenerator = () => {
         setUseAspectRatio(true);
       }
       
-      // Set appropriate tab based on current hash
+      // Set appropriate tab based on current hash or default
       const hash = window.location.hash;
       if (hash === '#imagegenerate') {
         setActiveTab('input');
@@ -198,19 +201,29 @@ const ImageGenerator = () => {
         // Scroll to top for desktop remix
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 100);
+        }, 200);
       } else {
+        // Default behavior for cross-route navigation
         setActiveTab('input');
       }
       
-      // Clear the location state to prevent re-processing
-      window.history.replaceState({ ...location.state, remixImage: null }, '', location.pathname + location.hash);
+      // Clear remix state to prevent re-processing
+      const newState = { ...location.state };
+      delete newState.remixImage;
+      window.history.replaceState(newState, '', location.pathname + location.hash);
+      
+      console.log('Remix processing completed');
     }
   }, [
     location.state, remixProcessed, setActiveTab, setAspectRatio, setHeight, 
     setModel, setPrompt, setQuality, setRandomizeSeed, 
     setSeed, setUseAspectRatio, setWidth, setNegativePrompt, setGuidanceScale, modelConfigs
   ]);
+
+  // Reset remix processed flag when location pathname changes
+  useEffect(() => {
+    setRemixProcessed(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (modelConfigs && modelConfigs[model]) {
