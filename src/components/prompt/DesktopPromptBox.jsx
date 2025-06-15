@@ -277,6 +277,7 @@ const DesktopPromptBox = ({
                     currentModel={activeModel} 
                     onModelChange={onModelChange} 
                     modelConfigs={modelConfigs}
+                    proMode={proMode}
                   />
                 )}
                 
