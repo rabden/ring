@@ -8,8 +8,6 @@ export const UserPreferencesProvider = ({ children }) => {
     const saved = localStorage.getItem('aspectRatio');
     return saved || "1:1";
   });
-
-  const [isRemixMode, setIsRemixMode] = useState(false);
   
   const [settingsActive, setSettingsActive] = useState(() => {
     const saved = localStorage.getItem('settingsActive');
@@ -17,10 +15,8 @@ export const UserPreferencesProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    if (!isRemixMode) {
-      localStorage.setItem('aspectRatio', aspectRatio);
-    }
-  }, [aspectRatio, isRemixMode]);
+    localStorage.setItem('aspectRatio', aspectRatio);
+  }, [aspectRatio]);
   
   useEffect(() => {
     localStorage.setItem('settingsActive', JSON.stringify(settingsActive));
@@ -34,8 +30,6 @@ export const UserPreferencesProvider = ({ children }) => {
   const value = {
     aspectRatio,
     setAspectRatio,
-    isRemixMode,
-    setIsRemixMode,
     settingsActive,
     setSettingsActive,
   };
